@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // ou mysql se você estiver usando mysql
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+
+  users  User[]
+  events Event[]
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  name           String
+  email          String   @unique
+  passwordHash   String
+  role           String   @default("STAFF")
+  createdAt      DateTime @default(now())
+
+  organizationId Int
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  events Event[]
+}
+
+model Event {
+  id             Int      @id @default(autoincrement())
+  title          String
+  type           String
+  slug           String   @unique
+  description    String?
+  eventDate      DateTime?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  organizationId Int
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  userId         Int
+  user           User @relation(fields: [userId], references: [id])
+}
