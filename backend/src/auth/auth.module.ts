@@ -2,18 +2,18 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { JwtStrategy } from './jwt.strategy';
-import { UsersModule } from '../users/users.module';
+import { PrismaModule } from '../modules/prisma/prisma.module';
 
 @Module({
   imports: [
-    UsersModule,
+    PrismaModule,
     JwtModule.register({
-      secret: 'supersecret',
+      secret: 'supersecretkey', // depois vamos colocar em .env
       signOptions: { expiresIn: '1d' },
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService],
+  exports: [AuthService],
 })
 export class AuthModule {}

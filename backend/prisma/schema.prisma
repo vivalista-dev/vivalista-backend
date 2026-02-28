@@ -3,12 +3,18 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // ou mysql se você estiver usando mysql
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  ADMIN
+  MANAGER
+  STAFF
+}
+
 model Organization {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   name      String
   createdAt DateTime @default(now())
 
@@ -17,21 +23,21 @@ model Organization {
 }
 
 model User {
-  id             Int      @id @default(autoincrement())
+  id             String   @id @default(uuid())
   name           String
   email          String   @unique
   passwordHash   String
-  role           String   @default("STAFF")
+  role           Role     @default(STAFF)
   createdAt      DateTime @default(now())
 
-  organizationId Int
+  organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
 
   events Event[]
 }
 
 model Event {
-  id             Int      @id @default(autoincrement())
+  id             String   @id @default(uuid())
   title          String
   type           String
   slug           String   @unique
@@ -40,9 +46,9 @@ model Event {
   isActive       Boolean  @default(true)
   createdAt      DateTime @default(now())
 
-  organizationId Int
+  organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
 
-  userId         Int
+  userId         String
   user           User @relation(fields: [userId], references: [id])
 }

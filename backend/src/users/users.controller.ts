@@ -1,27 +1,44 @@
-import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Delete,
+  Patch,
+  Body,
+  Req,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Role } from '@prisma/client';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @UseGuards(JwtAuthGuard)
   @Get()
-  async findAll() {
-    return this.usersService.findAll();
+  findAll(@Req() req: any) {
+    return this.usersService.findAll(req.user.organizationId);
   }
 
-  @Post()
-  async create(
-    @Body()
-    body: {
-      name: string;
-      email: string;
-      password: string;
-      organizationId: number;
-    },
+  @Get(':id')
+  findOne(@Param('id') id: string, @Req() req: any) {
+    return this.usersService.findOne(id, req.user.organizationId);
+  }
+
+  @Patch(':id/role')
+  updateRole(
+    @Param('id') id: string,
+    @Body('role') role: Role,
+    @Req() req: any,
   ) {
-    return this.usersService.create(body);
+    return this.usersService.updateRole(
+      id,
+      req.user.organizationId,
+      role,
+    );
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string, @Req() req: any) {
+    return this.usersService.remove(id, req.user.organizationId);
   }
 }
