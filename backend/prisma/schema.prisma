@@ -3,52 +3,53 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "postgresql" // ou sqlite se você estiver usando sqlite
   url      = env("DATABASE_URL")
 }
 
 enum Role {
+  OWNER
   ADMIN
-  MANAGER
   STAFF
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
 }
 
 model Organization {
   id        String   @id @default(uuid())
   name      String
+  users     User[]
+  events    Event[]
   createdAt DateTime @default(now())
-
-  users  User[]
-  events Event[]
 }
 
 model User {
-  id             String   @id @default(uuid())
+  id             String        @id @default(uuid())
   name           String
-  email          String   @unique
-  passwordHash   String
-  role           Role     @default(STAFF)
-  createdAt      DateTime @default(now())
-
+  email          String        @unique
+  password       String
+  role           Role          @default(STAFF)
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
-
-  events Event[]
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime      @default(now())
 }
 
 model Event {
-  id             String   @id @default(uuid())
-  title          String
-  type           String
-  slug           String   @unique
+  id             String        @id @default(uuid())
+  name           String
   description    String?
-  eventDate      DateTime?
-  isActive       Boolean  @default(true)
-  createdAt      DateTime @default(now())
+  date           DateTime
+  location       String?
+  capacity       Int?
+  status         EventStatus   @default(DRAFT)
 
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
+  organization   Organization  @relation(fields: [organizationId], references: [id])
 
-  userId         String
-  user           User @relation(fields: [userId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 }

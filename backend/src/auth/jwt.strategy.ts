@@ -8,7 +8,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: 'supersecret', // MESMO SECRET DO AUTH.MODULE
+      secretOrKey: 'supersecret',
     });
   }
 
@@ -17,6 +17,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       userId: payload.sub,
       email: payload.email,
       organizationId: payload.organizationId,
+      role: payload.role,
     };
   }
 }
