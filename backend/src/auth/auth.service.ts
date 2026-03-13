@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../modules/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { Role } from './roles.enum';
 
 @Injectable()
 export class AuthService {
@@ -14,7 +15,7 @@ export class AuthService {
     name: string;
     email: string;
     password: string;
-    organizationId: string;
+    organizationName: string;
   }) {
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
@@ -23,8 +24,12 @@ export class AuthService {
         name: data.name,
         email: data.email,
         password: hashedPassword,
-        organizationId: data.organizationId,
-        role: 'ADMIN',
+        role: Role.OWNER,
+        organization: {
+          create: {
+            name: data.organizationName,
+          },
+        },
       },
     });
 

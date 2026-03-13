@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // ou sqlite se você estiver usando sqlite
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -13,43 +13,112 @@ enum Role {
   STAFF
 }
 
-enum EventStatus {
-  DRAFT
-  PUBLISHED
-  CLOSED
+enum GuestStatus {
+  INVITED
+  CONFIRMED
+  DECLINED
 }
 
 model Organization {
-  id        String   @id @default(uuid())
-  name      String
-  users     User[]
-  events    Event[]
-  createdAt DateTime @default(now())
+  id                    String   @id @default(uuid())
+  name                  String
+  paymentGateway        String?
+  paymentAccountId      String?
+  paymentAccountStatus  String?  @default("NOT_CONNECTED")
+  paymentAccountReady   Boolean  @default(false)
+  createdAt             DateTime @default(now())
+
+  users  User[]
+  events Event[]
 }
 
 model User {
-  id             String        @id @default(uuid())
+  id             String   @id @default(uuid())
   name           String
-  email          String        @unique
+  email          String   @unique
   password       String
-  role           Role          @default(STAFF)
+  role           Role     @default(STAFF)
   organizationId String
-  organization   Organization  @relation(fields: [organizationId], references: [id])
-  createdAt      DateTime      @default(now())
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 }
 
 model Event {
-  id             String        @id @default(uuid())
+  id             String   @id @default(uuid())
   name           String
+  slug           String?  @unique
   description    String?
   date           DateTime
-  location       String?
+  location       String
   capacity       Int?
-  status         EventStatus   @default(DRAFT)
-
+  status         String   @default("DRAFT")
   organizationId String
-  organization   Organization  @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime @default(now())
 
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  guests         Guest[]
+  gifts          Gift[]
+  payments       Payment[]
+}
+
+model Guest {
+  id             String      @id @default(uuid())
+  name           String
+  email          String?
+  phone          String?
+  status         GuestStatus @default(INVITED)
+  rsvpCode       String?     @unique
+  eventId        String
+  organizationId String
+  createdAt      DateTime    @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+model Gift {
+  id              String   @id @default(uuid())
+  title           String
+  description     String?
+  price           Float?
+  imageUrl        String?
+  purchaseUrl     String?
+  isActive        Boolean  @default(true)
+  isReserved      Boolean  @default(false)
+  isPurchased     Boolean  @default(false)
+  reservedByName  String?
+  reservedAt      DateTime?
+  purchasedByName String?
+  purchasedAt     DateTime?
+  eventId         String
+  organizationId  String
+  createdAt       DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id                String   @id @default(uuid())
+  organizationId    String
+  eventId           String
+  giftId            String
+  buyerName         String
+  buyerEmail        String
+  buyerPhone        String
+  paymentMethod     String
+  status            String   @default("PENDING")
+  amount            Float
+  gatewayProvider   String?
+  gatewayPaymentId  String?
+  externalReference String?
+  checkoutUrl       String?
+  pixCode           String?
+  pixQrCode         String?
+  boletoUrl         String?
+  boletoBarcode     String?
+  paidAt            DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 }

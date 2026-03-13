@@ -1,0 +1,769 @@
+﻿===================== C:\Users\famil\VIVALISTA\backend\src\auth\dto\login.dto.ts =====================
+import { IsEmail, IsString } from 'class-validator';
+
+export class LoginDto {
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  password: string;
+}
+
+===================== C:\Users\famil\VIVALISTA\backend\src\auth\dto\register.dto.ts =====================
+import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+
+export class RegisterDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+
+  @IsString()
+  @IsNotEmpty()
+  organizationName: string;
+}
+
+===================== C:\Users\famil\VIVALISTA\backend\src\auth\auth.controller.spec.ts =====================
+import { Test, TestingModule } from '@nestjs/testing';
+import { AuthController } from './auth.controller';
+
+describe('AuthController', () => {
+  let controller: AuthController;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [AuthController],
+    }).compile();
+
+    controller = module.get<AuthController>(AuthController);
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+});
+
+===================== C:\Users\famil\VIVALISTA\backend\src\auth\auth.controller.ts =====================
+import { Controller, Post, Body } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { RegisterDto } from './dto/register.dto';
+
+@Controller('auth')
+export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
+  @Post('register')
+  register(@Body() body: RegisterDto) {
+    return this.authService.register(body);
+  }
+
+  @Post('login')
+  login(@Body() body: { email: string; password: string }) {
+    return this.authService.login(body.email, body.password);
+  }
+}
+
+===================== C:\Users\famil\VIVALISTA\backend\src\auth\auth.module.ts =====================
+import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+import { JwtStrategy } from './jwt.strategy';
+
+import { PrismaModule } from '../modules/prisma/prisma.module';
+
+@Module({
+  imports: [
+    PrismaModule,
+    PassportModule,
+    JwtModule.register({
+      secret: 'supersecret', // depois vamos colocar no .env
+      signOptions: { expiresIn: '1d' },
+    }),
+  ],
+  controllers: [AuthController],
+  providers: [AuthService, JwtStrategy],
+  exports: [AuthService],
+})
+export class AuthModule {}
+
+===================== C:\Users\famil\VIVALISTA\backend\src\auth\auth.service.spec.ts =====================
+import { Test, TestingModule } from '@nestjs/testing';
+import { AuthService } from './auth.service';
+
+describe('AuthService', () => {
+  let service: AuthService;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [AuthService],
+    }).compile();
+
+    service = module.get<AuthService>(AuthService);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+});
+
+===================== C:\Users\famil\VIVALISTA\backend\src\auth\auth.service.ts =====================
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { PrismaService } from '../modules/prisma/prisma.service';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
+import { Role } from './roles.enum';
+
+@Injectable()
+export class AuthService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+  ) {}
+
+  async register(data: {
+    name: string;
+    email: string;
+    password: string;
+    organizationName: string;
+  }) {
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+
+    const user = await this.prisma.user.create({
+      data: {
+        name: data.name,
+        email: data.email,
+        password: hashedPassword,
+        role: Role.OWNER,
+        organization: {
+          create: {
+            name: data.organizationName,
+          },
+        },
+      },
+    });
+
+    return user;
+  }
+
+  async login(email: string, password: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Credenciais invÃ¡lidas');
+    }
+
+    const passwordValid = await bcrypt.compare(password, user.password);
+
+    if (!passwordValid) {
+      throw new UnauthorizedException('Credenciais invÃ¡lidas');
+    }
+
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      organizationId: user.organizationId,
+    };
+
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
+  }
+}
+
+===================== C:\Users\famil\VIVALISTA\backend\src\auth\jwt-auth.guard.ts =====================
+import { Injectable } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+
+@Injectable()
+export class JwtAuthGuard extends AuthGuard('jwt') {}
+
+===================== C:\Users\famil\VIVALISTA\backend\src\auth\jwt.strategy.ts =====================
+import { Injectable } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+
+@Injectable()
+export class JwtStrategy extends PassportStrategy(Strategy) {
+  constructor() {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey: 'supersecret',
+    });
+  }
+
+  async validate(payload: any) {
+    return {
+      userId: payload.sub,
+      email: payload.email,
+      organizationId: payload.organizationId,
+      role: payload.role,
+    };
+  }
+}
+
+===================== C:\Users\famil\VIVALISTA\backend\src\auth\roles.decorator.ts =====================
+import { SetMetadata } from '@nestjs/common';
+import { Role } from './roles.enum';
+
+export const ROLES_KEY = 'roles';
+
+export const Roles = (...roles: Role[]) =>
+  SetMetadata(ROLES_KEY, roles);
+
+===================== C:\Users\famil\VIVALISTA\backend\src\auth\roles.enum.ts =====================
+export enum Role {
+  OWNER = 'OWNER',
+  ADMIN = 'ADMIN',
+  STAFF = 'STAFF',
+}
+
+===================== C:\Users\famil\VIVALISTA\backend\src\auth\roles.guard.ts =====================
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { Role } from './roles.enum';
+import { ROLES_KEY } from './roles.decorator';
+
+@Injectable()
+export class RolesGuard implements CanActivate {
+  constructor(private reflector: Reflector) {}
+
+  canActivate(context: ExecutionContext): boolean {
+    const requiredRoles = this.reflector.getAllAndOverride<Role[]>(
+      ROLES_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+
+    if (!requiredRoles) {
+      return true;
+    }
+
+    const request = context.switchToHttp().getRequest();
+    const user = request.user;
+
+    if (!user || !requiredRoles.includes(user.role)) {
+      throw new ForbiddenException(
+        'VocÃª nÃ£o tem permissÃ£o para acessar este recurso',
+      );
+    }
+
+    return true;
+  }
+}
+
+===================== C:\Users\famil\VIVALISTA\backend\src\modules\event\event.controller.ts =====================
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Request,
+} from '@nestjs/common';
+
+import { EventService } from './event.service';
+import { Roles } from '../../auth/roles.decorator';
+import { Role } from '../../auth/roles.enum';
+
+@Controller('events')
+export class EventController {
+  constructor(private readonly eventService: EventService) {}
+
+  @Post()
+  @Roles(Role.OWNER, Role.ADMIN)
+  create(@Body() body: any, @Request() req) {
+    return this.eventService.create(body, req.user.organizationId);
+  }
+
+  @Get()
+  findAll(@Request() req) {
+    return this.eventService.findAll(req.user.organizationId);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string, @Request() req) {
+    return this.eventService.findOne(id, req.user.organizationId);
+  }
+
+  @Patch(':id')
+  @Roles(Role.OWNER, Role.ADMIN)
+  update(@Param('id') id: string, @Body() body: any, @Request() req) {
+    return this.eventService.update(id, body, req.user.organizationId);
+  }
+
+  @Delete(':id')
+  @Roles(Role.OWNER)
+  remove(@Param('id') id: string, @Request() req) {
+    return this.eventService.remove(id, req.user.organizationId);
+  }
+}
+
+===================== C:\Users\famil\VIVALISTA\backend\src\modules\event\event.module.ts =====================
+import { Module } from '@nestjs/common';
+import { EventService } from './event.service';
+import { EventController } from './event.controller';
+import { PrismaModule } from '../prisma/prisma.module';
+
+@Module({
+  imports: [PrismaModule],
+  controllers: [EventController],
+  providers: [EventService],
+})
+export class EventModule {}
+
+===================== C:\Users\famil\VIVALISTA\backend\src\modules\event\event.service.ts =====================
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+
+@Injectable()
+export class EventService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(data: any, organizationId: string) {
+    return this.prisma.event.create({
+      data: {
+        ...data,
+        organizationId,
+      },
+    });
+  }
+
+  async findAll(organizationId: string) {
+    return this.prisma.event.findMany({
+      where: { organizationId },
+    });
+  }
+
+  async findOne(id: string, organizationId: string) {
+    const event = await this.prisma.event.findFirst({
+      where: { id, organizationId },
+    });
+
+    if (!event) {
+      throw new NotFoundException('Evento nÃ£o encontrado');
+    }
+
+    return event;
+  }
+
+  async update(id: string, data: any, organizationId: string) {
+    await this.findOne(id, organizationId);
+
+    return this.prisma.event.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async remove(id: string, organizationId: string) {
+    await this.findOne(id, organizationId);
+
+    return this.prisma.event.delete({
+      where: { id },
+    });
+  }
+}
+
+===================== C:\Users\famil\VIVALISTA\backend\src\modules\organization\organization.controller.ts =====================
+import {
+  Controller,
+  Get,
+  Param,
+  Delete,
+} from '@nestjs/common';
+import { OrganizationService } from './organization.service';
+
+@Controller('organizations')
+export class OrganizationController {
+  constructor(
+    private readonly organizationService: OrganizationService,
+  ) {}
+
+  @Get()
+  findAll() {
+    return this.organizationService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.organizationService.findOne(id);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.organizationService.remove(id);
+  }
+}
+
+===================== C:\Users\famil\VIVALISTA\backend\src\modules\organization\organization.module.ts =====================
+import { Module } from '@nestjs/common'
+import { OrganizationService } from './organization.service'
+import { OrganizationController } from './organization.controller'
+import { PrismaModule } from '../prisma/prisma.module'
+
+@Module({
+  imports: [PrismaModule],
+  controllers: [OrganizationController],
+  providers: [OrganizationService],
+})
+export class OrganizationModule {}
+
+===================== C:\Users\famil\VIVALISTA\backend\src\modules\organization\organization.service.ts =====================
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+
+@Injectable()
+export class OrganizationService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async findAll() {
+    return this.prisma.organization.findMany();
+  }
+
+  async findOne(id: string) {
+    const organization = await this.prisma.organization.findUnique({
+      where: { id },
+    });
+
+    if (!organization) {
+      throw new NotFoundException('OrganizaÃ§Ã£o nÃ£o encontrada');
+    }
+
+    return organization;
+  }
+
+  async remove(id: string) {
+    const organization = await this.prisma.organization.findUnique({
+      where: { id },
+    });
+
+    if (!organization) {
+      throw new NotFoundException('OrganizaÃ§Ã£o nÃ£o encontrada');
+    }
+
+    return this.prisma.organization.delete({
+      where: { id },
+    });
+  }
+}
+
+===================== C:\Users\famil\VIVALISTA\backend\src\modules\prisma\prisma.module.ts =====================
+import { Module } from '@nestjs/common'
+import { PrismaService } from './prisma.service'
+
+@Module({
+  providers: [PrismaService],
+  exports: [PrismaService],
+})
+export class PrismaModule {}
+
+===================== C:\Users\famil\VIVALISTA\backend\src\modules\prisma\prisma.service.ts =====================
+import { Injectable, OnModuleInit } from '@nestjs/common'
+import { PrismaClient } from '@prisma/client'
+
+@Injectable()
+export class PrismaService extends PrismaClient implements OnModuleInit {
+  async onModuleInit() {
+    await this.$connect()
+  }
+}
+
+===================== C:\Users\famil\VIVALISTA\backend\src\users\users.controller.spec.ts =====================
+import { Test, TestingModule } from '@nestjs/testing';
+import { UsersController } from './users.controller';
+import { UsersService } from './users.service';
+
+describe('UsersController', () => {
+  let controller: UsersController;
+
+  const mockUsersService = {
+    create: jest.fn(),
+    findAll: jest.fn(),
+  };
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [UsersController],
+      providers: [
+        {
+          provide: UsersService,
+          useValue: mockUsersService,
+        },
+      ],
+    }).compile();
+
+    controller = module.get<UsersController>(UsersController);
+  });
+
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
+});
+
+===================== C:\Users\famil\VIVALISTA\backend\src\users\users.controller.ts =====================
+import {
+  Controller,
+  Get,
+  Param,
+  Delete,
+  Patch,
+  Body,
+  Req,
+} from '@nestjs/common';
+import { UsersService } from './users.service';
+import { Role } from '@prisma/client';
+import { Roles } from '../auth/roles.decorator';
+import { Role as AppRole } from '../auth/roles.enum';
+
+@Controller('users')
+export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
+
+  @Get()
+  @Roles(AppRole.OWNER, AppRole.ADMIN)
+  findAll(@Req() req: any) {
+    return this.usersService.findAll(req.user.organizationId);
+  }
+
+  @Get(':id')
+  @Roles(AppRole.OWNER, AppRole.ADMIN)
+  findOne(@Param('id') id: string, @Req() req: any) {
+    return this.usersService.findOne(id, req.user.organizationId);
+  }
+
+  @Patch(':id/role')
+  @Roles(AppRole.OWNER)
+  updateRole(
+    @Param('id') id: string,
+    @Body('role') role: Role,
+    @Req() req: any,
+  ) {
+    return this.usersService.updateRole(
+      id,
+      req.user.organizationId,
+      role,
+    );
+  }
+
+  @Delete(':id')
+  @Roles(AppRole.OWNER)
+  remove(@Param('id') id: string, @Req() req: any) {
+    return this.usersService.remove(id, req.user.organizationId);
+  }
+}
+
+===================== C:\Users\famil\VIVALISTA\backend\src\users\users.module.ts =====================
+import { Module } from '@nestjs/common';
+import { UsersService } from './users.service';
+import { UsersController } from './users.controller';
+import { PrismaModule } from '../modules/prisma/prisma.module';
+
+@Module({
+  imports: [PrismaModule],
+  controllers: [UsersController],
+  providers: [UsersService],
+  exports: [UsersService],
+})
+export class UsersModule {}
+
+===================== C:\Users\famil\VIVALISTA\backend\src\users\users.service.spec.ts =====================
+import { Test, TestingModule } from '@nestjs/testing';
+import { UsersService } from './users.service';
+
+describe('UsersService', () => {
+  let service: UsersService;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [UsersService],
+    }).compile();
+
+    service = module.get<UsersService>(UsersService);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+});
+
+===================== C:\Users\famil\VIVALISTA\backend\src\users\users.service.ts =====================
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../modules/prisma/prisma.service';
+import { Role } from '@prisma/client';
+
+@Injectable()
+export class UsersService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async findAll(organizationId: string) {
+    return this.prisma.user.findMany({
+      where: {
+        organizationId,
+      },
+    });
+  }
+
+  async findOne(id: string, organizationId: string) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        id,
+        organizationId,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('UsuÃ¡rio nÃ£o encontrado');
+    }
+
+    return user;
+  }
+
+  async updateRole(id: string, organizationId: string, role: Role) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        id,
+        organizationId,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('UsuÃ¡rio nÃ£o encontrado');
+    }
+
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        role,
+      },
+    });
+  }
+
+  async remove(id: string, organizationId: string) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        id,
+        organizationId,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('UsuÃ¡rio nÃ£o encontrado');
+    }
+
+    return this.prisma.user.delete({
+      where: { id },
+    });
+  }
+}
+
+===================== C:\Users\famil\VIVALISTA\backend\src\app.controller.spec.ts =====================
+import { Test, TestingModule } from '@nestjs/testing';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+
+describe('AppController', () => {
+  let appController: AppController;
+
+  beforeEach(async () => {
+    const app: TestingModule = await Test.createTestingModule({
+      controllers: [AppController],
+      providers: [AppService],
+    }).compile();
+
+    appController = app.get<AppController>(AppController);
+  });
+
+  describe('root', () => {
+    it('should return "Hello World!"', () => {
+      expect(appController.getHello()).toBe('Hello World!');
+    });
+  });
+});
+
+===================== C:\Users\famil\VIVALISTA\backend\src\app.controller.ts =====================
+import { Controller, Get } from '@nestjs/common';
+import { AppService } from './app.service';
+
+@Controller()
+export class AppController {
+  constructor(private readonly appService: AppService) {}
+
+  @Get()
+  getHello(): string {
+    return this.appService.getHello();
+  }
+}
+
+===================== C:\Users\famil\VIVALISTA\backend\src\app.module.ts =====================
+import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
+import { EventModule } from './modules/event/event.module';
+import { OrganizationModule } from './modules/organization/organization.module';
+import { PrismaModule } from './modules/prisma/prisma.module';
+
+import { RolesGuard } from './auth/roles.guard';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
+
+@Module({
+  imports: [
+    AuthModule,
+    UsersModule,
+    EventModule,
+    OrganizationModule,
+    PrismaModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
+})
+export class AppModule {}
+
+===================== C:\Users\famil\VIVALISTA\backend\src\app.service.ts =====================
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class AppService {
+  getHello(): string {
+    return 'Hello World!';
+  }
+}
+
+===================== C:\Users\famil\VIVALISTA\backend\src\main.ts =====================
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  await app.listen(process.env.PORT ?? 3000);
+}
+bootstrap();
+
