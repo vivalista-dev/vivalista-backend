@@ -9,6 +9,7 @@ import { PrismaModule } from './modules/prisma/prisma.module';
 import { GuestModule } from './modules/guest/guest.module';
 import { RsvpModule } from './modules/rsvp/rsvp.module';
 import { PaymentModule } from './modules/payment/payment.module';
+import { PublicRsvpModule } from './modules/public-rsvp/public-rsvp.module';
 
 import { RolesGuard } from './auth/roles.guard';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
@@ -23,6 +24,7 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
     GuestModule,
     RsvpModule,
     PaymentModule,
+    PublicRsvpModule,
   ],
   providers: [
     {

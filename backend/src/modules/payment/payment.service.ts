@@ -1,11 +1,13 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { PaymentGatewayService } from './gateways/payment-gateway.service';
+import { MercadoPagoConfig, Payment as MercadoPagoPayment } from 'mercadopago';
 
 @Injectable()
 export class PaymentService {
@@ -14,12 +16,33 @@ export class PaymentService {
     private readonly paymentGatewayService: PaymentGatewayService,
   ) {}
 
+  private getMercadoPagoPaymentClient() {
+    const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+
+    if (!accessToken) {
+      throw new InternalServerErrorException(
+        'MERCADOPAGO_ACCESS_TOKEN não configurado no ambiente.',
+      );
+    }
+
+    const client = new MercadoPagoConfig({
+      accessToken,
+    });
+
+    return new MercadoPagoPayment(client);
+  }
+
   async createPublicPaymentIntent(dto: CreatePaymentDto) {
+    console.log('================ PAYMENT DEBUG START ================');
+    console.log('DTO RECEBIDO:', dto);
+
     const event = await this.prisma.event.findFirst({
       where: {
         id: dto.eventId,
       },
     });
+
+    console.log('EVENT ENCONTRADO:', event);
 
     if (!event) {
       throw new NotFoundException('Evento não encontrado.');
@@ -31,12 +54,15 @@ export class PaymentService {
       },
       select: {
         id: true,
+        name: true,
         paymentGateway: true,
         paymentAccountId: true,
         paymentAccountStatus: true,
         paymentAccountReady: true,
       },
     });
+
+    console.log('ORGANIZATION ENCONTRADA:', organization);
 
     if (!organization) {
       throw new NotFoundException('Organização não encontrada.');
@@ -56,7 +82,37 @@ export class PaymentService {
       },
     });
 
+    console.log('BUSCA DO GIFT COM FILTRO TRIPLO:', {
+      giftId: dto.giftId,
+      eventId: dto.eventId,
+      organizationId: event.organizationId,
+      giftEncontrado: gift,
+    });
+
     if (!gift) {
+      const giftByIdOnly = await this.prisma.gift.findFirst({
+        where: {
+          id: dto.giftId,
+        },
+      });
+
+      const giftsByEvent = await this.prisma.gift.findMany({
+        where: {
+          eventId: dto.eventId,
+        },
+        select: {
+          id: true,
+          title: true,
+          eventId: true,
+          organizationId: true,
+          isActive: true,
+          isPurchased: true,
+        },
+      });
+
+      console.log('GIFT BUSCADO APENAS POR ID:', giftByIdOnly);
+      console.log('GIFTS DO EVENTO:', giftsByEvent);
+
       throw new NotFoundException('Presente não encontrado.');
     }
 
@@ -82,6 +138,8 @@ export class PaymentService {
       },
     });
 
+    console.log('PAYMENT CRIADO:', payment);
+
     const gatewayResponse = await this.paymentGatewayService.createPayment({
       paymentId: payment.id,
       organizationId: event.organizationId,
@@ -93,6 +151,8 @@ export class PaymentService {
       paymentMethod: dto.paymentMethod,
       amount: dto.amount,
     });
+
+    console.log('GATEWAY RESPONSE:', gatewayResponse);
 
     const updatedPayment = await this.prisma.payment.update({
       where: {
@@ -110,6 +170,9 @@ export class PaymentService {
         boletoBarcode: gatewayResponse.boletoBarcode,
       },
     });
+
+    console.log('PAYMENT ATUALIZADO:', updatedPayment);
+    console.log('================ PAYMENT DEBUG END =================');
 
     return {
       message: 'Pagamento público criado com sucesso.',
@@ -225,7 +288,7 @@ export class PaymentService {
     });
 
     return {
-      message: 'Pagamento criado com gateway mock com sucesso.',
+      message: 'Pagamento criado com gateway Mercado Pago com sucesso.',
       payment: updatedPayment,
       paymentData: {
         paymentMethod: updatedPayment.paymentMethod,
@@ -354,11 +417,117 @@ export class PaymentService {
     };
   }
 
+  async processMercadoPagoWebhook(body: any, query: any) {
+    const notificationType =
+      body?.type ||
+      body?.topic ||
+      query?.type ||
+      query?.topic ||
+      null;
+
+    const mercadoPagoPaymentId =
+      body?.data?.id ||
+      query?.['data.id'] ||
+      query?.id ||
+      null;
+
+    if (!mercadoPagoPaymentId) {
+      return {
+        received: true,
+        ignored: true,
+        message: 'Webhook recebido sem payment id.',
+      };
+    }
+
+    if (
+      notificationType &&
+      notificationType !== 'payment' &&
+      notificationType !== 'merchant_order'
+    ) {
+      return {
+        received: true,
+        ignored: true,
+        message: `Webhook ignorado para tipo ${notificationType}.`,
+      };
+    }
+
+    const mpPaymentClient = this.getMercadoPagoPaymentClient();
+    const mercadoPagoPayment = await mpPaymentClient.get({
+      id: String(mercadoPagoPaymentId),
+    });
+
+    const externalReference = mercadoPagoPayment.external_reference || null;
+
+    if (!externalReference) {
+      return {
+        received: true,
+        ignored: true,
+        message: 'Pagamento Mercado Pago sem external_reference.',
+      };
+    }
+
+    const payment = await this.prisma.payment.findUnique({
+      where: {
+        id: externalReference,
+      },
+    });
+
+    if (!payment) {
+      return {
+        received: true,
+        ignored: true,
+        message: 'Pagamento local não encontrado pelo external_reference.',
+      };
+    }
+
+    await this.prisma.payment.update({
+      where: {
+        id: payment.id,
+      },
+      data: {
+        gatewayPaymentId: String(mercadoPagoPayment.id),
+        status: String(mercadoPagoPayment.status || payment.status),
+      },
+    });
+
+    if (payment.status === 'PAID') {
+      return {
+        received: true,
+        approved: true,
+        alreadyProcessed: true,
+        message: 'Pagamento já estava confirmado no VivaLista.',
+      };
+    }
+
+    if (mercadoPagoPayment.status !== 'approved') {
+      return {
+        received: true,
+        approved: false,
+        mercadoPagoStatus: mercadoPagoPayment.status,
+        message: 'Pagamento ainda não foi aprovado.',
+      };
+    }
+
+    const result = await this.confirmPayment(
+      payment.organizationId,
+      payment.id,
+    );
+
+    return {
+      received: true,
+      approved: true,
+      webhookEvent: 'payment.approved',
+      payment: result.payment,
+      gift: result.gift,
+      message: 'Webhook Mercado Pago processado com sucesso.',
+    };
+  }
+
   getModuleStatus() {
     return {
       module: 'payment',
       status: 'ok',
-      gateway: 'mock',
+      gateway: 'mercadopago',
       message: 'Módulo de pagamentos carregado.',
     };
   }

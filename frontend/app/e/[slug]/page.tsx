@@ -216,11 +216,9 @@ export default function EventPage() {
   const [buyerName, setBuyerName] = useState("");
   const [buyerEmail, setBuyerEmail] = useState("");
   const [buyerPhone, setBuyerPhone] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("PIX");
+  const [paymentMethod, setPaymentMethod] = useState("CARD");
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentError, setPaymentError] = useState("");
-  const [paymentResult, setPaymentResult] = useState<PaymentResponse | null>(null);
-  const [confirmingPayment, setConfirmingPayment] = useState(false);
 
   const [rsvpCode, setRsvpCode] = useState("");
   const [rsvpLoading, setRsvpLoading] = useState(false);
@@ -283,9 +281,8 @@ export default function EventPage() {
     setBuyerName("");
     setBuyerEmail("");
     setBuyerPhone("");
-    setPaymentMethod("PIX");
+    setPaymentMethod("CARD");
     setPaymentError("");
-    setPaymentResult(null);
   }
 
   function closePaymentModal() {
@@ -293,10 +290,8 @@ export default function EventPage() {
     setBuyerName("");
     setBuyerEmail("");
     setBuyerPhone("");
-    setPaymentMethod("PIX");
+    setPaymentMethod("CARD");
     setPaymentError("");
-    setPaymentResult(null);
-    setConfirmingPayment(false);
   }
 
   async function handleCreatePublicPayment() {
@@ -304,6 +299,11 @@ export default function EventPage() {
 
     if (!buyerName.trim() || !buyerEmail.trim() || !buyerPhone.trim()) {
       setPaymentError("Preencha nome, email e telefone.");
+      return;
+    }
+
+    if (!selectedGift.price || selectedGift.price <= 0) {
+      setPaymentError("Este presente não possui valor válido para pagamento.");
       return;
     }
 
@@ -323,7 +323,7 @@ export default function EventPage() {
           buyerEmail: buyerEmail.trim(),
           buyerPhone: buyerPhone.trim(),
           paymentMethod,
-          amount: selectedGift.price ?? 0,
+          amount: selectedGift.price,
         }),
       });
 
@@ -333,7 +333,13 @@ export default function EventPage() {
         throw new Error(data?.message || "Não foi possível gerar o pagamento.");
       }
 
-      setPaymentResult(data);
+      const checkoutUrl = data?.paymentData?.checkoutUrl;
+
+      if (!checkoutUrl) {
+        throw new Error("O checkout não foi retornado pelo servidor.");
+      }
+
+      window.location.href = checkoutUrl;
     } catch (error) {
       const message =
         error instanceof Error
@@ -343,77 +349,6 @@ export default function EventPage() {
       setPaymentError(message);
     } finally {
       setPaymentLoading(false);
-    }
-  }
-
-  async function reloadGifts() {
-    if (!slug) return;
-
-    try {
-      const giftsRes = await fetch(`${API}/events/public/${slug}/gifts`, {
-        cache: "no-store",
-      });
-
-      const giftsJson = giftsRes.ok ? await giftsRes.json() : [];
-      const rawGifts = Array.isArray(giftsJson)
-        ? giftsJson
-        : Array.isArray((giftsJson as { gifts?: unknown[] })?.gifts)
-        ? (giftsJson as { gifts: unknown[] }).gifts
-        : Array.isArray((giftsJson as { data?: unknown[] })?.data)
-        ? (giftsJson as { data: unknown[] }).data
-        : Array.isArray((giftsJson as { data?: { gifts?: unknown[] } })?.data?.gifts)
-        ? (giftsJson as { data: { gifts: unknown[] } }).data.gifts
-        : [];
-
-      setGifts((rawGifts as GiftApiItem[]).map(normalizeGift));
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  function copyPixCode() {
-    const pixCode = paymentResult?.paymentData?.pixCode;
-
-    if (!pixCode) return;
-
-    navigator.clipboard.writeText(pixCode);
-    window.alert("Código PIX copiado com sucesso.");
-  }
-
-  async function handleMockApprovePayment() {
-    const paymentId = paymentResult?.payment?.id;
-
-    if (!paymentId) {
-      setPaymentError("Pagamento não encontrado para simular aprovação.");
-      return;
-    }
-
-    try {
-      setConfirmingPayment(true);
-      setPaymentError("");
-
-      const response = await fetch(`${API}/payments/public/mock/${paymentId}/paid`, {
-        method: "POST",
-      });
-
-      const data: PaymentResponse = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data?.message || "Não foi possível confirmar o pagamento.");
-      }
-
-      setPaymentResult(data);
-      await reloadGifts();
-      window.alert("Pagamento simulado como aprovado com sucesso.");
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Não foi possível confirmar o pagamento.";
-
-      setPaymentError(message);
-    } finally {
-      setConfirmingPayment(false);
     }
   }
 
@@ -592,7 +527,7 @@ export default function EventPage() {
 
                 <a
                   href="#presentes"
-                  className="rounded-full border border-white/30 bg-white/10 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/15"
+                  className="rounded-full border border-white/30 bg-white/10 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/15]"
                 >
                   Ver lista de presentes
                 </a>
@@ -1016,210 +951,80 @@ export default function EventPage() {
               </button>
             </div>
 
-            {!paymentResult ? (
-              <div className="mt-8 grid gap-4">
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-zinc-700">
-                    Seu nome
-                  </label>
-                  <input
-                    type="text"
-                    value={buyerName}
-                    onChange={(e) => setBuyerName(e.target.value)}
-                    className="w-full rounded-2xl border border-zinc-200 px-4 py-3 outline-none transition focus:border-zinc-400"
-                    placeholder="Digite seu nome"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-zinc-700">
-                    Seu email
-                  </label>
-                  <input
-                    type="email"
-                    value={buyerEmail}
-                    onChange={(e) => setBuyerEmail(e.target.value)}
-                    className="w-full rounded-2xl border border-zinc-200 px-4 py-3 outline-none transition focus:border-zinc-400"
-                    placeholder="Digite seu email"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-zinc-700">
-                    Seu telefone
-                  </label>
-                  <input
-                    type="text"
-                    value={buyerPhone}
-                    onChange={(e) => setBuyerPhone(e.target.value)}
-                    className="w-full rounded-2xl border border-zinc-200 px-4 py-3 outline-none transition focus:border-zinc-400"
-                    placeholder="Digite seu telefone"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-zinc-700">
-                    Forma de pagamento
-                  </label>
-                  <select
-                    value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-full rounded-2xl border border-zinc-200 px-4 py-3 outline-none transition focus:border-zinc-400"
-                  >
-                    <option value="PIX">PIX</option>
-                    <option value="CARD">Cartão</option>
-                    <option value="BOLETO">Boleto</option>
-                  </select>
-                </div>
-
-                {paymentError ? (
-                  <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
-                    {paymentError}
-                  </div>
-                ) : null}
-
-                <button
-                  type="button"
-                  onClick={handleCreatePublicPayment}
-                  disabled={paymentLoading}
-                  className="mt-2 rounded-full bg-zinc-900 px-6 py-3 text-sm font-semibold text-white transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:bg-zinc-400"
-                >
-                  {paymentLoading ? "Gerando pagamento..." : "Gerar pagamento"}
-                </button>
+            <div className="mt-8 grid gap-4">
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-zinc-700">
+                  Seu nome
+                </label>
+                <input
+                  type="text"
+                  value={buyerName}
+                  onChange={(e) => setBuyerName(e.target.value)}
+                  className="w-full rounded-2xl border border-zinc-200 px-4 py-3 outline-none transition focus:border-zinc-400"
+                  placeholder="Digite seu nome"
+                />
               </div>
-            ) : (
-              <div className="mt-8 space-y-5">
-                <div className="rounded-3xl bg-emerald-50 px-5 py-4 text-emerald-700">
-                  <p className="font-semibold">{paymentResult.message}</p>
-                  <p className="mt-1 text-sm">
-                    Status: {paymentResult.payment?.status || paymentResult.paymentData?.status || "PENDING"}
-                  </p>
-                </div>
 
-                {paymentResult.paymentData?.pixCode ? (
-                  <div className="rounded-3xl border border-zinc-200 p-5">
-                    <h4 className="text-lg font-semibold text-zinc-900">Pagamento via PIX</h4>
-                    <p className="mt-2 text-sm leading-7 text-zinc-600">
-                      Use o código abaixo para pagar no aplicativo do seu banco.
-                    </p>
-
-                    <textarea
-                      readOnly
-                      value={paymentResult.paymentData.pixCode}
-                      className="mt-4 min-h-[140px] w-full rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-700 outline-none"
-                    />
-
-                    <div className="mt-4 flex flex-wrap gap-3">
-                      <button
-                        type="button"
-                        onClick={copyPixCode}
-                        className="rounded-full bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.02]"
-                      >
-                        Copiar código PIX
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={handleMockApprovePayment}
-                        disabled={confirmingPayment}
-                        className="rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:bg-emerald-300"
-                      >
-                        {confirmingPayment
-                          ? "Confirmando..."
-                          : "Simular pagamento aprovado"}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={closePaymentModal}
-                        className="rounded-full border border-zinc-300 px-5 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
-                      >
-                        Fechar
-                      </button>
-                    </div>
-                  </div>
-                ) : null}
-
-                {paymentResult.paymentData?.checkoutUrl ? (
-                  <div className="rounded-3xl border border-zinc-200 p-5">
-                    <h4 className="text-lg font-semibold text-zinc-900">Pagamento com cartão</h4>
-                    <p className="mt-2 text-sm leading-7 text-zinc-600">
-                      Clique no botão abaixo para continuar o pagamento.
-                    </p>
-
-                    <div className="mt-4 flex flex-wrap gap-3">
-                      <a
-                        href={paymentResult.paymentData.checkoutUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex rounded-full bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.02]"
-                      >
-                        Ir para checkout
-                      </a>
-
-                      <button
-                        type="button"
-                        onClick={handleMockApprovePayment}
-                        disabled={confirmingPayment}
-                        className="rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:bg-emerald-300"
-                      >
-                        {confirmingPayment
-                          ? "Confirmando..."
-                          : "Simular pagamento aprovado"}
-                      </button>
-                    </div>
-                  </div>
-                ) : null}
-
-                {paymentResult.paymentData?.boletoUrl ? (
-                  <div className="rounded-3xl border border-zinc-200 p-5">
-                    <h4 className="text-lg font-semibold text-zinc-900">Pagamento com boleto</h4>
-                    <p className="mt-2 text-sm leading-7 text-zinc-600">
-                      Clique no botão abaixo para abrir o boleto.
-                    </p>
-
-                    <div className="mt-4 flex flex-wrap gap-3">
-                      <a
-                        href={paymentResult.paymentData.boletoUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex rounded-full bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.02]"
-                      >
-                        Abrir boleto
-                      </a>
-
-                      <button
-                        type="button"
-                        onClick={handleMockApprovePayment}
-                        disabled={confirmingPayment}
-                        className="rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:bg-emerald-300"
-                      >
-                        {confirmingPayment
-                          ? "Confirmando..."
-                          : "Simular pagamento aprovado"}
-                      </button>
-                    </div>
-                  </div>
-                ) : null}
-
-                {paymentError ? (
-                  <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
-                    {paymentError}
-                  </div>
-                ) : null}
-
-                <button
-                  type="button"
-                  onClick={async () => {
-                    closePaymentModal();
-                    await reloadGifts();
-                  }}
-                  className="rounded-full border border-zinc-300 px-5 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
-                >
-                  Atualizar presentes
-                </button>
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-zinc-700">
+                  Seu email
+                </label>
+                <input
+                  type="email"
+                  value={buyerEmail}
+                  onChange={(e) => setBuyerEmail(e.target.value)}
+                  className="w-full rounded-2xl border border-zinc-200 px-4 py-3 outline-none transition focus:border-zinc-400"
+                  placeholder="Digite seu email"
+                />
               </div>
-            )}
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-zinc-700">
+                  Seu telefone
+                </label>
+                <input
+                  type="text"
+                  value={buyerPhone}
+                  onChange={(e) => setBuyerPhone(e.target.value)}
+                  className="w-full rounded-2xl border border-zinc-200 px-4 py-3 outline-none transition focus:border-zinc-400"
+                  placeholder="Digite seu telefone"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-zinc-700">
+                  Forma de pagamento
+                </label>
+                <select
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="w-full rounded-2xl border border-zinc-200 px-4 py-3 outline-none transition focus:border-zinc-400"
+                >
+                  <option value="CARD">Cartão</option>
+                  <option value="PIX">PIX</option>
+                  <option value="BOLETO">Boleto</option>
+                </select>
+              </div>
+
+              <div className="rounded-2xl bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
+                Ao clicar em continuar, você será redirecionado para o checkout seguro do Mercado Pago.
+              </div>
+
+              {paymentError ? (
+                <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+                  {paymentError}
+                </div>
+              ) : null}
+
+              <button
+                type="button"
+                onClick={handleCreatePublicPayment}
+                disabled={paymentLoading}
+                className="mt-2 rounded-full bg-zinc-900 px-6 py-3 text-sm font-semibold text-white transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:bg-zinc-400"
+              >
+                {paymentLoading ? "Redirecionando..." : "Continuar para pagamento"}
+              </button>
+            </div>
           </div>
         </div>
       ) : null}

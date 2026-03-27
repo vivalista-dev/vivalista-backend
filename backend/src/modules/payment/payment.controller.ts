@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -45,6 +46,15 @@ export class PaymentController {
   @Post('public/mock/:paymentId/paid')
   processPublicMockWebhookPaid(@Param('paymentId') paymentId: string) {
     return this.paymentService.processPublicMockWebhookPaid(paymentId);
+  }
+
+  @Public()
+  @Post('webhook/mercadopago')
+  processMercadoPagoWebhook(
+    @Body() body: any,
+    @Query() query: any,
+  ) {
+    return this.paymentService.processMercadoPagoWebhook(body, query);
   }
 
   @Post('intent')

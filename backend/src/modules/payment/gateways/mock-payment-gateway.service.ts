@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { MercadoPagoConfig, Preference } from 'mercadopago';
 import {
   GatewayCreatePaymentInput,
   GatewayCreatePaymentOutput,
@@ -7,53 +8,80 @@ import {
 
 @Injectable()
 export class MockPaymentGatewayService implements PaymentGatewayService {
+  private readonly client: MercadoPagoConfig;
+  private readonly preference: Preference;
+
+  constructor() {
+    const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+
+    if (!accessToken) {
+      throw new InternalServerErrorException(
+        'MERCADOPAGO_ACCESS_TOKEN não configurado no ambiente.',
+      );
+    }
+
+    this.client = new MercadoPagoConfig({
+      accessToken,
+    });
+
+    this.preference = new Preference(this.client);
+  }
+
   async createPayment(
     input: GatewayCreatePaymentInput,
   ): Promise<GatewayCreatePaymentOutput> {
-    const method = input.paymentMethod.toUpperCase();
+    const requestBody = {
+      external_reference: input.paymentId,
+      items: [
+        {
+          id: input.giftId,
+          title: 'Presente VivaLista',
+          quantity: 1,
+          currency_id: 'BRL',
+          unit_price: Number(input.amount),
+        },
+      ],
+      payer: {
+        name: input.buyerName,
+        email: input.buyerEmail,
+      },
+    };
 
-    if (method === 'PIX') {
+    try {
+      console.log('============= MP DEBUG START =============');
+      console.log('INPUT CREATE PAYMENT:', input);
+      console.log('REQUEST BODY MP:', JSON.stringify(requestBody, null, 2));
+
+      const response = await this.preference.create({
+        body: requestBody,
+      });
+
+      console.log('RESPONSE MP:', response);
+      console.log('============= MP DEBUG END ===============');
+
       return {
-        gatewayProvider: 'mock',
-        gatewayPaymentId: `mock_pix_${input.paymentId}`,
+        gatewayProvider: 'mercadopago',
+        gatewayPaymentId: String(response.id),
         externalReference: input.paymentId,
         status: 'PENDING',
-        checkoutUrl: null,
-        pixCode: `00020126580014BR.GOV.BCB.PIX0136mock-${input.paymentId}520400005303986540${input.amount.toFixed(
-          2,
-        )}5802BR5909VIVALISTA6009SAOPAULO62070503***6304ABCD`,
-        pixQrCode: `mock-qr-code-${input.paymentId}`,
+        checkoutUrl: response.init_point ?? null,
+        pixCode: null,
+        pixQrCode: null,
         boletoUrl: null,
         boletoBarcode: null,
       };
-    }
+    } catch (error: any) {
+      console.log('============= MP DEBUG ERROR =============');
+      console.log('MP ERROR RAW:', error);
+      console.log('MP ERROR MESSAGE:', error?.message);
+      console.log('MP ERROR CAUSE:', error?.cause);
+      console.log('MP ERROR RESPONSE:', error?.response);
+      console.log('MP ERROR STATUS:', error?.status);
+      console.log('============= MP DEBUG ERROR END =========');
 
-    if (method === 'BOLETO') {
-      return {
-        gatewayProvider: 'mock',
-        gatewayPaymentId: `mock_boleto_${input.paymentId}`,
-        externalReference: input.paymentId,
-        status: 'PENDING',
-        checkoutUrl: null,
-        pixCode: null,
-        pixQrCode: null,
-        boletoUrl: `https://mock.vivalista.com/boleto/${input.paymentId}`,
-        boletoBarcode: `34191.79001 01043.510047 91020.150008 5 123400000${Math.round(
-          input.amount * 100,
-        )}`,
-      };
+      throw new InternalServerErrorException(
+        'Erro ao criar pagamento no Mercado Pago.',
+      );
     }
-
-    return {
-      gatewayProvider: 'mock',
-      gatewayPaymentId: `mock_card_${input.paymentId}`,
-      externalReference: input.paymentId,
-      status: 'PENDING',
-      checkoutUrl: `https://mock.vivalista.com/checkout/${input.paymentId}`,
-      pixCode: null,
-      pixQrCode: null,
-      boletoUrl: null,
-      boletoBarcode: null,
-    };
   }
 }
