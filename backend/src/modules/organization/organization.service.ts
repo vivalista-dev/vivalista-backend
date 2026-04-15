@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdatePaymentSettingsDto } from './dto/update-payment-settings.dto';
 
@@ -6,23 +10,33 @@ import { UpdatePaymentSettingsDto } from './dto/update-payment-settings.dto';
 export class OrganizationService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll() {
-    return this.prisma.organization.findMany();
+  private normalizeOrganizationId(id: string): string {
+    const normalized = String(id || '').trim();
+
+    if (!normalized) {
+      throw new BadRequestException('organizationId é obrigatório.');
+    }
+
+    return normalized;
   }
 
-  async findOne(id: string) {
+  private async findOrganizationEntityOrFail(id: string) {
+    const organizationId = this.normalizeOrganizationId(id);
+
     const organization = await this.prisma.organization.findUnique({
-      where: { id },
+      where: { id: organizationId },
     });
 
     if (!organization) {
-      throw new NotFoundException('Organização não encontrada');
+      throw new NotFoundException('Organização não encontrada.');
     }
 
     return organization;
   }
 
-  async getPaymentSettings(organizationId: string) {
+  private async findPaymentSettingsEntityOrFail(id: string) {
+    const organizationId = this.normalizeOrganizationId(id);
+
     const organization = await this.prisma.organization.findUnique({
       where: { id: organizationId },
       select: {
@@ -36,8 +50,27 @@ export class OrganizationService {
     });
 
     if (!organization) {
-      throw new NotFoundException('Organização não encontrada');
+      throw new NotFoundException('Organização não encontrada.');
     }
+
+    return organization;
+  }
+
+  async findAll() {
+    return this.prisma.organization.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async findOne(id: string) {
+    return this.findOrganizationEntityOrFail(id);
+  }
+
+  async getPaymentSettings(organizationId: string) {
+    const organization =
+      await this.findPaymentSettingsEntityOrFail(organizationId);
 
     return {
       message: 'Configuração de pagamento carregada com sucesso.',
@@ -49,16 +82,13 @@ export class OrganizationService {
     organizationId: string,
     dto: UpdatePaymentSettingsDto,
   ) {
-    const organization = await this.prisma.organization.findUnique({
-      where: { id: organizationId },
-    });
+    await this.findOrganizationEntityOrFail(organizationId);
 
-    if (!organization) {
-      throw new NotFoundException('Organização não encontrada');
-    }
+    const normalizedOrganizationId =
+      this.normalizeOrganizationId(organizationId);
 
     const updatedOrganization = await this.prisma.organization.update({
-      where: { id: organizationId },
+      where: { id: normalizedOrganizationId },
       data: {
         paymentGateway: dto.paymentGateway,
         paymentAccountId: dto.paymentAccountId,
@@ -82,16 +112,10 @@ export class OrganizationService {
   }
 
   async remove(id: string) {
-    const organization = await this.prisma.organization.findUnique({
-      where: { id },
-    });
-
-    if (!organization) {
-      throw new NotFoundException('Organização não encontrada');
-    }
+    const organization = await this.findOrganizationEntityOrFail(id);
 
     return this.prisma.organization.delete({
-      where: { id },
+      where: { id: organization.id },
     });
   }
 }

@@ -9,69 +9,105 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { GuestService } from './guest.service';
 import { CreateGuestDto } from './dto/create-guest.dto';
 import { UpdateGuestDto } from './dto/update-guest.dto';
-
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { RolesGuard } from '../../auth/roles.guard';
 import { Roles } from '../../auth/roles.decorator';
 import { Role } from '../../auth/roles.enum';
+
+type AuthenticatedRequest = Request & {
+  user: {
+    sub?: string;
+    email?: string;
+    role?: Role;
+    organizationId: string;
+  };
+};
 
 @Controller('events/:eventId/guests')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class GuestController {
   constructor(private readonly guestService: GuestService) {}
 
+  // =========================
+  // CRIAÇÃO
+  // =========================
+
   @Post()
   @Roles(Role.OWNER, Role.ADMIN)
   create(
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
     @Param('eventId') eventId: string,
     @Body() dto: CreateGuestDto,
   ) {
-    const organizationId = req.user.organizationId;
-    return this.guestService.create(organizationId, eventId, dto);
+    return this.guestService.create(req.user.organizationId, eventId, dto);
   }
+
+  // =========================
+  // LEITURA
+  // =========================
 
   @Get()
   @Roles(Role.OWNER, Role.ADMIN, Role.STAFF)
-  findAll(@Req() req: any, @Param('eventId') eventId: string) {
-    const organizationId = req.user.organizationId;
-    return this.guestService.findAllByEvent(organizationId, eventId);
+  findAll(
+    @Req() req: AuthenticatedRequest,
+    @Param('eventId') eventId: string,
+  ) {
+    return this.guestService.findAllByEvent(req.user.organizationId, eventId);
   }
 
   @Get(':guestId')
   @Roles(Role.OWNER, Role.ADMIN, Role.STAFF)
   findOne(
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
     @Param('eventId') eventId: string,
     @Param('guestId') guestId: string,
   ) {
-    const organizationId = req.user.organizationId;
-    return this.guestService.findOne(organizationId, eventId, guestId);
+    return this.guestService.findOne(
+      req.user.organizationId,
+      eventId,
+      guestId,
+    );
   }
+
+  // =========================
+  // ATUALIZAÇÃO
+  // =========================
 
   @Patch(':guestId')
   @Roles(Role.OWNER, Role.ADMIN)
   update(
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
     @Param('eventId') eventId: string,
     @Param('guestId') guestId: string,
     @Body() dto: UpdateGuestDto,
   ) {
-    const organizationId = req.user.organizationId;
-    return this.guestService.update(organizationId, eventId, guestId, dto);
+    return this.guestService.update(
+      req.user.organizationId,
+      eventId,
+      guestId,
+      dto,
+    );
   }
+
+  // =========================
+  // REMOÇÃO
+  // =========================
 
   @Delete(':guestId')
   @Roles(Role.OWNER, Role.ADMIN)
   remove(
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
     @Param('eventId') eventId: string,
     @Param('guestId') guestId: string,
   ) {
-    const organizationId = req.user.organizationId;
-    return this.guestService.remove(organizationId, eventId, guestId);
+    return this.guestService.remove(
+      req.user.organizationId,
+      eventId,
+      guestId,
+    );
   }
 }

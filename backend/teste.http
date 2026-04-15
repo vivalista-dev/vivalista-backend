@@ -1,0 +1,127 @@
+### REGISTRAR USUÁRIO
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "name": "Andre",
+  "email": "andre@vivalista.com",
+  "password": "123456",
+  "organizationName": "VivaLista Teste"
+}
+
+### LOGIN
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "andre@vivalista.com",
+  "password": "123456"
+}
+
+### CRIAR EVENTO
+POST http://localhost:3000/events
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhYWQ2MTY1Yi1jY2Y3LTRmZTMtOTMyMi03YTdhOGE2NTU1MTkiLCJlbWFpbCI6ImFuZHJlQHZpdmFsaXN0YS5jb20iLCJyb2xlIjoiT1dORVIiLCJvcmdhbml6YXRpb25JZCI6IjIxZjc5NzZlLTk1NWQtNGE0MS05YjFmLTdlYzIwOTg5OTExNSIsImlhdCI6MTc3NDYyOTg5MiwiZXhwIjoxNzc0NzE2MjkyfQ.ygJdSmDH3A6S_Hb--iX4A-rWEJCadcfKWpsOzP0mZD0
+
+{
+  "name": "Casamento Renan e Laislla",
+  "description": "Nosso grande dia",
+  "date": "2026-08-22T14:00:00.000Z",
+  "location": "Cachoeira Grande, Lagoinha - SP",
+  "capacity": 150,
+  "status": "PUBLISHED"
+}
+
+### CRIAR PRESENTE
+POST http://localhost:3000/events/dc554df2-d591-4c91-8e1c-337cb221e6fb/gifts
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhYWQ2MTY1Yi1jY2Y3LTRmZTMtOTMyMi03YTdhOGE2NTU1MTkiLCJlbWFpbCI6ImFuZHJlQHZpdmFsaXN0YS5jb20iLCJyb2xlIjoiT1dORVIiLCJvcmdhbml6YXRpb25JZCI6IjIxZjc5NzZlLTk1NWQtNGE0MS05YjFmLTdlYzIwOTg5OTExNSIsImlhdCI6MTc3NDYyOTg5MiwiZXhwIjoxNzc0NzE2MjkyfQ.ygJdSmDH3A6S_Hb--iX4A-rWEJCadcfKWpsOzP0mZD0
+
+{
+  "title": "Geladeira",
+  "description": "Ajuda para a casa nova",
+  "price": 3500,
+  "imageUrl": "https://via.placeholder.com/400",
+  "isActive": true
+}
+
+### VER CONFIGURACAO DE PAGAMENTO
+GET http://localhost:3000/organizations/me/payment-settings
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhYWQ2MTY1Yi1jY2Y3LTRmZTMtOTMyMi03YTdhOGE2NTU1MTkiLCJlbWFpbCI6ImFuZHJlQHZpdmFsaXN0YS5jb20iLCJyb2xlIjoiT1dORVIiLCJvcmdhbml6YXRpb25JZCI6IjIxZjc5NzZlLTk1NWQtNGE0MS05YjFmLTdlYzIwOTg5OTExNSIsImlhdCI6MTc3NDYyOTg5MiwiZXhwIjoxNzc0NzE2MjkyfQ.ygJdSmDH3A6S_Hb--iX4A-rWEJCadcfKWpsOzP0mZD0
+
+### ATIVAR PAGAMENTO DA ORGANIZACAO
+PATCH http://localhost:3000/organizations/me/payment-settings
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhYWQ2MTY1Yi1jY2Y3LTRmZTMtOTMyMi03YTdhOGE2NTU1MTkiLCJlbWFpbCI6ImFuZHJlQHZpdmFsaXN0YS5jb20iLCJyb2xlIjoiT1dORVIiLCJvcmdhbml6YXRpb25JZCI6IjIxZjc5NzZlLTk1NWQtNGE0MS05YjFmLTdlYzIwOTg5OTExNSIsImlhdCI6MTc3NDYyOTg5MiwiZXhwIjoxNzc0NzE2MjkyfQ.ygJdSmDH3A6S_Hb--iX4A-rWEJCadcfKWpsOzP0mZD0
+
+{
+  "paymentGateway": "MERCADO_PAGO",
+  "paymentAccountId": "teste-mp-001",
+  "paymentAccountStatus": "CONNECTED",
+  "paymentAccountReady": true
+}
+
+### CRIAR PAGAMENTO PUBLICO
+POST http://localhost:3000/payments/public/intent
+Content-Type: application/json
+
+{
+  "eventId": "dc554df2-d591-4c91-8e1c-337cb221e6fb",
+  "giftId": "29a2f698-017e-4fe7-b9ca-fd463e656499",
+  "buyerName": "Andre Teste",
+  "buyerEmail": "testuser5726375028388484354@testuser.com",
+  "buyerPhone": "11999999999",
+  "paymentMethod": "PIX",
+  "amount": 3500
+}
+
+### MOCK PAGAMENTO APROVADO
+POST http://localhost:3000/payments/public/mock/83ab654a-9781-40bc-8572-65ee63e36c0e/paid
+Content-Type: application/json
+
+### VER PRESENTES DO EVENTO
+GET http://localhost:3000/events/dc554df2-d591-4c91-8e1c-337cb221e6fb/gifts
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhYWQ2MTY1Yi1jY2Y3LTRmZTMtOTMyMi03YTdhOGE2NTU1MTkiLCJlbWFpbCI6ImFuZHJlQHZpdmFsaXN0YS5jb20iLCJyb2xlIjoiT1dORVIiLCJvcmdhbml6YXRpb25JZCI6IjIxZjc5NzZlLTk1NWQtNGE0MS05YjFmLTdlYzIwOTg5OTExNSIsImlhdCI6MTc3NDYyOTg5MiwiZXhwIjoxNzc0NzE2MjkyfQ.ygJdSmDH3A6S_Hb--iX4A-rWEJCadcfKWpsOzP0mZD0
+### CRIAR CONVIDADO
+POST http://localhost:3000/events/dc554df2-d591-4c91-8e1c-337cb221e6fb/guests
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhYWQ2MTY1Yi1jY2Y3LTRmZTMtOTMyMi03YTdhOGE2NTU1MTkiLCJlbWFpbCI6ImFuZHJlQHZpdmFsaXN0YS5jb20iLCJyb2xlIjoiT1dORVIiLCJvcmdhbml6YXRpb25JZCI6IjIxZjc5NzZlLTk1NWQtNGE0MS05YjFmLTdlYzIwOTg5OTExNSIsImlhdCI6MTc3NDc1MzA1NiwiZXhwIjoxNzc0ODM5NDU2fQ.cW7zPBS_2m3wa-IKfOuDFsDM83ySSugHSnB0bVXSltY
+Content-Type: application/json
+
+{
+  "name": "Maria Silva",
+  "email": "maria@email.com",
+  "phone": "11999999999"
+}
+### LISTAR CONVIDADOS DO EVENTO
+GET http://localhost:3000/events/dc554df2-d591-4c91-8e1c-337cb221e6fb/guests
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhYWQ2MTY1Yi1jY2Y3LTRmZTMtOTMyMi03YTdhOGE2NTU1MTkiLCJlbWFpbCI6ImFuZHJlQHZpdmFsaXN0YS5jb20iLCJyb2xlIjoiT1dORVIiLCJvcmdhbml6YXRpb25JZCI6IjIxZjc5NzZlLTk1NWQtNGE0MS05YjFmLTdlYzIwOTg5OTExNSIsImlhdCI6MTc3NDc1MzA1NiwiZXhwIjoxNzc0ODM5NDU2fQ.cW7zPBS_2m3wa-IKfOuDFsDM83ySSugHSnB0bVXSltY
+### RSVP LOOKUP PUBLICO
+POST http://localhost:3000/events/public/casamento-renan-e-laislla/rsvp/lookup
+Content-Type: application/json
+
+{
+  "code": "D04F0E9A"
+}
+### RSVP CONFIRMAR PRESENCA
+PATCH http://localhost:3000/events/public/casamento-renan-e-laislla/rsvp/D04F0E9A/confirm
+Content-Type: application/json
+### DASHBOARD DE CONVIDADOS
+GET http://localhost:3000/events/dc554df2-d591-4c91-8e1c-337cb221e6fb/guests/dashboard
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhYWQ2MTY1Yi1jY2Y3LTRmZTMtOTMyMi03YTdhOGE2NTU1MTkiLCJlbWFpbCI6ImFuZHJlQHZpdmFsaXN0YS5jb20iLCJyb2xlIjoiT1dORVIiLCJvcmdhbml6YXRpb25JZCI6IjIxZjc5NzZlLTk1NWQtNGE0MS05YjFmLTdlYzIwOTg5OTExNSIsImlhdCI6MTc3NDc1MzA1NiwiZXhwIjoxNzc0ODM5NDU2fQ.cW7zPBS_2m3wa-IKfOuDFsDM83ySSugHSnB0bVXSltY
+### LOGIN
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "andre@vivalista.com",
+  "password": "123456"
+}
+
+### ATUALIZAR IMAGEM DE CAPA DO EVENTO
+PATCH http://localhost:3000/events/dc554df2-d591-4c91-8e1c-337cb221e6fb
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhYWQ2MTY1Yi1jY2Y3LTRmZTMtOTMyMi03YTdhOGE2NTU1MTkiLCJlbWFpbCI6ImFuZHJlQHZpdmFsaXN0YS5jb20iLCJyb2xlIjoiT1dORVIiLCJvcmdhbml6YXRpb25JZCI6IjIxZjc5NzZlLTk1NWQtNGE0MS05YjFmLTdlYzIwOTg5OTExNSIsImlhdCI6MTc3NDg2ODI4MSwiZXhwIjoxNzc0OTU0NjgxfQ.Qblrgn3CZsOHodqgWBFx3zopfRIGPSbgRBjN35ttLBk
+
+{
+  "coverImage": "https://images.unsplash.com/photo-1519741497674-611481863552"
+}

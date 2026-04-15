@@ -1,3 +1,4 @@
+
 import {
   Body,
   Controller,
@@ -36,6 +37,10 @@ export class PaymentController {
     return this.paymentService.getModuleStatus();
   }
 
+  // =========================
+  // ROTAS PÚBLICAS
+  // =========================
+
   @Public()
   @Post('public/intent')
   createPublicPaymentIntent(@Body() dto: CreatePaymentDto) {
@@ -50,12 +55,13 @@ export class PaymentController {
 
   @Public()
   @Post('webhook/mercadopago')
-  processMercadoPagoWebhook(
-    @Body() body: any,
-    @Query() query: any,
-  ) {
+  processMercadoPagoWebhook(@Body() body: any, @Query() query: any) {
     return this.paymentService.processMercadoPagoWebhook(body, query);
   }
+
+  // =========================
+  // ROTAS PROTEGIDAS
+  // =========================
 
   @Post('intent')
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -64,8 +70,10 @@ export class PaymentController {
     @Req() req: AuthenticatedRequest,
     @Body() dto: CreatePaymentDto,
   ) {
-    const organizationId = req.user.organizationId;
-    return this.paymentService.createPaymentIntent(organizationId, dto);
+    return this.paymentService.createPaymentIntent(
+      req.user.organizationId,
+      dto,
+    );
   }
 
   @Post(':paymentId/confirm')
@@ -75,8 +83,10 @@ export class PaymentController {
     @Req() req: AuthenticatedRequest,
     @Param('paymentId') paymentId: string,
   ) {
-    const organizationId = req.user.organizationId;
-    return this.paymentService.confirmPayment(organizationId, paymentId);
+    return this.paymentService.confirmPayment(
+      req.user.organizationId,
+      paymentId,
+    );
   }
 
   @Post('webhook/mock/:paymentId/paid')
@@ -86,9 +96,8 @@ export class PaymentController {
     @Req() req: AuthenticatedRequest,
     @Param('paymentId') paymentId: string,
   ) {
-    const organizationId = req.user.organizationId;
     return this.paymentService.processMockWebhookPaid(
-      organizationId,
+      req.user.organizationId,
       paymentId,
     );
   }

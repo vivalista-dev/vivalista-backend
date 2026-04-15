@@ -1,0 +1,15 @@
+-- AlterTable
+ALTER TABLE "Event" ADD COLUMN     "fontStyle" TEXT,
+ADD COLUMN     "heroImageUrl" TEXT,
+ADD COLUMN     "heroLayout" TEXT,
+ADD COLUMN     "primaryColor" TEXT,
+ADD COLUMN     "publicSubtitle" TEXT,
+ADD COLUMN     "publicTitle" TEXT,
+ADD COLUMN     "secondaryColor" TEXT,
+ADD COLUMN     "showCountdown" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "showGallery" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "showGifts" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "showLocation" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "showRsvp" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "showStory" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "welcomeMessage" TEXT;

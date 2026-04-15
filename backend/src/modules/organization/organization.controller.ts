@@ -18,7 +18,8 @@ import { UpdatePaymentSettingsDto } from './dto/update-payment-settings.dto';
 
 type AuthenticatedRequest = Request & {
   user: {
-    userId: string;
+    userId?: string;
+    sub?: string;
     email: string;
     role: Role;
     organizationId: string;
@@ -26,25 +27,39 @@ type AuthenticatedRequest = Request & {
 };
 
 @Controller('organizations')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class OrganizationController {
   constructor(
     private readonly organizationService: OrganizationService,
   ) {}
 
+  // =========================
+  // LEITURA ADMINISTRATIVA
+  // =========================
+
   @Get()
+  @Roles(Role.OWNER, Role.ADMIN)
   findAll() {
     return this.organizationService.findAll();
   }
 
+  @Get(':id')
+  @Roles(Role.OWNER, Role.ADMIN)
+  findOne(@Param('id') id: string) {
+    return this.organizationService.findOne(id);
+  }
+
+  // =========================
+  // CONTEXTO DA ORGANIZAÇÃO LOGADA
+  // =========================
+
   @Get('me/payment-settings')
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.OWNER, Role.ADMIN)
   getMyPaymentSettings(@Req() req: AuthenticatedRequest) {
     return this.organizationService.getPaymentSettings(req.user.organizationId);
   }
 
   @Patch('me/payment-settings')
-  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.OWNER)
   updateMyPaymentSettings(
     @Req() req: AuthenticatedRequest,
@@ -56,12 +71,12 @@ export class OrganizationController {
     );
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.organizationService.findOne(id);
-  }
+  // =========================
+  // REMOÇÃO ADMINISTRATIVA
+  // =========================
 
   @Delete(':id')
+  @Roles(Role.OWNER)
   remove(@Param('id') id: string) {
     return this.organizationService.remove(id);
   }

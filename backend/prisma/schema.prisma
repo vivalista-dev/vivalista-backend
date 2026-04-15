@@ -19,17 +19,79 @@ enum GuestStatus {
   DECLINED
 }
 
-model Organization {
-  id                    String   @id @default(uuid())
-  name                  String
-  paymentGateway        String?
-  paymentAccountId      String?
-  paymentAccountStatus  String?  @default("NOT_CONNECTED")
-  paymentAccountReady   Boolean  @default(false)
-  createdAt             DateTime @default(now())
+enum EventType {
+  WEDDING
+  KITCHEN_SHOWER
+  BABY_SHOWER
+  BIRTHDAY
+  GRADUATION
+  HOUSEWARMING
+  CORPORATE
+  OTHER
+}
 
-  users  User[]
-  events Event[]
+enum GiftMode {
+  PHYSICAL_ONLY
+  CASH_ONLY
+  HYBRID
+}
+
+enum GiftType {
+  PHYSICAL
+  CASH
+  QUOTA
+  FREE_CONTRIBUTION
+}
+
+enum PriceMode {
+  FIXED
+  FLEXIBLE
+}
+
+enum GiftStatus {
+  AVAILABLE
+  RESERVED
+  PURCHASED
+  PARTIALLY_FUNDED
+  DISABLED
+}
+
+enum ReservationStatus {
+  ACTIVE
+  CANCELLED
+  COMPLETED
+  EXPIRED
+}
+
+enum ContributionStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  PIX
+  CARD
+  BOLETO
+  OFFLINE
+}
+
+model Organization {
+  id                   String   @id @default(uuid())
+  name                 String
+  paymentGateway       String?
+  paymentAccountId     String?
+  paymentAccountStatus String?  @default("NOT_CONNECTED")
+  paymentAccountReady  Boolean  @default(false)
+  createdAt            DateTime @default(now())
+
+  users         User[]
+  events        Event[]
+  templates     EventTemplate[]
+  contributions Contribution[]
+  payments      Payment[]
 }
 
 model User {
@@ -51,15 +113,46 @@ model Event {
   description    String?
   date           DateTime
   location       String
+  coverImage     String?
   capacity       Int?
   status         String   @default("DRAFT")
   organizationId String
   createdAt      DateTime @default(now())
 
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  guests         Guest[]
-  gifts          Gift[]
-  payments       Payment[]
+  // CAMPOS JÁ EXISTENTES
+  eventType                EventType @default(OTHER)
+  giftMode                 GiftMode  @default(PHYSICAL_ONLY)
+  templateKey              String?
+  themeKey                 String?
+  openingMessage           String?
+  pixEnabled               Boolean   @default(false)
+  freeContributionEnabled  Boolean   @default(false)
+  quotaEnabled             Boolean   @default(false)
+  contributionsFeedEnabled Boolean   @default(false)
+
+  // NOVOS CAMPOS VISUAIS
+  publicTitle     String?
+  publicSubtitle  String?
+  heroImageUrl    String?
+  welcomeMessage  String?
+  primaryColor    String?
+  secondaryColor  String?
+  fontStyle       String?
+  heroLayout      String?
+  showCountdown   Boolean   @default(true)
+  showStory       Boolean   @default(true)
+  showGallery     Boolean   @default(true)
+  showLocation    Boolean   @default(true)
+  showGifts       Boolean   @default(true)
+  showRsvp        Boolean   @default(true)
+
+  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  guests          Guest[]
+  gifts           Gift[]
+  payments        Payment[]
+  sections        EventSection[]
+  contributions   Contribution[]
+  GiftReservation GiftReservation[]
 }
 
 model Guest {
@@ -74,39 +167,60 @@ model Guest {
   createdAt      DateTime    @default(now())
 
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  reservations  GiftReservation[]
+  contributions Contribution[]
 }
 
 model Gift {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   title           String
   description     String?
   price           Float?
   imageUrl        String?
   purchaseUrl     String?
-  isActive        Boolean  @default(true)
-  isReserved      Boolean  @default(false)
-  isPurchased     Boolean  @default(false)
+  isActive        Boolean   @default(true)
+  isReserved      Boolean   @default(false)
+  isPurchased     Boolean   @default(false)
   reservedByName  String?
   reservedAt      DateTime?
   purchasedByName String?
   purchasedAt     DateTime?
   eventId         String
   organizationId  String
-  createdAt       DateTime @default(now())
+  createdAt       DateTime  @default(now())
+
+  // NOVOS CAMPOS
+  giftType          GiftType   @default(PHYSICAL)
+  priceMode         PriceMode  @default(FIXED)
+  giftStatus        GiftStatus @default(AVAILABLE)
+  allowCustomAmount Boolean    @default(false)
+  quotaTotal        Int?
+  quotaSold         Int        @default(0)
+  minAmount         Float?
+  maxAmount         Float?
+  isFeatured        Boolean    @default(false)
+  displayOrder      Int        @default(0)
+  category          String?
 
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  payments      Payment[]
+  reservations  GiftReservation[]
+  contributions Contribution[]
+  quotas        GiftQuota[]
 }
 
 model Payment {
-  id                String   @id @default(uuid())
+  id                String    @id @default(uuid())
   organizationId    String
   eventId           String
-  giftId            String
+  giftId            String?
   buyerName         String
   buyerEmail        String
   buyerPhone        String
   paymentMethod     String
-  status            String   @default("PENDING")
+  status            String    @default("PENDING")
   amount            Float
   gatewayProvider   String?
   gatewayPaymentId  String?
@@ -117,8 +231,113 @@ model Payment {
   boletoUrl         String?
   boletoBarcode     String?
   paidAt            DateTime?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  gift  Gift? @relation(fields: [giftId], references: [id], onDelete: SetNull)
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+model EventSection {
+  id             String   @id @default(uuid())
+  eventId        String
+  organizationId String
+  sectionKey     String
+  enabled        Boolean  @default(true)
+  sortOrder      Int      @default(0)
+  configJson     Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, sectionKey])
+  @@index([eventId])
+  @@index([organizationId])
+}
+
+model EventTemplate {
+  id                  String    @id @default(uuid())
+  organizationId      String?
+  key                 String    @unique
+  name                String
+  eventType           EventType
+  previewImage        String?
+  defaultSectionsJson Json?
+  defaultThemeJson    Json?
+  isActive            Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+model GiftReservation {
+  id              String            @id @default(uuid())
+  giftId          String
+  eventId         String
+  guestId         String?
+  organizationId  String
+  reservedByName  String
+  reservedByEmail String?
+  reservedByPhone String?
+  status          ReservationStatus @default(ACTIVE)
+  expiresAt       DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  gift  Gift   @relation(fields: [giftId], references: [id], onDelete: Cascade)
+  event Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guest Guest? @relation(fields: [guestId], references: [id], onDelete: SetNull)
+
+  @@index([giftId])
+  @@index([eventId])
+  @@index([organizationId])
+}
+
+model Contribution {
+  id               String             @id @default(uuid())
+  organizationId   String
+  eventId          String
+  giftId           String?
+  guestId          String?
+  contributorName  String
+  contributorEmail String?
+  contributorPhone String?
+  message          String?
+  amount           Float
+  paymentMethod    PaymentMethod
+  status           ContributionStatus @default(PENDING)
+  isPublic         Boolean            @default(true)
+  paidAt           DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  event        Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  gift         Gift?        @relation(fields: [giftId], references: [id], onDelete: SetNull)
+  guest        Guest?       @relation(fields: [guestId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([eventId])
+  @@index([giftId])
+}
+
+model GiftQuota {
+  id             String   @id @default(uuid())
+  giftId         String
+  organizationId String
+  label          String?
+  amount         Float
+  isPaid         Boolean  @default(false)
+  contributionId String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  gift Gift @relation(fields: [giftId], references: [id], onDelete: Cascade)
+
+  @@index([giftId])
+  @@index([organizationId])
 }
