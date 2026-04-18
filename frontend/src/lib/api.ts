@@ -1,19 +1,23 @@
 export async function apiFetch(path: string, options: RequestInit = {}) {
-  const token = localStorage.getItem("token");
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...(options.headers || {}),
+    ...(options.headers as Record<string, string>),
   };
 
   if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+    headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`http://localhost:3000${path}`, {
-    ...options,
-    headers,
-  });
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}${path}`,
+    {
+      ...options,
+      headers,
+    }
+  );
 
   if (!response.ok) {
     const error = await response.json().catch(() => null);
