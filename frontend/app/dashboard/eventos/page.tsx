@@ -54,28 +54,6 @@ function getAuthToken(): string | null {
   return null;
 }
 
-function buildAssetUrl(value?: string | null): string | null {
-  const raw = value?.trim();
-  if (!raw) return null;
-
-  if (
-    raw.startsWith("http://") ||
-    raw.startsWith("https://") ||
-    raw.startsWith("data:") ||
-    raw.startsWith("blob:")
-  ) {
-    return raw;
-  }
-
-  const backendUrl = getBackendUrl();
-
-  if (raw.startsWith("/")) {
-    return `${backendUrl}${raw}`;
-  }
-
-  return `${backendUrl}/${raw}`;
-}
-
 function formatDate(date?: string | null): string {
   if (!date) return "Não informada";
 
@@ -193,7 +171,12 @@ function sortEvents(events: EventItem[], sortBy: string): EventItem[] {
 
 function buildPublicUrl(slug?: string | null): string | null {
   if (!slug) return null;
-  return `http://localhost:3001/e/${slug}`;
+
+  if (typeof window !== "undefined") {
+    return `${window.location.origin}/e/${slug}`;
+  }
+
+  return `/e/${slug}`;
 }
 
 function SectionShell({
@@ -241,9 +224,7 @@ function SummaryCard({
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
         {label}
       </p>
-      <p className="mt-3 text-3xl font-semibold text-neutral-900">
-        {value}
-      </p>
+      <p className="mt-3 text-3xl font-semibold text-neutral-900">{value}</p>
       <p className="mt-2 text-sm leading-6 text-neutral-600">{description}</p>
     </div>
   );
@@ -404,6 +385,13 @@ export default function DashboardEventosPage() {
               >
                 Voltar ao dashboard
               </Link>
+
+              <Link
+                href="/dashboard/eventos/novo"
+                className="inline-flex items-center justify-center rounded-xl bg-[#8f6a16] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#7a5911]"
+              >
+                Criar evento
+              </Link>
             </div>
           </div>
         </section>
@@ -523,180 +511,162 @@ export default function DashboardEventosPage() {
 
         <div className="mt-6">
           {loading ? (
-            <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, index) => (
+            <section className="grid gap-6 lg:grid-cols-2">
+              {Array.from({ length: 4 }).map((_, index) => (
                 <div
                   key={index}
-                  className="overflow-hidden rounded-[28px] border border-[#e8dfd2] bg-white shadow-sm"
+                  className="rounded-[28px] border border-[#e8dfd2] bg-white p-6 shadow-sm"
                 >
-                  <div className="h-44 animate-pulse bg-neutral-200" />
-                  <div className="p-6">
-                    <div className="h-4 w-24 animate-pulse rounded bg-neutral-200" />
-                    <div className="mt-4 h-7 w-2/3 animate-pulse rounded bg-neutral-200" />
-                    <div className="mt-4 h-4 w-full animate-pulse rounded bg-neutral-200" />
-                    <div className="mt-2 h-4 w-5/6 animate-pulse rounded bg-neutral-200" />
-                    <div className="mt-6 h-10 w-36 animate-pulse rounded bg-neutral-200" />
-                  </div>
+                  <div className="h-4 w-24 animate-pulse rounded bg-neutral-200" />
+                  <div className="mt-4 h-8 w-1/2 animate-pulse rounded bg-neutral-200" />
+                  <div className="mt-4 h-24 w-full animate-pulse rounded bg-neutral-200" />
                 </div>
               ))}
             </section>
           ) : errorMessage ? (
-            <section className="rounded-[28px] border border-red-200 bg-red-50 p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-red-800">
-                Erro ao carregar eventos
-              </h2>
-              <p className="mt-2 text-sm text-red-700">{errorMessage}</p>
+            <section className="rounded-[28px] border border-red-200 bg-red-50 p-6 text-red-700 shadow-sm">
+              {errorMessage}
             </section>
           ) : filteredEvents.length === 0 ? (
-            <section className="rounded-[28px] border border-[#e8dfd2] bg-white p-10 text-center shadow-sm">
-              <h2 className="text-xl font-semibold text-neutral-900">
+            <section className="rounded-[28px] border border-dashed border-[#d7c9b9] bg-white p-8 text-center shadow-sm">
+              <h2 className="text-2xl font-semibold tracking-tight text-neutral-900">
                 Nenhum evento encontrado
               </h2>
-              <p className="mt-2 text-sm text-neutral-600">
-                Ajuste a busca, filtros ou crie eventos no backend para eles aparecerem aqui.
+              <p className="mt-3 text-sm leading-7 text-neutral-600">
+                Você ainda não tem eventos cadastrados ou os filtros não encontraram resultados.
               </p>
+
+              <div className="mt-6 flex justify-center">
+                <Link
+                  href="/dashboard/eventos/novo"
+                  className="inline-flex items-center justify-center rounded-xl bg-[#8f6a16] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#7a5911]"
+                >
+                  Criar primeiro evento
+                </Link>
+              </div>
             </section>
           ) : (
-            <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <section className="grid gap-6 lg:grid-cols-2">
               {filteredEvents.map((event) => {
                 const publicUrl = buildPublicUrl(event.slug);
-                const coverImageUrl = buildAssetUrl(event.coverImage);
 
                 return (
                   <article
                     key={event.id}
-                    className={`overflow-hidden rounded-[28px] border border-[#e8dfd2] bg-white shadow-sm ring-1 transition hover:-translate-y-1 hover:shadow-md ${statusCardAccent(
-                      event.status
-                    )}`}
+                    className={`rounded-[28px] border border-[#e8dfd2] bg-white p-6 shadow-sm ring-1 ${statusCardAccent(event.status)}`}
                   >
-                    <div className="relative h-48 w-full overflow-hidden bg-[#f3ece3]">
-                      {coverImageUrl ? (
-                        <img
-                          src={coverImageUrl}
-                          alt={event.name || "Capa do evento"}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center px-6 text-center text-sm text-[#8a7d74]">
-                          Sem capa enviada
-                        </div>
-                      )}
-
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
-
-                      <div className="absolute left-4 top-4 flex items-start gap-2">
-                        <span
-                          className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur-sm ${statusClasses(
-                            event.status
-                          )}`}
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <div
+                          className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${statusClasses(event.status)}`}
                         >
                           {statusLabel(event.status)}
-                        </span>
+                        </div>
+
+                        <h3 className="mt-4 text-2xl font-semibold tracking-tight text-neutral-900">
+                          {event.name}
+                        </h3>
+
+                        <p className="mt-2 text-sm text-neutral-600">
+                          Criado em {formatDate(event.createdAt)}
+                        </p>
                       </div>
                     </div>
 
-                    <div className="p-6">
-                      <div className="flex items-start justify-between gap-3">
-                        <h2 className="text-2xl font-semibold tracking-tight text-neutral-900">
-                          {event.name || "Evento sem nome"}
-                        </h2>
+                    <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                      <div className="rounded-[22px] border border-[#e8dfd2] bg-[#f8f3ec] p-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
+                          Data
+                        </p>
+                        <p className="mt-2 text-sm font-medium text-neutral-900">
+                          {formatDate(event.date)}
+                        </p>
                       </div>
 
-                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                        <div className="rounded-[22px] border border-[#e8dfd2] bg-[#f8f3ec] p-4">
-                          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
-                            Data
-                          </p>
-                          <p className="mt-2 text-sm font-medium text-neutral-900">
-                            {formatDate(event.date)}
-                          </p>
-                        </div>
-
-                        <div className="rounded-[22px] border border-[#e8dfd2] bg-[#f8f3ec] p-4">
-                          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
-                            Capacidade
-                          </p>
-                          <p className="mt-2 text-sm font-medium text-neutral-900">
-                            {event.capacity ?? "Não informada"}
-                          </p>
-                        </div>
-
-                        <div className="rounded-[22px] border border-[#e8dfd2] bg-[#f8f3ec] p-4 sm:col-span-2">
-                          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
-                            Local
-                          </p>
-                          <p className="mt-2 text-sm font-medium text-neutral-900">
-                            {event.location || "Não informado"}
-                          </p>
-                        </div>
-
-                        <div className="rounded-[22px] border border-[#e8dfd2] bg-[#f8f3ec] p-4 sm:col-span-2">
-                          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
-                            Slug público
-                          </p>
-                          <p className="mt-2 break-all text-sm font-medium text-neutral-900">
-                            {event.slug || "Não informado"}
-                          </p>
-                        </div>
+                      <div className="rounded-[22px] border border-[#e8dfd2] bg-[#f8f3ec] p-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
+                          Capacidade
+                        </p>
+                        <p className="mt-2 text-sm font-medium text-neutral-900">
+                          {event.capacity ?? "Não informada"}
+                        </p>
                       </div>
 
-                      <p className="mt-4 line-clamp-3 text-sm leading-6 text-neutral-600">
-                        {event.description || "Sem descrição cadastrada."}
-                      </p>
-
-                      <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                        <Link
-                          href={`/dashboard/eventos/${event.id}`}
-                          className="inline-flex items-center justify-center rounded-xl bg-[#8f6a16] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#7a5911]"
-                        >
-                          Abrir painel
-                        </Link>
-
-                        {event.slug ? (
-                          <Link
-                            href={`/e/${event.slug}`}
-                            target="_blank"
-                            className="inline-flex items-center justify-center rounded-xl border border-[#ddd1f2] bg-[#efe7fb] px-4 py-2 text-sm font-medium text-[#5f3d95] transition hover:bg-[#e7ddf7]"
-                          >
-                            Ver página pública
-                          </Link>
-                        ) : null}
-
-                        <Link
-                          href={`/dashboard/eventos/${event.id}/visual`}
-                          className="inline-flex items-center justify-center rounded-xl border border-[#e8dfd2] bg-white px-4 py-2 text-sm font-medium text-[#8f6a16] transition hover:bg-[#fcfaf7]"
-                        >
-                          Abrir visual
-                        </Link>
-
-                        <Link
-                          href={`/dashboard/eventos/${event.id}/presentes`}
-                          className="inline-flex items-center justify-center rounded-xl border border-[#e8dfd2] bg-white px-4 py-2 text-sm font-medium text-[#8f6a16] transition hover:bg-[#fcfaf7]"
-                        >
-                          Abrir presentes
-                        </Link>
-
-                        <Link
-                          href={`/dashboard/eventos/${event.id}/convidados`}
-                          className="inline-flex items-center justify-center rounded-xl border border-[#e8dfd2] bg-white px-4 py-2 text-sm font-medium text-[#8f6a16] transition hover:bg-[#fcfaf7]"
-                        >
-                          Abrir convidados
-                        </Link>
-
-                        {publicUrl ? (
-                          <button
-                            type="button"
-                            onClick={() => handleCopyPublicLink(event)}
-                            className="inline-flex items-center justify-center rounded-xl border border-[#e8dfd2] bg-white px-4 py-2 text-sm font-medium text-[#8f6a16] transition hover:bg-[#fcfaf7]"
-                          >
-                            {copiedId === event.id ? "Link copiado" : "Copiar link público"}
-                          </button>
-                        ) : (
-                          <div className="inline-flex items-center justify-center rounded-xl border border-dashed border-[#d7c9b9] bg-[#f8f3ec] px-4 py-2 text-sm text-[#8a7d74]">
-                            Sem link público
-                          </div>
-                        )}
+                      <div className="rounded-[22px] border border-[#e8dfd2] bg-[#f8f3ec] p-4 sm:col-span-2">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
+                          Local
+                        </p>
+                        <p className="mt-2 text-sm font-medium text-neutral-900">
+                          {event.location || "Não informado"}
+                        </p>
                       </div>
+
+                      <div className="rounded-[22px] border border-[#e8dfd2] bg-[#f8f3ec] p-4 sm:col-span-2">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
+                          Slug público
+                        </p>
+                        <p className="mt-2 break-all text-sm font-medium text-neutral-900">
+                          {event.slug || "Não informado"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <p className="mt-4 line-clamp-3 text-sm leading-6 text-neutral-600">
+                      {event.description || "Sem descrição cadastrada."}
+                    </p>
+
+                    <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                      <Link
+                        href={`/dashboard/eventos/${event.id}`}
+                        className="inline-flex items-center justify-center rounded-xl bg-[#8f6a16] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#7a5911]"
+                      >
+                        Abrir painel
+                      </Link>
+
+                      {event.slug ? (
+                        <Link
+                          href={`/e/${event.slug}`}
+                          target="_blank"
+                          className="inline-flex items-center justify-center rounded-xl border border-[#ddd1f2] bg-[#efe7fb] px-4 py-2 text-sm font-medium text-[#5f3d95] transition hover:bg-[#e7ddf7]"
+                        >
+                          Ver página pública
+                        </Link>
+                      ) : null}
+
+                      <Link
+                        href={`/dashboard/eventos/${event.id}/visual`}
+                        className="inline-flex items-center justify-center rounded-xl border border-[#e8dfd2] bg-white px-4 py-2 text-sm font-medium text-[#8f6a16] transition hover:bg-[#fcfaf7]"
+                      >
+                        Abrir visual
+                      </Link>
+
+                      <Link
+                        href={`/dashboard/eventos/${event.id}/presentes`}
+                        className="inline-flex items-center justify-center rounded-xl border border-[#e8dfd2] bg-white px-4 py-2 text-sm font-medium text-[#8f6a16] transition hover:bg-[#fcfaf7]"
+                      >
+                        Abrir presentes
+                      </Link>
+
+                      <Link
+                        href={`/dashboard/eventos/${event.id}/convidados`}
+                        className="inline-flex items-center justify-center rounded-xl border border-[#e8dfd2] bg-white px-4 py-2 text-sm font-medium text-[#8f6a16] transition hover:bg-[#fcfaf7]"
+                      >
+                        Abrir convidados
+                      </Link>
+
+                      {publicUrl ? (
+                        <button
+                          type="button"
+                          onClick={() => handleCopyPublicLink(event)}
+                          className="inline-flex items-center justify-center rounded-xl border border-[#e8dfd2] bg-white px-4 py-2 text-sm font-medium text-[#8f6a16] transition hover:bg-[#fcfaf7]"
+                        >
+                          {copiedId === event.id ? "Link copiado" : "Copiar link público"}
+                        </button>
+                      ) : (
+                        <div className="inline-flex items-center justify-center rounded-xl border border-dashed border-[#d7c9b9] bg-[#f8f3ec] px-4 py-2 text-sm text-[#8a7d74]">
+                          Sem link público
+                        </div>
+                      )}
                     </div>
                   </article>
                 );
