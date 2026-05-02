@@ -74,7 +74,7 @@ const eventModels: EventModel[] = [
       "Um site delicado para contar a história do casal, mostrar fotos, orientar convidados, receber confirmações e organizar presentes em um único link.",
     icon: "💍",
     tag: "Mais desejado",
-    previewUrl: "https://andrelssampaio13-debug.github.io/renan-e-laislla/",
+    previewUrl: "/modelos/casamento-romantico",
     useUrl: "/register?tipo=casamento&modelo=casamento-romantico",
     image:
       "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=90",
@@ -155,7 +155,7 @@ const eventModels: EventModel[] = [
       "Capa premium, contagem regressiva, galeria, dress code, localização e confirmação de presença para uma celebração memorável.",
     icon: "👑",
     tag: "Premium",
-    previewUrl: "/modelos/debutante-luxo",
+    previewUrl: "#galeria-modelos",
     useUrl: "/register?tipo=aniversario-15-anos&modelo=debutante-luxo",
     image:
       "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=1200&q=90",
@@ -220,7 +220,7 @@ const eventModels: EventModel[] = [
       "Uma página suave para lista de enxoval, mensagem da família, presentes, confirmação de presença e localização.",
     icon: "🧸",
     tag: "Família",
-    previewUrl: "/modelos/cha-bebe-delicado",
+    previewUrl: "#galeria-modelos",
     useUrl: "/register?tipo=cha-de-bebe&modelo=bebe-delicado",
     image:
       "https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=1200&q=90",
@@ -252,7 +252,7 @@ const eventModels: EventModel[] = [
       "Modelo perfeito para organizar presentes, compartilhar endereço, receber mensagens e facilitar contribuições pelo Pix.",
     icon: "🍳",
     tag: "Modelo real",
-    previewUrl: "https://cha-de-cozinha.github.io/cha-de-cozinha/",
+    previewUrl: "/modelos/cha-cozinha-elegante",
     useUrl: "/register?tipo=cha-de-cozinha&modelo=cha-cozinha-elegante",
     image:
       "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1200&q=90",
@@ -269,7 +269,7 @@ const eventModels: EventModel[] = [
       "Open house, chá de casa nova, lista de presentes, contribuição livre, localização e mensagem em um visual clean.",
     icon: "🏡",
     tag: "Novo lar",
-    previewUrl: "/modelos/casa-nova-clean",
+    previewUrl: "#galeria-modelos",
     useUrl: "/register?tipo=casa-nova&modelo=casa-nova-clean",
     image:
       "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=90",
@@ -285,7 +285,7 @@ const eventModels: EventModel[] = [
       "Programação, turma, local, fotos, confirmação de presença e informações importantes em uma página elegante.",
     icon: "🎓",
     tag: "Conquista",
-    previewUrl: "/modelos/formatura-classica",
+    previewUrl: "#galeria-modelos",
     useUrl: "/register?tipo=formatura&modelo=formatura-classica",
     image:
       "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=90",
@@ -317,7 +317,7 @@ const eventModels: EventModel[] = [
       "Página para programação, inscrição, localização, palestrantes, patrocinadores e informações do evento.",
     icon: "🏢",
     tag: "Empresa",
-    previewUrl: "/modelos/corporativo-premium",
+    previewUrl: "#galeria-modelos",
     useUrl: "/register?tipo=corporativo&modelo=corporativo-premium",
     image:
       "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=90",
@@ -832,19 +832,16 @@ export default function HomePage() {
   const hasMoreModels = filteredModels.length > displayedModels.length;
   const currentSlide = heroSlides[activeSlide];
 
-  const isExternalPreview = (url: string) => url.startsWith("http");
-
-  const hasPreviewPage = (url: string) =>
-    url.startsWith("http") || url.startsWith("/modelos/");
+  const hasRealPreview = (url: string) => url.startsWith("http");
 
   const getPreviewTarget = (url: string) =>
-    isExternalPreview(url) ? "_blank" : "_self";
+    hasRealPreview(url) ? "_blank" : "_self";
 
   const getPreviewRel = (url: string) =>
-    isExternalPreview(url) ? "noopener noreferrer" : undefined;
+    hasRealPreview(url) ? "noopener noreferrer" : undefined;
 
   const getPreviewLabel = (url: string) =>
-    hasPreviewPage(url) ? "Ver modelo" : "Ver detalhes";
+    hasRealPreview(url) ? "Ver modelo" : "Ver detalhes";
 
   const handleSelectModel = (slug: string) => {
     setFeaturedSlug(slug);
@@ -1327,8 +1324,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      <section className="section-white-glow relative z-10 px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
+            <section className="section-white-glow relative z-10 px-4 py-20 sm:px-6 lg:px-8 lg:py-24">
         <div className="mx-auto max-w-7xl">
           <div className="grid items-center gap-12 lg:grid-cols-[0.88fr_1.12fr] lg:gap-14">
             <div>

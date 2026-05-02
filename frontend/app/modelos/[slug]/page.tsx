@@ -24,6 +24,37 @@ type Modelo = {
 };
 
 const modelos = {
+  "casamento-romantico": {
+    slug: "casamento-romantico",
+    nome: "Casamento Romântico",
+    categoria: "Casamento",
+    estilo: "Romântico, elegante e emocional",
+    frase: "Um site completo para contar a história do casal e encantar convidados.",
+    descricao:
+      "Modelo pensado para casamento com visual delicado, capa emocional, contagem regressiva, história do casal, galeria, localização, presentes e confirmação de presença.",
+    anfitrioes: "Marina & Gabriel",
+    data: "22 de agosto de 2026",
+    local: "Espaço Jardim das Flores • São Paulo",
+    imagem:
+      "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1600&q=90",
+    corPrincipal: "#7c3aed",
+    corSecundaria: "#e6c76b",
+    fundo: "from-purple-950 via-violet-900 to-fuchsia-900",
+    secoes: [
+      "Convite de abertura",
+      "História do casal",
+      "Contagem regressiva",
+      "Galeria de fotos",
+      "Localização com mapa",
+      "Lista de presentes",
+      "Confirmação de presença",
+    ],
+    presentes: [
+      { nome: "Cota lua de mel", valor: "R$ 200,00" },
+      { nome: "Jantar especial", valor: "R$ 150,00" },
+      { nome: "Presente livre", valor: "Valor livre" },
+    ],
+  },
   "debutante-luxo": {
     slug: "debutante-luxo",
     nome: "Debutante Luxo",
@@ -36,7 +67,7 @@ const modelos = {
     data: "18 de outubro de 2026",
     local: "Espaço Imperial • São Paulo",
     imagem:
-      "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1600&q=90",
     corPrincipal: "#6d28d9",
     corSecundaria: "#f4c95d",
     fundo: "from-purple-950 via-purple-900 to-fuchsia-900",
@@ -66,8 +97,8 @@ const modelos = {
     data: "12 de julho de 2026",
     local: "Casa da Família • São Paulo",
     imagem:
-      "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=1600&q=80",
-    corPrincipal: "#7dd3fc",
+      "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=1600&q=90",
+    corPrincipal: "#0284c7",
     corSecundaria: "#f9a8d4",
     fundo: "from-sky-100 via-pink-50 to-amber-50",
     secoes: [
@@ -84,6 +115,37 @@ const modelos = {
       { nome: "Cota enxoval", valor: "R$ 150,00" },
     ],
   },
+  "cha-cozinha-elegante": {
+    slug: "cha-cozinha-elegante",
+    nome: "Chá de Cozinha Elegante",
+    categoria: "Chá de cozinha",
+    estilo: "Elegante, prático e acolhedor",
+    frase: "Uma celebração charmosa para montar o novo lar com carinho.",
+    descricao:
+      "Modelo pensado para chá de cozinha, chá de panela e casa nova, com lista de presentes visual, reserva, contribuição livre por Pix, localização e mensagem especial aos convidados.",
+    anfitrioes: "Chá da Laislla & Renan",
+    data: "02 de maio de 2026",
+    local: "Casa da Família • São Paulo",
+    imagem:
+      "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1600&q=90",
+    corPrincipal: "#3f4f45",
+    corSecundaria: "#c9a46c",
+    fundo: "from-stone-900 via-emerald-950 to-stone-800",
+    secoes: [
+      "Convite de abertura",
+      "Mensagem especial",
+      "Contagem regressiva",
+      "Localização",
+      "Lista de presentes",
+      "Reserva de presentes",
+      "Pix livre",
+    ],
+    presentes: [
+      { nome: "Jogo de panelas", valor: "R$ 280,00" },
+      { nome: "Kit utensílios", valor: "R$ 120,00" },
+      { nome: "Ajuda com Pix", valor: "Valor livre" },
+    ],
+  },
   "casa-nova-clean": {
     slug: "casa-nova-clean",
     nome: "Casa Nova Clean",
@@ -96,7 +158,7 @@ const modelos = {
     data: "04 de setembro de 2026",
     local: "Apartamento novo • Vila Mariana",
     imagem:
-      "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1600&q=90",
     corPrincipal: "#334155",
     corSecundaria: "#c9a46c",
     fundo: "from-stone-100 via-white to-slate-100",
@@ -126,7 +188,7 @@ const modelos = {
     data: "29 de novembro de 2026",
     local: "Salão Nobre • São Paulo",
     imagem:
-      "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1600&q=90",
     corPrincipal: "#111827",
     corSecundaria: "#d4af37",
     fundo: "from-slate-950 via-slate-900 to-black",
@@ -156,7 +218,7 @@ const modelos = {
     data: "08 de dezembro de 2026",
     local: "Centro de Eventos • São Paulo",
     imagem:
-      "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1600&q=80",
+      "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1600&q=90",
     corPrincipal: "#0f172a",
     corSecundaria: "#38bdf8",
     fundo: "from-slate-950 via-blue-950 to-slate-900",
@@ -224,13 +286,15 @@ export default async function ModeloPreviewPage({ params }: PageProps) {
     <main className="min-h-screen bg-white text-slate-900">
       <section className={`relative overflow-hidden bg-gradient-to-br ${modelo.fundo}`}>
         <div
-          className="absolute inset-0 opacity-35"
+          className="absolute inset-0 opacity-40"
           style={{
-            backgroundImage: `linear-gradient(90deg, rgba(0,0,0,0.55), rgba(0,0,0,0.15)), url(${modelo.imagem})`,
+            backgroundImage: `linear-gradient(90deg, rgba(0,0,0,0.68), rgba(0,0,0,0.22)), url(${modelo.imagem})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
         />
+
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.20),transparent_28%),radial-gradient(circle_at_80%_10%,rgba(230,199,107,0.22),transparent_32%)]" />
 
         <div className="relative mx-auto flex min-h-[720px] max-w-7xl flex-col px-6 py-8 text-white">
           <header className="flex items-center justify-between gap-4">
@@ -351,7 +415,7 @@ export default async function ModeloPreviewPage({ params }: PageProps) {
               <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-black uppercase tracking-widest text-slate-500">
                 <span>Início</span>
                 <span>•</span>
-                <span>História</span>
+                <span>Mensagem</span>
                 <span>•</span>
                 <span>Localização</span>
                 <span>•</span>
