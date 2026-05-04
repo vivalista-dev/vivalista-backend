@@ -1,19 +1,35 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, Suspense, useMemo, useState } from "react";
+import { FormEvent, Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { apiFetch } from "../../../../src/lib/api";
 
 type EventTemplateKey =
-  | "casamento"
-  | "aniversario"
-  | "cha-de-bebe"
-  | "formatura"
-  | "casa-nova";
+  | "casamento-romantico"
+  | "cha-cozinha-elegante"
+  | "debutante-luxo"
+  | "cha-bebe-delicado"
+  | "casa-nova-clean"
+  | "formatura-classica"
+  | "corporativo-premium"
+  | "aniversario";
+
+type EventType =
+  | "WEDDING"
+  | "KITCHEN_SHOWER"
+  | "BABY_SHOWER"
+  | "BIRTHDAY"
+  | "GRADUATION"
+  | "HOUSEWARMING"
+  | "CORPORATE"
+  | "OTHER";
+
+type GiftMode = "PHYSICAL_ONLY" | "CASH_ONLY" | "HYBRID";
 
 type EventTemplate = {
   key: EventTemplateKey;
+  legacyKeys: string[];
   label: string;
   shortLabel: string;
   description: string;
@@ -22,73 +38,155 @@ type EventTemplate = {
   suggestedName: string;
   suggestedDescription: string;
   suggestedLocation: string;
+  eventType: EventType;
+  giftMode: GiftMode;
+  themeKey: string;
+  previewHref?: string;
 };
 
 const EVENT_TEMPLATES: EventTemplate[] = [
   {
-    key: "casamento",
-    label: "Casamento",
+    key: "casamento-romantico",
+    legacyKeys: ["casamento", "wedding"],
+    label: "Casamento Romântico",
     shortLabel: "Casamento",
     description:
-      "Ideal para cerimônia, recepção, RSVP, lista de presentes e página pública elegante.",
+      "Ideal para cerimônia, recepção, RSVP, lista de presentes, página pública elegante e experiência emocional.",
     badge: "cerimônia + festa",
     icon: "💍",
     suggestedName: "Casamento Nome 1 e Nome 2",
     suggestedDescription:
-      "Celebre esse grande dia com uma página elegante, confirmações de presença e lista de presentes.",
+      "Celebre esse grande dia com uma página elegante, confirmações de presença, contagem regressiva e lista de presentes.",
     suggestedLocation: "Ex.: Espaço para casamento, cidade",
+    eventType: "WEDDING",
+    giftMode: "HYBRID",
+    themeKey: "casamento-romantico",
+    previewHref: "/modelos/casamento-romantico",
+  },
+  {
+    key: "cha-cozinha-elegante",
+    legacyKeys: ["cha-cozinha", "cha-de-cozinha", "kitchen-shower"],
+    label: "Chá de Cozinha Elegante",
+    shortLabel: "Chá de cozinha",
+    description:
+      "Modelo acolhedor para chá de cozinha, lista de presentes, Pix livre e celebração familiar.",
+    badge: "casa + presentes",
+    icon: "🍽️",
+    suggestedName: "Chá de cozinha de Nome",
+    suggestedDescription:
+      "Monte uma página elegante e acolhedora para organizar convidados, presentes e contribuições para a nova fase.",
+    suggestedLocation: "Ex.: Casa da família, salão ou espaço reservado",
+    eventType: "KITCHEN_SHOWER",
+    giftMode: "HYBRID",
+    themeKey: "cha-cozinha-elegante",
+    previewHref: "/modelos/cha-cozinha-elegante",
+  },
+  {
+    key: "debutante-luxo",
+    legacyKeys: ["debutante", "15-anos", "quinze-anos"],
+    label: "Debutante Luxo",
+    shortLabel: "15 anos",
+    description:
+      "Modelo glamouroso para festa de 15 anos com clima de red carpet, galeria, RSVP e presentes.",
+    badge: "glamour",
+    icon: "✨",
+    suggestedName: "15 anos de Nome",
+    suggestedDescription:
+      "Crie uma página marcante para uma noite inesquecível, com convidados, galeria, confirmação e presentes.",
+    suggestedLocation: "Ex.: Buffet, salão ou espaço de festas",
+    eventType: "BIRTHDAY",
+    giftMode: "HYBRID",
+    themeKey: "debutante-luxo",
+    previewHref: "/modelos/debutante-luxo",
+  },
+  {
+    key: "cha-bebe-delicado",
+    legacyKeys: ["cha-de-bebe", "cha-bebe", "baby-shower"],
+    label: "Chá de Bebê Delicado",
+    shortLabel: "Chá de bebê",
+    description:
+      "Modelo delicado para chá de bebê, chá revelação e encontros familiares com presentes e confirmação.",
+    badge: "família",
+    icon: "🧸",
+    suggestedName: "Chá de bebê de Nome",
+    suggestedDescription:
+      "Monte uma página especial para compartilhar a celebração, confirmar presença e organizar presentes com carinho.",
+    suggestedLocation: "Ex.: Espaço do evento, residência ou salão",
+    eventType: "BABY_SHOWER",
+    giftMode: "HYBRID",
+    themeKey: "cha-bebe-delicado",
+    previewHref: "/modelos/cha-bebe-delicado",
+  },
+  {
+    key: "casa-nova-clean",
+    legacyKeys: ["casa-nova", "open-house", "housewarming"],
+    label: "Casa Nova Clean",
+    shortLabel: "Casa nova",
+    description:
+      "Ótimo para open house, chá de casa nova e organização de presentes por cotas, itens ou valor livre.",
+    badge: "novo lar",
+    icon: "🏡",
+    suggestedName: "Casa nova de Nome",
+    suggestedDescription:
+      "Crie uma página para celebrar o novo lar com convidados, presentes úteis e comunicação clara.",
+    suggestedLocation: "Ex.: Endereço do novo lar ou espaço da celebração",
+    eventType: "HOUSEWARMING",
+    giftMode: "HYBRID",
+    themeKey: "casa-nova-clean",
+    previewHref: "/modelos/casa-nova-clean",
+  },
+  {
+    key: "formatura-classica",
+    legacyKeys: ["formatura", "graduation"],
+    label: "Formatura Clássica",
+    shortLabel: "Formatura",
+    description:
+      "Estrutura ideal para formaturas, celebrações de conquista, turma, cerimônia, baile e página pública refinada.",
+    badge: "conquista",
+    icon: "🎓",
+    suggestedName: "Formatura de Nome ou Turma",
+    suggestedDescription:
+      "Reúna convidados, confirmação, detalhes da comemoração e presentes em uma experiência organizada e elegante.",
+    suggestedLocation: "Ex.: Espaço de eventos, teatro, salão ou restaurante",
+    eventType: "GRADUATION",
+    giftMode: "HYBRID",
+    themeKey: "formatura-classica",
+    previewHref: "/modelos/formatura-classica",
+  },
+  {
+    key: "corporativo-premium",
+    legacyKeys: ["corporativo", "evento-corporativo", "corporate"],
+    label: "Corporativo Premium",
+    shortLabel: "Corporativo",
+    description:
+      "Modelo para eventos empresariais, palestras, lançamentos, conferências, credenciamento e RSVP.",
+    badge: "empresa",
+    icon: "💼",
+    suggestedName: "Evento corporativo Nome",
+    suggestedDescription:
+      "Organize um evento empresarial com apresentação profissional, convidados, confirmação e informações essenciais.",
+    suggestedLocation: "Ex.: Centro de eventos, auditório, hotel ou sede da empresa",
+    eventType: "CORPORATE",
+    giftMode: "PHYSICAL_ONLY",
+    themeKey: "corporativo-premium",
+    previewHref: "/modelos/corporativo-premium",
   },
   {
     key: "aniversario",
+    legacyKeys: ["aniversario", "birthday"],
     label: "Aniversário",
     shortLabel: "Aniversário",
     description:
-      "Perfeito para festas de aniversário com convidados, confirmação e presentes.",
+      "Perfeito para festas de aniversário com convidados, confirmação, informações do evento e presentes.",
     badge: "festa",
     icon: "🎂",
     suggestedName: "Aniversário de Nome",
     suggestedDescription:
       "Organize sua comemoração com uma página bonita, convidados e presentes em um só lugar.",
     suggestedLocation: "Ex.: Buffet, salão ou residência",
-  },
-  {
-    key: "cha-de-bebe",
-    label: "Chá de bebê",
-    shortLabel: "Chá de bebê",
-    description:
-      "Modelo pensado para chá revelação, chá de bebê e encontros mais delicados e íntimos.",
-    badge: "família + convidados",
-    icon: "🧸",
-    suggestedName: "Chá de bebê de Nome",
-    suggestedDescription:
-      "Monte uma página especial para compartilhar a celebração, confirmar presença e organizar presentes.",
-    suggestedLocation: "Ex.: Espaço do evento, residência ou salão",
-  },
-  {
-    key: "formatura",
-    label: "Formatura",
-    shortLabel: "Formatura",
-    description:
-      "Estrutura ideal para formaturas, celebrações de conquista e página pública refinada.",
-    badge: "conquista",
-    icon: "🎓",
-    suggestedName: "Formatura de Nome",
-    suggestedDescription:
-      "Reúna convidados, confirmação e detalhes da comemoração em uma experiência mais organizada.",
-    suggestedLocation: "Ex.: Espaço de eventos, casa de festas ou restaurante",
-  },
-  {
-    key: "casa-nova",
-    label: "Casa nova",
-    shortLabel: "Casa nova",
-    description:
-      "Ótimo para open house, chá de casa nova e organização de presentes por cotas ou itens.",
-    badge: "novo lar",
-    icon: "🏡",
-    suggestedName: "Casa nova de Nome",
-    suggestedDescription:
-      "Crie uma página para celebrar o novo lar com convidados, presentes e comunicação clara.",
-    suggestedLocation: "Ex.: Endereço do novo lar ou espaço da celebração",
+    eventType: "BIRTHDAY",
+    giftMode: "HYBRID",
+    themeKey: "aniversario",
   },
 ];
 
@@ -99,25 +197,33 @@ function toDatetimeLocalValue(date: Date) {
   return localDate.toISOString().slice(0, 16);
 }
 
-function getTemplateByKey(key: string | null): EventTemplate | null {
-  if (!key) return null;
+function getTemplateByParam(value: string | null): EventTemplate | null {
+  if (!value) return null;
 
-  return EVENT_TEMPLATES.find((item) => item.key === key) ?? null;
+  const normalized = value.trim();
+
+  return (
+    EVENT_TEMPLATES.find((item) => item.key === normalized) ??
+    EVENT_TEMPLATES.find((item) => item.legacyKeys.includes(normalized)) ??
+    null
+  );
 }
 
 function buildTemplateHref(key: EventTemplateKey) {
-  return `/dashboard/eventos/novo?tipo=${key}`;
+  return `/dashboard/eventos/novo?modelo=${key}`;
 }
 
 function NovoEventoPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const selectedType = searchParams.get("tipo");
+  const selectedModel = searchParams.get("modelo");
+  const selectedLegacyType = searchParams.get("tipo");
+  const selectedTemplateParam = selectedModel || selectedLegacyType;
 
   const selectedTemplate = useMemo(
-    () => getTemplateByKey(selectedType),
-    [selectedType],
+    () => getTemplateByParam(selectedTemplateParam),
+    [selectedTemplateParam],
   );
 
   const [name, setName] = useState("");
@@ -126,6 +232,7 @@ function NovoEventoPageContent() {
   const [description, setDescription] = useState("");
   const [capacity, setCapacity] = useState("");
 
+  const [appliedTemplateKey, setAppliedTemplateKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -133,8 +240,16 @@ function NovoEventoPageContent() {
     setName((current) => current || template.suggestedName);
     setDescription((current) => current || template.suggestedDescription);
     setLocation((current) => current || template.suggestedLocation);
+    setAppliedTemplateKey(template.key);
     setErrorMessage(null);
   }
+
+  useEffect(() => {
+    if (!selectedTemplate) return;
+    if (appliedTemplateKey === selectedTemplate.key) return;
+
+    applyTemplateSuggestion(selectedTemplate);
+  }, [selectedTemplate, appliedTemplateKey]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -163,10 +278,8 @@ function NovoEventoPageContent() {
       setLoading(true);
       setErrorMessage(null);
 
-      const baseDescription = description.trim();
-      const finalDescription = baseDescription
-        ? `[Modelo: ${selectedTemplate.label}] ${baseDescription}`
-        : `[Modelo: ${selectedTemplate.label}]`;
+      const finalDescription =
+        description.trim() || selectedTemplate.suggestedDescription;
 
       const payload = {
         name: name.trim(),
@@ -174,6 +287,17 @@ function NovoEventoPageContent() {
         location: location.trim(),
         description: finalDescription,
         capacity: capacity.trim() ? Number(capacity) : undefined,
+
+        eventType: selectedTemplate.eventType,
+        giftMode: selectedTemplate.giftMode,
+        templateKey: selectedTemplate.key,
+        themeKey: selectedTemplate.themeKey,
+        openingMessage: finalDescription,
+
+        pixEnabled: selectedTemplate.giftMode === "HYBRID",
+        freeContributionEnabled: selectedTemplate.giftMode === "HYBRID",
+        quotaEnabled: selectedTemplate.giftMode === "HYBRID",
+        contributionsFeedEnabled: false,
       };
 
       const createdEvent = await apiFetch("/events", {
@@ -222,9 +346,9 @@ function NovoEventoPageContent() {
               </h1>
 
               <p className="mt-3 max-w-3xl text-sm leading-7 text-neutral-600">
-                Primeiro selecione o tipo do evento. Depois você preenche os
-                dados e monta a base inicial do site ou do painel do cliente com
-                mais contexto.
+                Primeiro selecione o modelo. Depois você preenche os dados e o
+                evento já nasce com o template salvo para a página pública usar
+                depois.
               </p>
             </div>
 
@@ -257,8 +381,9 @@ function NovoEventoPageContent() {
             </h2>
 
             <p className="mt-2 text-sm leading-6 text-neutral-600">
-              Escolha a base mais próxima do que você quer criar. Isso organiza
-              melhor o fluxo do sistema.
+              A escolha aqui será salva como <strong>templateKey</strong> e{" "}
+              <strong>themeKey</strong> no evento. Assim a página pública poderá
+              usar o visual correto.
             </p>
           </div>
 
@@ -296,8 +421,20 @@ function NovoEventoPageContent() {
                     {template.description}
                   </p>
 
-                  <div className="mt-4 text-sm font-medium text-[#8f6a16]">
-                    {isSelected ? "Modelo selecionado" : "Selecionar modelo"}
+                  <div className="mt-4 flex flex-wrap items-center gap-2 text-sm font-medium">
+                    <span className="text-[#8f6a16]">
+                      {isSelected ? "Modelo selecionado" : "Selecionar modelo"}
+                    </span>
+
+                    {template.previewHref ? (
+                      <Link
+                        href={template.previewHref}
+                        onClick={(event) => event.stopPropagation()}
+                        className="rounded-full border border-[#e8dfd2] bg-white px-3 py-1 text-xs font-semibold text-neutral-600 transition hover:bg-[#fcfaf7]"
+                      >
+                        Ver preview
+                      </Link>
+                    ) : null}
                   </div>
                 </button>
               );
@@ -318,7 +455,7 @@ function NovoEventoPageContent() {
 
               <p className="mt-2 text-sm leading-6 text-neutral-600">
                 {selectedTemplate
-                  ? `Você está criando um evento do tipo ${selectedTemplate.shortLabel}.`
+                  ? `Você está criando um evento usando o modelo ${selectedTemplate.shortLabel}.`
                   : "Escolha primeiro o modelo acima para continuar com mais contexto."}
               </p>
             </div>
@@ -439,6 +576,13 @@ function NovoEventoPageContent() {
             {selectedTemplate ? (
               <div className="rounded-2xl border border-[#ead79a] bg-[#fff8e7] px-4 py-3 text-sm text-[#7a5911]">
                 Modelo escolhido: <strong>{selectedTemplate.label}</strong>
+                <br />
+                <span className="text-xs">
+                  Será salvo como templateKey:{" "}
+                  <strong>{selectedTemplate.key}</strong> • eventType:{" "}
+                  <strong>{selectedTemplate.eventType}</strong> • giftMode:{" "}
+                  <strong>{selectedTemplate.giftMode}</strong>
+                </span>
               </div>
             ) : null}
 
