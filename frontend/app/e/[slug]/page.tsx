@@ -2702,6 +2702,5035 @@ function KitchenShowerPublicPage({
 }
 
 
+
+const DEBUTANTE_FALLBACK_IMAGES = [
+  "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1505236858219-8359eb29e329?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1478146896981-b80fe463b330?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1800&q=92",
+];
+
+function DebutantePublicPage({
+  event,
+  countdown,
+  galleryImages,
+  filteredGifts,
+  giftCategories,
+  financialSummary,
+  showStory,
+  showGallery,
+  showLocation,
+  showGifts,
+  showRsvp,
+  showCountdown,
+  copied,
+  handleCopyLink,
+  giftSearch,
+  setGiftSearch,
+  giftCategory,
+  setGiftCategory,
+  giftSort,
+  setGiftSort,
+  openPaymentModal,
+  selectedGift,
+  closePaymentModal,
+  buyerName,
+  setBuyerName,
+  buyerEmail,
+  setBuyerEmail,
+  buyerPhone,
+  setBuyerPhone,
+  buyerMessage,
+  setBuyerMessage,
+  customAmount,
+  setCustomAmount,
+  quotaQuantity,
+  setQuotaQuantity,
+  paymentMethod,
+  setPaymentMethod,
+  paymentLoading,
+  paymentError,
+  paymentPreviewAmount,
+  handleCreatePublicPayment,
+  rsvpCode,
+  setRsvpCode,
+  rsvpLoading,
+  rsvpError,
+  rsvpSuccess,
+  guest,
+  handleLookupGuest,
+  handleRsvpAction,
+  showBackToTop,
+}: WeddingPublicPageProps) {
+  const heroImage =
+    event.heroImage ||
+    event.coverImage ||
+    "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=2400&q=92";
+
+  const debutanteGallery =
+    galleryImages.filter((image) => image && image !== GIFT_PLACEHOLDER).length > 0
+      ? galleryImages
+      : DEBUTANTE_FALLBACK_IMAGES;
+
+  return (
+    <main className="min-h-screen bg-[#11051c] text-[#fff8ff]">
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            html { scroll-behavior: smooth; }
+            .debut-display {
+              font-family: "Bodoni 72", "Didot", "Playfair Display", Georgia, serif;
+              font-weight: 400;
+              letter-spacing: -.055em;
+            }
+            .debut-serif {
+              font-family: "Bodoni 72", "Didot", "Playfair Display", Georgia, serif;
+              font-weight: 400;
+            }
+            .debut-eyebrow {
+              font-size: 11px;
+              font-weight: 900;
+              letter-spacing: .32em;
+              text-transform: uppercase;
+            }
+            .debut-photo {
+              background-size: cover;
+              background-position: center;
+            }
+            .debut-glow {
+              box-shadow:
+                0 34px 110px rgba(139, 63, 242, .18),
+                0 0 0 1px rgba(246, 203, 99, .18);
+            }
+            .debut-card {
+              border: 1px solid rgba(246, 203, 99, .20);
+              background:
+                radial-gradient(circle at 18% 12%, rgba(246,203,99,.12), transparent 30%),
+                linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.045));
+              box-shadow: 0 26px 80px rgba(0,0,0,.26);
+              backdrop-filter: blur(14px);
+            }
+            @media (max-width: 768px) {
+              .debut-display { letter-spacing: -.035em; }
+            }
+          `,
+        }}
+      />
+
+      <header className="sticky top-0 z-50 border-b border-[#f6cb63]/15 bg-[#10041b]/88 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+          <a href="#inicio" className="debut-serif text-2xl text-[#f6cb63]">
+            XV
+          </a>
+
+          <nav className="hidden items-center gap-6 md:flex">
+            <a href="#inicio" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#f6cb63]">
+              Início
+            </a>
+            {showStory ? (
+              <a href="#historia" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#f6cb63]">
+                História
+              </a>
+            ) : null}
+            <a href="#noite" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#f6cb63]">
+              A noite
+            </a>
+            {showGallery ? (
+              <a href="#galeria" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#f6cb63]">
+                Galeria
+              </a>
+            ) : null}
+            {showGifts ? (
+              <a href="#presentes" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#f6cb63]">
+                Presentes
+              </a>
+            ) : null}
+            {showRsvp ? (
+              <a href="#confirmacao" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#f6cb63]">
+                RSVP
+              </a>
+            ) : null}
+          </nav>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              className="hidden rounded-full border border-[#f6cb63]/20 bg-white/5 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-[#f6cb63] transition hover:bg-white/10 md:inline-flex"
+            >
+              {copied ? "Copiado" : "Copiar link"}
+            </button>
+
+            {showRsvp ? (
+              <a
+                href="#confirmacao"
+                className="rounded-full bg-[#f6cb63] px-5 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-[#11051c] shadow-[0_16px_45px_rgba(246,203,99,.20)] transition hover:-translate-y-0.5"
+              >
+                Confirmar
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </header>
+
+      <section id="inicio" className="relative min-h-[800px] overflow-hidden bg-[#090111]">
+        <div
+          className="absolute inset-0 debut-photo opacity-72"
+          style={{ backgroundImage: `url("${heroImage}")` }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,1,17,.96)_0%,rgba(20,4,33,.78)_47%,rgba(20,4,33,.22)_100%)]" />
+        <div className="absolute left-[-12%] top-[-18%] h-[560px] w-[560px] rounded-full bg-[#8b3ff2]/26 blur-3xl" />
+        <div className="absolute bottom-[-24%] right-[-12%] h-[620px] w-[620px] rounded-full bg-[#f6cb63]/18 blur-3xl" />
+        <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#11051c] to-transparent" />
+
+        <div className="relative z-10 mx-auto grid min-h-[800px] max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.08fr_.92fr] lg:px-8">
+          <div>
+            <p className="debut-eyebrow text-[#f6cb63]">Uma noite de gala</p>
+            <h1 className="debut-display mt-7 text-7xl leading-[0.82] text-white sm:text-8xl lg:text-[128px]">
+              {event.title}
+            </h1>
+            <p className="debut-serif mt-7 max-w-2xl text-3xl italic leading-tight text-[#dec5ff] sm:text-4xl">
+              {event.publicSubtitle ||
+                event.welcomeMessage ||
+                "Uma celebração inesquecível, feita para brilhar."}
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <span className="rounded-full border border-[#f6cb63]/18 bg-white/8 px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-[#f7e8ff] backdrop-blur">
+                {formatDateShort(event.date)}
+              </span>
+              <span className="rounded-full border border-[#f6cb63]/18 bg-white/8 px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-[#f7e8ff] backdrop-blur">
+                {event.location}
+              </span>
+            </div>
+
+            <div className="mt-10 flex flex-wrap gap-4">
+              {showRsvp ? (
+                <a
+                  href="#confirmacao"
+                  className="rounded-full bg-[#f6cb63] px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-[#11051c] shadow-[0_18px_50px_rgba(0,0,0,.28)] transition hover:-translate-y-0.5"
+                >
+                  Confirmar presença
+                </a>
+              ) : null}
+
+              {showGifts ? (
+                <a
+                  href="#presentes"
+                  className="rounded-full border border-[#f6cb63]/22 bg-white/8 px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-white shadow-[0_18px_50px_rgba(0,0,0,.18)] backdrop-blur transition hover:bg-white/12"
+                >
+                  Ver presentes
+                </a>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="debut-card rounded-[46px] p-5">
+            <div
+              className="min-h-[520px] rounded-[34px] debut-photo"
+              style={{ backgroundImage: `url("${debutanteGallery[0] || heroImage}")` }}
+            />
+            <div className="px-4 py-5">
+              <p className="debut-eyebrow text-[#f6cb63]">red carpet</p>
+              <p className="debut-serif mt-2 text-3xl leading-tight text-white">
+                Uma entrada marcante para uma noite memorável.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showCountdown ? (
+        <section className="bg-[#11051c] px-4 py-16 text-white sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-5xl text-center">
+            <p className="debut-eyebrow text-[#f6cb63]">Contagem regressiva</p>
+            <h2 className="debut-serif mt-4 text-4xl text-[#fff7e0] sm:text-5xl">
+              A noite mais esperada está chegando.
+            </h2>
+
+            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              {countdown.map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-[30px] border border-[#f6cb63]/15 bg-white/[.07] px-4 py-7 debut-glow"
+                >
+                  <strong className="debut-serif block text-5xl font-normal text-[#f6cb63]">
+                    {item.value}
+                  </strong>
+                  <span className="mt-3 block text-[11px] font-black uppercase tracking-[0.24em] text-white/55">
+                    {item.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section className="bg-[#f7f0ff] px-4 py-20 text-center text-[#190823] sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl rounded-[42px] border border-[#d7bdf6] bg-white/82 px-7 py-12 shadow-[0_30px_90px_rgba(49,14,74,.12)] sm:px-12">
+          <p className="debut-eyebrow text-[#8b3ff2]">Mensagem aos convidados</p>
+          <h2 className="debut-serif mt-5 text-4xl leading-tight text-[#190823] sm:text-6xl">
+            Uma nova fase começa com brilho.
+          </h2>
+          <p className="mx-auto mt-7 max-w-3xl text-base leading-8 text-[#5e4d68] sm:text-lg">
+            {event.welcomeMessage ||
+              event.openingMessage ||
+              event.description ||
+              "Criamos este espaço para compartilhar os detalhes da festa, confirmar presença e reunir todos em uma experiência especial."}
+          </p>
+        </div>
+      </section>
+
+      {showStory ? (
+        <section id="historia" className="bg-[#fff9ff] px-4 py-24 text-[#190823] sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[.95fr_1.05fr]">
+            <div className="relative min-h-[560px]">
+              <div
+                className="absolute inset-0 right-20 bottom-24 rounded-[42px] border-[12px] border-white bg-[#d7bdf6] shadow-[0_30px_90px_rgba(49,14,74,.12)] debut-photo"
+                style={{ backgroundImage: `url("${debutanteGallery[1] || debutanteGallery[0]}")` }}
+              />
+              <div
+                className="absolute bottom-0 right-0 h-[310px] w-[48%] rounded-[34px] border-[10px] border-white bg-[#d7bdf6] shadow-[0_30px_90px_rgba(49,14,74,.12)] debut-photo"
+                style={{ backgroundImage: `url("${debutanteGallery[2] || debutanteGallery[0]}")` }}
+              />
+            </div>
+
+            <div>
+              <p className="debut-eyebrow text-[#8b3ff2]">A aniversariante</p>
+              <h2 className="debut-display mt-5 text-6xl leading-[0.9] text-[#190823] sm:text-7xl">
+                Um sonho que ganha palco.
+              </h2>
+              <p className="mt-7 text-lg leading-9 text-[#5e4d68]">
+                Esta página reúne todos os detalhes da comemoração: data, local,
+                presentes, confirmação de presença e informações para que cada
+                convidado faça parte dessa noite especial.
+              </p>
+              <p className="debut-serif mt-8 border-l-2 border-[#8b3ff2] pl-6 text-3xl leading-tight text-[#7b2bd7]">
+                Hoje é dia de celebrar beleza, alegria e memória.
+              </p>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section id="noite" className="relative overflow-hidden bg-[#090111] px-4 py-24 text-white sm:px-6 lg:px-8">
+        <div
+          className="absolute inset-0 opacity-30 debut-photo"
+          style={{ backgroundImage: `url("${debutanteGallery[3] || heroImage}")` }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,1,17,.98),rgba(17,5,28,.78),rgba(17,5,28,.48))]" />
+
+        <div className="relative z-10 mx-auto max-w-6xl text-center">
+          <p className="debut-eyebrow text-[#f6cb63]">A noite</p>
+          <h2 className="debut-serif mt-4 text-5xl leading-tight text-[#fff7e0] sm:text-6xl">
+            Festa, fotos, música e emoção.
+          </h2>
+
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            <div className="debut-card rounded-[34px] p-7">
+              <p className="text-5xl">✦</p>
+              <h3 className="mt-5 text-xs font-black uppercase tracking-[0.26em] text-[#f6cb63]">
+                Data
+              </h3>
+              <p className="debut-serif mt-3 text-3xl text-white">{formatDateShort(event.date)}</p>
+            </div>
+            <div className="debut-card rounded-[34px] p-7">
+              <p className="text-5xl">◆</p>
+              <h3 className="mt-5 text-xs font-black uppercase tracking-[0.26em] text-[#f6cb63]">
+                Local
+              </h3>
+              <p className="debut-serif mt-3 text-3xl text-white">{event.location}</p>
+            </div>
+            <div className="debut-card rounded-[34px] p-7">
+              <p className="text-5xl">★</p>
+              <h3 className="mt-5 text-xs font-black uppercase tracking-[0.26em] text-[#f6cb63]">
+                Experiência
+              </h3>
+              <p className="debut-serif mt-3 text-3xl text-white">Red carpet</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showGallery ? (
+        <section id="galeria" className="bg-[#fff9ff] py-16 text-center text-[#190823]">
+          <p className="debut-eyebrow text-[#8b3ff2]">Galeria</p>
+          <h2 className="debut-serif mt-3 text-5xl text-[#190823]">
+            Memórias com brilho
+          </h2>
+
+          <div className="mt-10 grid grid-cols-2 md:grid-cols-5">
+            {debutanteGallery.slice(0, 5).map((image, index) => (
+              <div key={`${image}-${index}`} className="h-64 overflow-hidden bg-[#d7bdf6] md:h-80">
+                <div
+                  className="h-full w-full debut-photo transition duration-700 hover:scale-105"
+                  style={{ backgroundImage: `url("${image}")` }}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <section id="informacoes" className="bg-[#f1e3ff] px-4 py-24 text-[#190823] sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[.82fr_1.18fr]">
+          <div className="rounded-[38px] border border-[#d7bdf6] bg-white/78 p-8 shadow-[0_30px_90px_rgba(49,14,74,.12)]">
+            <p className="debut-eyebrow text-[#8b3ff2]">Informações</p>
+            <h2 className="debut-display mt-4 text-5xl leading-[0.95] text-[#190823] sm:text-6xl">
+              Tudo para viver essa noite sem preocupação.
+            </h2>
+            <p className="mt-6 text-base leading-8 text-[#5e4d68]">
+              Encontre aqui data, local, confirmação, lista de presentes e as principais
+              orientações para aproveitar cada momento da comemoração.
+            </p>
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="rounded-[30px] border border-[#d7bdf6] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#8b3ff2]">Data</p>
+              <p className="mt-4 text-2xl font-semibold text-[#190823]">{formatDate(event.date)}</p>
+            </div>
+            <div className="rounded-[30px] border border-[#d7bdf6] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#8b3ff2]">Local</p>
+              <p className="mt-4 break-words text-2xl font-semibold text-[#190823]">{event.location}</p>
+            </div>
+            <div className="rounded-[30px] border border-[#d7bdf6] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#8b3ff2]">Presentes</p>
+              <p className="mt-4 text-2xl font-semibold text-[#190823]">{filteredGifts.length} disponíveis</p>
+            </div>
+            <div className="rounded-[30px] border border-[#d7bdf6] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#8b3ff2]">Arrecadado</p>
+              <p className="mt-4 text-2xl font-semibold text-[#190823]">{formatMoney(financialSummary.totalRaised)}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showLocation ? (
+        <section id="localizacao" className="bg-[#fff9ff] px-4 py-24 text-[#190823] sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[.86fr_1.14fr]">
+            <div className="rounded-[38px] bg-[#090111] p-8 text-white shadow-[0_30px_90px_rgba(49,14,74,.20)]">
+              <p className="debut-eyebrow text-[#f6cb63]">Localização</p>
+              <h2 className="debut-serif mt-5 text-5xl leading-tight text-[#fff7e0]">
+                Como chegar
+              </h2>
+              <p className="mt-6 text-base leading-8 text-white/70">
+                {event.location}
+              </p>
+
+              <div className="mt-8 flex flex-wrap gap-3">
+                <a
+                  href={getMapsUrl(event.location)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full bg-[#f6cb63] px-6 py-3 text-sm font-black uppercase tracking-[0.14em] text-[#11051c] transition hover:bg-[#ffe08f]"
+                >
+                  Google Maps
+                </a>
+                <a
+                  href={getWazeUrl(event.location)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border border-[#f6cb63]/18 bg-white/8 px-6 py-3 text-sm font-black uppercase tracking-[0.14em] text-white transition hover:bg-white/12"
+                >
+                  Waze
+                </a>
+              </div>
+            </div>
+
+            <div className="grid min-h-[360px] place-items-center rounded-[38px] border border-[#d7bdf6] bg-[#f1e3ff] p-8 text-center shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <div>
+                <p className="debut-eyebrow text-[#8b3ff2]">Mapa</p>
+                <h3 className="debut-serif mt-3 text-4xl text-[#190823]">
+                  {event.location}
+                </h3>
+                <p className="mx-auto mt-4 max-w-md text-[#5e4d68]">
+                  Use os botões de rota para chegar com tranquilidade.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {showGifts ? (
+        <section id="presentes" className="bg-[#f1e3ff] px-4 py-24 text-[#190823] sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="mx-auto mb-12 max-w-4xl text-center">
+              <p className="debut-eyebrow text-[#8b3ff2]">Presentes</p>
+              <h2 className="debut-serif mt-4 text-5xl leading-tight text-[#190823] sm:text-6xl">
+                Lista de presentes
+              </h2>
+              <p className="mt-5 text-base leading-8 text-[#5e4d68]">
+                Escolha uma lembrança ou contribuição para fazer parte desta noite inesquecível.
+              </p>
+            </div>
+
+            <div className="mb-8 rounded-[34px] border border-[#d7bdf6] bg-white/82 p-5 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <div className="grid gap-4 md:grid-cols-3">
+                <input
+                  value={giftSearch}
+                  onChange={(event) => setGiftSearch(event.target.value)}
+                  placeholder="Buscar presente"
+                  className="rounded-2xl border border-[#d7bdf6] bg-white px-4 py-3 text-sm outline-none focus:border-[#8b3ff2]"
+                />
+                <select
+                  value={giftCategory}
+                  onChange={(event) => setGiftCategory(event.target.value)}
+                  className="rounded-2xl border border-[#d7bdf6] bg-white px-4 py-3 text-sm outline-none focus:border-[#8b3ff2]"
+                >
+                  <option value="all">Todas as categorias</option>
+                  {giftCategories.map((category) => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
+                <select
+                  value={giftSort}
+                  onChange={(event) => setGiftSort(event.target.value)}
+                  className="rounded-2xl border border-[#d7bdf6] bg-white px-4 py-3 text-sm outline-none focus:border-[#8b3ff2]"
+                >
+                  <option value="featured">Destaques</option>
+                  <option value="az">A-Z</option>
+                  <option value="price-asc">Menor valor</option>
+                  <option value="price-desc">Maior valor</option>
+                </select>
+              </div>
+            </div>
+
+            {filteredGifts.length === 0 ? (
+              <div className="rounded-[38px] border border-[#d7bdf6] bg-white/82 p-10 text-center shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+                <h3 className="debut-serif text-4xl text-[#190823]">
+                  Lista em preparação
+                </h3>
+                <p className="mx-auto mt-4 max-w-xl text-[#5e4d68]">
+                  Os presentes ainda não foram cadastrados para este evento.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-7 md:grid-cols-2 xl:grid-cols-3">
+                {filteredGifts.map((gift) => {
+                  const disabled = getGiftActionDisabled(gift);
+
+                  return (
+                    <article
+                      key={gift.id}
+                      className="overflow-hidden rounded-[34px] border border-[#d7bdf6] bg-white shadow-[0_30px_90px_rgba(49,14,74,.10)] transition hover:-translate-y-1"
+                    >
+                      <div className="relative aspect-[4/3] overflow-hidden">
+                        <img
+                          src={getGiftImage(gift)}
+                          alt={gift.title}
+                          className={`h-full w-full object-cover transition duration-500 ${getGiftImageStateClass(gift)}`}
+                        />
+                        <span className={`absolute left-4 top-4 rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] ${getGiftBadgeClass(gift)}`}>
+                          {getGiftBadge(gift)}
+                        </span>
+                      </div>
+
+                      <div className="p-6">
+                        {gift.category ? (
+                          <p className="debut-eyebrow text-[#8b3ff2]">{gift.category}</p>
+                        ) : null}
+                        <h3 className="mt-3 text-2xl font-semibold leading-tight text-[#190823]">
+                          {gift.title}
+                        </h3>
+                        <p className="mt-3 min-h-[70px] text-sm leading-7 text-[#5e4d68]">
+                          {gift.description || "Presente disponível na lista do evento."}
+                        </p>
+                        <p className="debut-serif mt-4 text-3xl text-[#7b2bd7]">
+                          {gift.giftType === "FREE_CONTRIBUTION"
+                            ? "Valor livre"
+                            : formatMoney(gift.price)}
+                        </p>
+
+                        <button
+                          type="button"
+                          disabled={disabled}
+                          onClick={() => openPaymentModal(gift)}
+                          className={`mt-6 w-full rounded-full px-5 py-3.5 text-sm font-black uppercase tracking-[0.14em] transition ${
+                            disabled
+                              ? "cursor-not-allowed bg-[#e7d7f8] text-[#5e4d68]"
+                              : "bg-[#16041f] text-[#f6cb63] hover:-translate-y-0.5"
+                          }`}
+                        >
+                          {getGiftActionLabel(gift)}
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </section>
+      ) : null}
+
+      <section className="bg-[#090111] px-4 py-20 text-white sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-[1fr_auto]">
+          <div>
+            <p className="debut-eyebrow text-[#f6cb63]">Próximo passo</p>
+            <h2 className="debut-serif mt-4 max-w-3xl text-5xl leading-tight text-[#fff7e0]">
+              Confirme sua presença e venha brilhar nesta noite.
+            </h2>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {showRsvp ? (
+              <a href="#confirmacao" className="rounded-full bg-[#f6cb63] px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-[#11051c]">
+                Confirmar presença
+              </a>
+            ) : null}
+            {showGifts ? (
+              <a href="#presentes" className="rounded-full border border-[#f6cb63]/18 bg-white/8 px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-white">
+                Ver presentes
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </section>
+
+      {showRsvp ? (
+        <section id="confirmacao" className="bg-[#fff9ff] px-4 py-24 text-[#190823] sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[.92fr_1.08fr]">
+            <div className="rounded-[38px] bg-[#090111] p-8 text-white shadow-[0_30px_90px_rgba(49,14,74,.20)]">
+              <p className="debut-eyebrow text-[#f6cb63]">RSVP</p>
+              <h2 className="debut-serif mt-5 text-5xl leading-tight text-[#fff7e0]">
+                Sua presença faz parte do espetáculo.
+              </h2>
+              <p className="mt-6 text-base leading-8 text-white/70">
+                Digite o código do convite para localizar seu cadastro e confirmar
+                sua presença.
+              </p>
+            </div>
+
+            <div className="rounded-[38px] border border-[#d7bdf6] bg-white/82 p-7 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#8b3ff2]">Localizar convite</p>
+              <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]">
+                <input
+                  value={rsvpCode}
+                  onChange={(event) => setRsvpCode(event.target.value)}
+                  placeholder="Digite seu código RSVP"
+                  className="rounded-2xl border border-[#d7bdf6] bg-white px-4 py-3.5 text-sm outline-none focus:border-[#8b3ff2]"
+                />
+                <button
+                  type="button"
+                  onClick={handleLookupGuest}
+                  disabled={rsvpLoading}
+                  className="rounded-2xl bg-[#16041f] px-6 py-3.5 text-sm font-black uppercase tracking-[0.14em] text-[#f6cb63] disabled:opacity-60"
+                >
+                  {rsvpLoading ? "Buscando..." : "Buscar"}
+                </button>
+              </div>
+
+              {rsvpError ? (
+                <div className="mt-5 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {rsvpError}
+                </div>
+              ) : null}
+
+              {rsvpSuccess && !guest ? (
+                <div className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                  {rsvpSuccess}
+                </div>
+              ) : null}
+
+              {guest ? (
+                <div className="mt-6 rounded-[30px] border border-[#d7bdf6] bg-[#f7f0ff] p-5">
+                  <p className="debut-eyebrow text-[#8b3ff2]">Convidado localizado</p>
+                  <h3 className="mt-2 text-2xl font-semibold text-[#190823]">
+                    {guest.name}
+                  </h3>
+                  <p className="mt-2 text-sm text-[#5e4d68]">
+                    Status atual: {translateGuestStatus(guest.status)}
+                  </p>
+
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => handleRsvpAction("confirm")}
+                      disabled={rsvpLoading}
+                      className="rounded-2xl bg-emerald-600 px-5 py-4 text-sm font-bold text-white disabled:opacity-60"
+                    >
+                      Confirmar presença
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRsvpAction("decline")}
+                      disabled={rsvpLoading}
+                      className="rounded-2xl border border-[#d7bdf6] bg-white px-5 py-4 text-sm font-bold text-[#190823] disabled:opacity-60"
+                    >
+                      Não poderei ir
+                    </button>
+                  </div>
+
+                  {rsvpSuccess ? (
+                    <div className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                      {rsvpSuccess}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <footer className="bg-[#090111] px-4 py-10 text-center text-white/60">
+        <p className="debut-serif text-3xl text-[#f6cb63]">XV</p>
+        <p className="mt-2 text-sm">
+          {formatDateShort(event.date)} • {event.location}
+        </p>
+      </footer>
+
+      {selectedGift ? (
+        <div className="fixed inset-0 z-[100] flex items-start justify-center bg-[rgba(9,1,17,0.82)] px-3 py-3 backdrop-blur-[5px] sm:px-6 sm:py-8 lg:items-center">
+          <div className="max-h-[96vh] w-full max-w-4xl overflow-y-auto rounded-[36px] border border-[#f6cb63]/18 bg-[#fff9ff] shadow-[0_38px_120px_rgba(15,23,42,0.22)]">
+            <div className="sticky top-0 z-10 border-b border-[#d7bdf6] bg-[#fff9ff]/95 px-5 py-4 backdrop-blur">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="debut-eyebrow text-[#8b3ff2]">Pagamento</p>
+                  <h3 className="mt-2 text-2xl font-semibold text-[#190823]">
+                    {selectedGift.title}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={closePaymentModal}
+                  className="rounded-full border border-[#d7bdf6] bg-white px-4 py-2 text-sm font-bold text-[#5e4d68]"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+
+            <div className="grid gap-6 p-5 lg:grid-cols-[.9fr_1.1fr]">
+              <div className="overflow-hidden rounded-[30px] border border-[#d7bdf6] bg-white">
+                <img
+                  src={getGiftImage(selectedGift)}
+                  alt={selectedGift.title}
+                  className="aspect-[4/3] w-full object-cover"
+                />
+                <div className="p-5">
+                  <p className="text-xl font-semibold text-[#190823]">
+                    {selectedGift.title}
+                  </p>
+                  <p className="mt-2 text-sm leading-7 text-[#5e4d68]">
+                    {selectedGift.description || "Pagamento do presente selecionado."}
+                  </p>
+                  <p className="debut-serif mt-4 text-3xl text-[#7b2bd7]">
+                    {paymentPreviewAmount ? formatMoney(paymentPreviewAmount) : "-"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-[30px] border border-[#d7bdf6] bg-white p-5">
+                <div className="grid gap-4">
+                  <input
+                    value={buyerName}
+                    onChange={(event) => setBuyerName(event.target.value)}
+                    placeholder="Seu nome"
+                    className="rounded-2xl border border-[#d7bdf6] px-4 py-3.5 text-sm outline-none focus:border-[#8b3ff2]"
+                  />
+                  <input
+                    value={buyerEmail}
+                    onChange={(event) => setBuyerEmail(event.target.value)}
+                    placeholder="Seu e-mail"
+                    className="rounded-2xl border border-[#d7bdf6] px-4 py-3.5 text-sm outline-none focus:border-[#8b3ff2]"
+                  />
+                  <input
+                    value={buyerPhone}
+                    onChange={(event) => setBuyerPhone(event.target.value)}
+                    placeholder="Seu telefone"
+                    className="rounded-2xl border border-[#d7bdf6] px-4 py-3.5 text-sm outline-none focus:border-[#8b3ff2]"
+                  />
+                  <textarea
+                    value={buyerMessage}
+                    onChange={(event) => setBuyerMessage(event.target.value)}
+                    placeholder="Mensagem opcional"
+                    className="min-h-[110px] rounded-2xl border border-[#d7bdf6] px-4 py-3.5 text-sm outline-none focus:border-[#8b3ff2]"
+                  />
+
+                  {(selectedGift.ui?.acceptsCustomAmount ||
+                    selectedGift.giftType === "FREE_CONTRIBUTION") ? (
+                    <input
+                      value={customAmount}
+                      onChange={(event) => setCustomAmount(event.target.value)}
+                      placeholder="Valor"
+                      className="rounded-2xl border border-[#d7bdf6] px-4 py-3.5 text-sm outline-none focus:border-[#8b3ff2]"
+                    />
+                  ) : null}
+
+                  {selectedGift.giftType === "QUOTA" ? (
+                    <input
+                      type="number"
+                      min={1}
+                      max={selectedGift.quotaRemaining ?? undefined}
+                      value={quotaQuantity}
+                      onChange={(event) => setQuotaQuantity(event.target.value)}
+                      className="rounded-2xl border border-[#d7bdf6] px-4 py-3.5 text-sm outline-none focus:border-[#8b3ff2]"
+                    />
+                  ) : null}
+
+                  <select
+                    value={paymentMethod}
+                    onChange={(event) => setPaymentMethod(event.target.value)}
+                    className="rounded-2xl border border-[#d7bdf6] px-4 py-3.5 text-sm outline-none focus:border-[#8b3ff2]"
+                  >
+                    <option value="CARD">Cartão</option>
+                    <option value="PIX">Pix</option>
+                    <option value="BOLETO">Boleto</option>
+                  </select>
+
+                  {paymentError ? (
+                    <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                      {paymentError}
+                    </div>
+                  ) : null}
+
+                  <button
+                    type="button"
+                    onClick={handleCreatePublicPayment}
+                    disabled={paymentLoading}
+                    className="rounded-full bg-[#16041f] px-5 py-4 text-sm font-black uppercase tracking-[0.14em] text-[#f6cb63] disabled:opacity-60"
+                  >
+                    {paymentLoading ? "Gerando pagamento..." : "Continuar para pagamento"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {showBackToTop ? (
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="fixed bottom-24 right-4 z-40 rounded-full bg-[#16041f] px-4 py-3 text-sm font-black uppercase tracking-[0.12em] text-[#f6cb63] shadow-xl transition hover:-translate-y-0.5 md:bottom-6"
+        >
+          Topo
+        </button>
+      ) : null}
+
+      {(showGifts || showRsvp) ? (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#d7bdf6] bg-[#fff9ff]/95 px-4 py-3 shadow-[0_-12px_30px_rgba(15,23,42,0.08)] backdrop-blur md:hidden">
+          <div className="mx-auto flex max-w-7xl gap-3">
+            {showGifts ? (
+              <a
+                href="#presentes"
+                className="flex-1 rounded-full bg-[#16041f] px-4 py-3 text-center text-sm font-bold text-[#f6cb63]"
+              >
+                Presentes
+              </a>
+            ) : null}
+            {showRsvp ? (
+              <a
+                href="#confirmacao"
+                className="flex-1 rounded-full border border-[#d7bdf6] bg-white px-4 py-3 text-center text-sm font-bold text-[#190823]"
+              >
+                Confirmar
+              </a>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+    </main>
+  );
+}
+
+
+
+const BABY_SHOWER_FALLBACK_IMAGES = [
+  "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1522771930-78848d9293e8?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1535572290543-960a8046f5af?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=1800&q=92",
+];
+
+function BabyShowerPublicPage({
+  event,
+  countdown,
+  galleryImages,
+  filteredGifts,
+  giftCategories,
+  financialSummary,
+  showStory,
+  showGallery,
+  showLocation,
+  showGifts,
+  showRsvp,
+  showCountdown,
+  copied,
+  handleCopyLink,
+  giftSearch,
+  setGiftSearch,
+  giftCategory,
+  setGiftCategory,
+  giftSort,
+  setGiftSort,
+  openPaymentModal,
+  selectedGift,
+  closePaymentModal,
+  buyerName,
+  setBuyerName,
+  buyerEmail,
+  setBuyerEmail,
+  buyerPhone,
+  setBuyerPhone,
+  buyerMessage,
+  setBuyerMessage,
+  customAmount,
+  setCustomAmount,
+  quotaQuantity,
+  setQuotaQuantity,
+  paymentMethod,
+  setPaymentMethod,
+  paymentLoading,
+  paymentError,
+  paymentPreviewAmount,
+  handleCreatePublicPayment,
+  rsvpCode,
+  setRsvpCode,
+  rsvpLoading,
+  rsvpError,
+  rsvpSuccess,
+  guest,
+  handleLookupGuest,
+  handleRsvpAction,
+  showBackToTop,
+}: WeddingPublicPageProps) {
+  const heroImage =
+    event.heroImage ||
+    event.coverImage ||
+    "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=2400&q=92";
+
+  const babyGallery =
+    galleryImages.filter((image) => image && image !== GIFT_PLACEHOLDER).length > 0
+      ? galleryImages
+      : BABY_SHOWER_FALLBACK_IMAGES;
+
+  return (
+    <main className="min-h-screen bg-[#f5f9fb] text-[#263f52]">
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            html { scroll-behavior: smooth; }
+            .debut-display {
+              font-family: "Bodoni 72", "Didot", "Playfair Display", Georgia, serif;
+              font-weight: 400;
+              letter-spacing: -.055em;
+            }
+            .debut-serif {
+              font-family: "Bodoni 72", "Didot", "Playfair Display", Georgia, serif;
+              font-weight: 400;
+            }
+            .debut-eyebrow {
+              font-size: 11px;
+              font-weight: 900;
+              letter-spacing: .32em;
+              text-transform: uppercase;
+            }
+            .debut-photo {
+              background-size: cover;
+              background-position: center;
+            }
+            .debut-glow {
+              box-shadow:
+                0 34px 110px rgba(139, 63, 242, .18),
+                0 0 0 1px rgba(246, 203, 99, .18);
+            }
+            .debut-card {
+              border: 1px solid rgba(246, 203, 99, .20);
+              background:
+                radial-gradient(circle at 18% 12%, rgba(246,203,99,.12), transparent 30%),
+                linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.045));
+              box-shadow: 0 26px 80px rgba(0,0,0,.26);
+              backdrop-filter: blur(14px);
+            }
+            @media (max-width: 768px) {
+              .debut-display { letter-spacing: -.035em; }
+            }
+          `,
+        }}
+      />
+
+      <header className="sticky top-0 z-50 border-b border-[#d7c4a6]/15 bg-[#10041b]/88 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+          <a href="#inicio" className="debut-serif text-2xl text-[#d7c4a6]">
+            XV
+          </a>
+
+          <nav className="hidden items-center gap-6 md:flex">
+            <a href="#inicio" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#d7c4a6]">
+              Início
+            </a>
+            {showStory ? (
+              <a href="#historia" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#d7c4a6]">
+                História
+              </a>
+            ) : null}
+            <a href="#noite" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#d7c4a6]">
+              O encontro
+            </a>
+            {showGallery ? (
+              <a href="#galeria" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#d7c4a6]">
+                Galeria
+              </a>
+            ) : null}
+            {showGifts ? (
+              <a href="#presentes" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#d7c4a6]">
+                Presentes
+              </a>
+            ) : null}
+            {showRsvp ? (
+              <a href="#confirmacao" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#d7c4a6]">
+                RSVP
+              </a>
+            ) : null}
+          </nav>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              className="hidden rounded-full border border-[#d7c4a6]/20 bg-white/5 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-[#d7c4a6] transition hover:bg-white/10 md:inline-flex"
+            >
+              {copied ? "Copiado" : "Copiar link"}
+            </button>
+
+            {showRsvp ? (
+              <a
+                href="#confirmacao"
+                className="rounded-full bg-[#d7c4a6] px-5 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-[#17384d] shadow-[0_16px_45px_rgba(246,203,99,.20)] transition hover:-translate-y-0.5"
+              >
+                Confirmar
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </header>
+
+      <section id="inicio" className="relative min-h-[800px] overflow-hidden bg-[#0f3548]">
+        <div
+          className="absolute inset-0 debut-photo opacity-72"
+          style={{ backgroundImage: `url("${heroImage}")` }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,1,17,.96)_0%,rgba(20,4,33,.78)_47%,rgba(20,4,33,.22)_100%)]" />
+        <div className="absolute left-[-12%] top-[-18%] h-[560px] w-[560px] rounded-full bg-[#8ab7cc]/26 blur-3xl" />
+        <div className="absolute bottom-[-24%] right-[-12%] h-[620px] w-[620px] rounded-full bg-[#d7c4a6]/18 blur-3xl" />
+        <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#17384d] to-transparent" />
+
+        <div className="relative z-10 mx-auto grid min-h-[800px] max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.08fr_.92fr] lg:px-8">
+          <div>
+            <p className="debut-eyebrow text-[#d7c4a6]">Um encontro delicado</p>
+            <h1 className="debut-display mt-7 text-7xl leading-[0.82] text-white sm:text-8xl lg:text-[128px]">
+              {event.title}
+            </h1>
+            <p className="debut-serif mt-7 max-w-2xl text-3xl italic leading-tight text-[#dff0f5] sm:text-4xl">
+              {event.publicSubtitle ||
+                event.welcomeMessage ||
+                "Um encontro cheio de carinho para celebrar a chegada."}
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <span className="rounded-full border border-[#d7c4a6]/18 bg-white/8 px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-[#f7e8ff] backdrop-blur">
+                {formatDateShort(event.date)}
+              </span>
+              <span className="rounded-full border border-[#d7c4a6]/18 bg-white/8 px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-[#f7e8ff] backdrop-blur">
+                {event.location}
+              </span>
+            </div>
+
+            <div className="mt-10 flex flex-wrap gap-4">
+              {showRsvp ? (
+                <a
+                  href="#confirmacao"
+                  className="rounded-full bg-[#d7c4a6] px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-[#17384d] shadow-[0_18px_50px_rgba(0,0,0,.28)] transition hover:-translate-y-0.5"
+                >
+                  Confirmar presença
+                </a>
+              ) : null}
+
+              {showGifts ? (
+                <a
+                  href="#presentes"
+                  className="rounded-full border border-[#d7c4a6]/22 bg-white/8 px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-white shadow-[0_18px_50px_rgba(0,0,0,.18)] backdrop-blur transition hover:bg-white/12"
+                >
+                  Ver presentes
+                </a>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="debut-card rounded-[46px] p-5">
+            <div
+              className="min-h-[520px] rounded-[34px] debut-photo"
+              style={{ backgroundImage: `url("${babyGallery[0] || heroImage}")` }}
+            />
+            <div className="px-4 py-5">
+              <p className="debut-eyebrow text-[#d7c4a6]">carinho</p>
+              <p className="debut-serif mt-2 text-3xl leading-tight text-white">
+                Uma abertura suave para um momento cheio de amor.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showCountdown ? (
+        <section className="bg-[#17384d] px-4 py-16 text-white sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-5xl text-center">
+            <p className="debut-eyebrow text-[#d7c4a6]">Contagem regressiva</p>
+            <h2 className="debut-serif mt-4 text-4xl text-[#fbf1dc] sm:text-5xl">
+              A chegada mais esperada está perto.
+            </h2>
+
+            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              {countdown.map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-[30px] border border-[#d7c4a6]/15 bg-white/[.07] px-4 py-7 debut-glow"
+                >
+                  <strong className="debut-serif block text-5xl font-normal text-[#d7c4a6]">
+                    {item.value}
+                  </strong>
+                  <span className="mt-3 block text-[11px] font-black uppercase tracking-[0.24em] text-white/55">
+                    {item.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section className="bg-[#f5f9fb] px-4 py-20 text-center text-[#263f52] sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl rounded-[42px] border border-[#cfe2ea] bg-white/82 px-7 py-12 shadow-[0_30px_90px_rgba(49,14,74,.12)] sm:px-12">
+          <p className="debut-eyebrow text-[#8ab7cc]">Mensagem aos convidados</p>
+          <h2 className="debut-serif mt-5 text-4xl leading-tight text-[#263f52] sm:text-6xl">
+            Uma nova vida chega trazendo amor.
+          </h2>
+          <p className="mx-auto mt-7 max-w-3xl text-base leading-8 text-[#6f8494] sm:text-lg">
+            {event.welcomeMessage ||
+              event.openingMessage ||
+              event.description ||
+              "Criamos este espaço para compartilhar os detalhes da festa, confirmar presença e reunir todos em uma experiência especial."}
+          </p>
+        </div>
+      </section>
+
+      {showStory ? (
+        <section id="historia" className="bg-[#ffffff] px-4 py-24 text-[#263f52] sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[.95fr_1.05fr]">
+            <div className="relative min-h-[560px]">
+              <div
+                className="absolute inset-0 right-20 bottom-24 rounded-[42px] border-[12px] border-white bg-[#cfe2ea] shadow-[0_30px_90px_rgba(49,14,74,.12)] debut-photo"
+                style={{ backgroundImage: `url("${babyGallery[1] || babyGallery[0]}")` }}
+              />
+              <div
+                className="absolute bottom-0 right-0 h-[310px] w-[48%] rounded-[34px] border-[10px] border-white bg-[#cfe2ea] shadow-[0_30px_90px_rgba(49,14,74,.12)] debut-photo"
+                style={{ backgroundImage: `url("${babyGallery[2] || babyGallery[0]}")` }}
+              />
+            </div>
+
+            <div>
+              <p className="debut-eyebrow text-[#8ab7cc]">Chá de bebê</p>
+              <h2 className="debut-display mt-5 text-6xl leading-[0.9] text-[#263f52] sm:text-7xl">
+                Um amor que já ocupa a casa inteira.
+              </h2>
+              <p className="mt-7 text-lg leading-9 text-[#6f8494]">
+                Esta página reúne os detalhes do chá: data, local,
+                presentes, confirmação de presença e informações para que cada
+                convidado celebre esse momento com carinho.
+              </p>
+              <p className="debut-serif mt-8 border-l-2 border-[#8ab7cc] pl-6 text-3xl leading-tight text-[#6fa8bd]">
+                Hoje é dia de celebrar carinho, família e esperança.
+              </p>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section id="noite" className="relative overflow-hidden bg-[#0f3548] px-4 py-24 text-white sm:px-6 lg:px-8">
+        <div
+          className="absolute inset-0 opacity-30 debut-photo"
+          style={{ backgroundImage: `url("${babyGallery[3] || heroImage}")` }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,1,17,.98),rgba(17,5,28,.78),rgba(17,5,28,.48))]" />
+
+        <div className="relative z-10 mx-auto max-w-6xl text-center">
+          <p className="debut-eyebrow text-[#d7c4a6]">O encontro</p>
+          <h2 className="debut-serif mt-4 text-5xl leading-tight text-[#fbf1dc] sm:text-6xl">
+            Família, carinho, presentes e afeto.
+          </h2>
+
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            <div className="debut-card rounded-[34px] p-7">
+              <p className="text-5xl">✦</p>
+              <h3 className="mt-5 text-xs font-black uppercase tracking-[0.26em] text-[#d7c4a6]">
+                Data
+              </h3>
+              <p className="debut-serif mt-3 text-3xl text-white">{formatDateShort(event.date)}</p>
+            </div>
+            <div className="debut-card rounded-[34px] p-7">
+              <p className="text-5xl">◆</p>
+              <h3 className="mt-5 text-xs font-black uppercase tracking-[0.26em] text-[#d7c4a6]">
+                Local
+              </h3>
+              <p className="debut-serif mt-3 text-3xl text-white">{event.location}</p>
+            </div>
+            <div className="debut-card rounded-[34px] p-7">
+              <p className="text-5xl">★</p>
+              <h3 className="mt-5 text-xs font-black uppercase tracking-[0.26em] text-[#d7c4a6]">
+                Experiência
+              </h3>
+              <p className="debut-serif mt-3 text-3xl text-white">Delicado</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showGallery ? (
+        <section id="galeria" className="bg-[#ffffff] py-16 text-center text-[#263f52]">
+          <p className="debut-eyebrow text-[#8ab7cc]">Galeria</p>
+          <h2 className="debut-serif mt-3 text-5xl text-[#263f52]">
+            Memórias com brilho
+          </h2>
+
+          <div className="mt-10 grid grid-cols-2 md:grid-cols-5">
+            {babyGallery.slice(0, 5).map((image, index) => (
+              <div key={`${image}-${index}`} className="h-64 overflow-hidden bg-[#cfe2ea] md:h-80">
+                <div
+                  className="h-full w-full debut-photo transition duration-700 hover:scale-105"
+                  style={{ backgroundImage: `url("${image}")` }}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <section id="informacoes" className="bg-[#eef7fa] px-4 py-24 text-[#263f52] sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[.82fr_1.18fr]">
+          <div className="rounded-[38px] border border-[#cfe2ea] bg-white/78 p-8 shadow-[0_30px_90px_rgba(49,14,74,.12)]">
+            <p className="debut-eyebrow text-[#8ab7cc]">Informações</p>
+            <h2 className="debut-display mt-4 text-5xl leading-[0.95] text-[#263f52] sm:text-6xl">
+              Tudo para viver esse encontro com tranquilidade.
+            </h2>
+            <p className="mt-6 text-base leading-8 text-[#6f8494]">
+              Encontre aqui data, local, confirmação, lista de presentes e as principais
+              orientações para participar desse momento especial.
+            </p>
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="rounded-[30px] border border-[#cfe2ea] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#8ab7cc]">Data</p>
+              <p className="mt-4 text-2xl font-semibold text-[#263f52]">{formatDate(event.date)}</p>
+            </div>
+            <div className="rounded-[30px] border border-[#cfe2ea] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#8ab7cc]">Local</p>
+              <p className="mt-4 break-words text-2xl font-semibold text-[#263f52]">{event.location}</p>
+            </div>
+            <div className="rounded-[30px] border border-[#cfe2ea] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#8ab7cc]">Presentes</p>
+              <p className="mt-4 text-2xl font-semibold text-[#263f52]">{filteredGifts.length} disponíveis</p>
+            </div>
+            <div className="rounded-[30px] border border-[#cfe2ea] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#8ab7cc]">Arrecadado</p>
+              <p className="mt-4 text-2xl font-semibold text-[#263f52]">{formatMoney(financialSummary.totalRaised)}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showLocation ? (
+        <section id="localizacao" className="bg-[#ffffff] px-4 py-24 text-[#263f52] sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[.86fr_1.14fr]">
+            <div className="rounded-[38px] bg-[#0f3548] p-8 text-white shadow-[0_30px_90px_rgba(49,14,74,.20)]">
+              <p className="debut-eyebrow text-[#d7c4a6]">Localização</p>
+              <h2 className="debut-serif mt-5 text-5xl leading-tight text-[#fbf1dc]">
+                Como chegar
+              </h2>
+              <p className="mt-6 text-base leading-8 text-white/70">
+                {event.location}
+              </p>
+
+              <div className="mt-8 flex flex-wrap gap-3">
+                <a
+                  href={getMapsUrl(event.location)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full bg-[#d7c4a6] px-6 py-3 text-sm font-black uppercase tracking-[0.14em] text-[#17384d] transition hover:bg-[#f0dcc0]"
+                >
+                  Google Maps
+                </a>
+                <a
+                  href={getWazeUrl(event.location)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border border-[#d7c4a6]/18 bg-white/8 px-6 py-3 text-sm font-black uppercase tracking-[0.14em] text-white transition hover:bg-white/12"
+                >
+                  Waze
+                </a>
+              </div>
+            </div>
+
+            <div className="grid min-h-[360px] place-items-center rounded-[38px] border border-[#cfe2ea] bg-[#eef7fa] p-8 text-center shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <div>
+                <p className="debut-eyebrow text-[#8ab7cc]">Mapa</p>
+                <h3 className="debut-serif mt-3 text-4xl text-[#263f52]">
+                  {event.location}
+                </h3>
+                <p className="mx-auto mt-4 max-w-md text-[#6f8494]">
+                  Use os botões de rota para chegar com tranquilidade.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {showGifts ? (
+        <section id="presentes" className="bg-[#eef7fa] px-4 py-24 text-[#263f52] sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="mx-auto mb-12 max-w-4xl text-center">
+              <p className="debut-eyebrow text-[#8ab7cc]">Presentes</p>
+              <h2 className="debut-serif mt-4 text-5xl leading-tight text-[#263f52] sm:text-6xl">
+                Lista de presentes
+              </h2>
+              <p className="mt-5 text-base leading-8 text-[#6f8494]">
+                Escolha uma lembrança ou contribuição para ajudar nessa nova fase.
+              </p>
+            </div>
+
+            <div className="mb-8 rounded-[34px] border border-[#cfe2ea] bg-white/82 p-5 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <div className="grid gap-4 md:grid-cols-3">
+                <input
+                  value={giftSearch}
+                  onChange={(event) => setGiftSearch(event.target.value)}
+                  placeholder="Buscar presente"
+                  className="rounded-2xl border border-[#cfe2ea] bg-white px-4 py-3 text-sm outline-none focus:border-[#8ab7cc]"
+                />
+                <select
+                  value={giftCategory}
+                  onChange={(event) => setGiftCategory(event.target.value)}
+                  className="rounded-2xl border border-[#cfe2ea] bg-white px-4 py-3 text-sm outline-none focus:border-[#8ab7cc]"
+                >
+                  <option value="all">Todas as categorias</option>
+                  {giftCategories.map((category) => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
+                <select
+                  value={giftSort}
+                  onChange={(event) => setGiftSort(event.target.value)}
+                  className="rounded-2xl border border-[#cfe2ea] bg-white px-4 py-3 text-sm outline-none focus:border-[#8ab7cc]"
+                >
+                  <option value="featured">Destaques</option>
+                  <option value="az">A-Z</option>
+                  <option value="price-asc">Menor valor</option>
+                  <option value="price-desc">Maior valor</option>
+                </select>
+              </div>
+            </div>
+
+            {filteredGifts.length === 0 ? (
+              <div className="rounded-[38px] border border-[#cfe2ea] bg-white/82 p-10 text-center shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+                <h3 className="debut-serif text-4xl text-[#263f52]">
+                  Lista em preparação
+                </h3>
+                <p className="mx-auto mt-4 max-w-xl text-[#6f8494]">
+                  Os presentes ainda não foram cadastrados para este evento.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-7 md:grid-cols-2 xl:grid-cols-3">
+                {filteredGifts.map((gift) => {
+                  const disabled = getGiftActionDisabled(gift);
+
+                  return (
+                    <article
+                      key={gift.id}
+                      className="overflow-hidden rounded-[34px] border border-[#cfe2ea] bg-white shadow-[0_30px_90px_rgba(49,14,74,.10)] transition hover:-translate-y-1"
+                    >
+                      <div className="relative aspect-[4/3] overflow-hidden">
+                        <img
+                          src={getGiftImage(gift)}
+                          alt={gift.title}
+                          className={`h-full w-full object-cover transition duration-500 ${getGiftImageStateClass(gift)}`}
+                        />
+                        <span className={`absolute left-4 top-4 rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] ${getGiftBadgeClass(gift)}`}>
+                          {getGiftBadge(gift)}
+                        </span>
+                      </div>
+
+                      <div className="p-6">
+                        {gift.category ? (
+                          <p className="debut-eyebrow text-[#8ab7cc]">{gift.category}</p>
+                        ) : null}
+                        <h3 className="mt-3 text-2xl font-semibold leading-tight text-[#263f52]">
+                          {gift.title}
+                        </h3>
+                        <p className="mt-3 min-h-[70px] text-sm leading-7 text-[#6f8494]">
+                          {gift.description || "Presente disponível na lista do evento."}
+                        </p>
+                        <p className="debut-serif mt-4 text-3xl text-[#6fa8bd]">
+                          {gift.giftType === "FREE_CONTRIBUTION"
+                            ? "Valor livre"
+                            : formatMoney(gift.price)}
+                        </p>
+
+                        <button
+                          type="button"
+                          disabled={disabled}
+                          onClick={() => openPaymentModal(gift)}
+                          className={`mt-6 w-full rounded-full px-5 py-3.5 text-sm font-black uppercase tracking-[0.14em] transition ${
+                            disabled
+                              ? "cursor-not-allowed bg-[#dbeaf0] text-[#6f8494]"
+                              : "bg-[#17384d] text-[#d7c4a6] hover:-translate-y-0.5"
+                          }`}
+                        >
+                          {getGiftActionLabel(gift)}
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </section>
+      ) : null}
+
+      <section className="bg-[#0f3548] px-4 py-20 text-white sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-[1fr_auto]">
+          <div>
+            <p className="debut-eyebrow text-[#d7c4a6]">Próximo passo</p>
+            <h2 className="debut-serif mt-4 max-w-3xl text-5xl leading-tight text-[#fbf1dc]">
+              Confirme sua presença e venha celebrar com a gente.
+            </h2>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {showRsvp ? (
+              <a href="#confirmacao" className="rounded-full bg-[#d7c4a6] px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-[#17384d]">
+                Confirmar presença
+              </a>
+            ) : null}
+            {showGifts ? (
+              <a href="#presentes" className="rounded-full border border-[#d7c4a6]/18 bg-white/8 px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-white">
+                Ver presentes
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </section>
+
+      {showRsvp ? (
+        <section id="confirmacao" className="bg-[#ffffff] px-4 py-24 text-[#263f52] sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[.92fr_1.08fr]">
+            <div className="rounded-[38px] bg-[#0f3548] p-8 text-white shadow-[0_30px_90px_rgba(49,14,74,.20)]">
+              <p className="debut-eyebrow text-[#d7c4a6]">RSVP</p>
+              <h2 className="debut-serif mt-5 text-5xl leading-tight text-[#fbf1dc]">
+                Sua presença aquece esse momento.
+              </h2>
+              <p className="mt-6 text-base leading-8 text-white/70">
+                Digite o código do convite para localizar seu cadastro e confirmar
+                sua presença.
+              </p>
+            </div>
+
+            <div className="rounded-[38px] border border-[#cfe2ea] bg-white/82 p-7 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#8ab7cc]">Localizar convite</p>
+              <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]">
+                <input
+                  value={rsvpCode}
+                  onChange={(event) => setRsvpCode(event.target.value)}
+                  placeholder="Digite seu código RSVP"
+                  className="rounded-2xl border border-[#cfe2ea] bg-white px-4 py-3.5 text-sm outline-none focus:border-[#8ab7cc]"
+                />
+                <button
+                  type="button"
+                  onClick={handleLookupGuest}
+                  disabled={rsvpLoading}
+                  className="rounded-2xl bg-[#17384d] px-6 py-3.5 text-sm font-black uppercase tracking-[0.14em] text-[#d7c4a6] disabled:opacity-60"
+                >
+                  {rsvpLoading ? "Buscando..." : "Buscar"}
+                </button>
+              </div>
+
+              {rsvpError ? (
+                <div className="mt-5 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {rsvpError}
+                </div>
+              ) : null}
+
+              {rsvpSuccess && !guest ? (
+                <div className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                  {rsvpSuccess}
+                </div>
+              ) : null}
+
+              {guest ? (
+                <div className="mt-6 rounded-[30px] border border-[#cfe2ea] bg-[#f5f9fb] p-5">
+                  <p className="debut-eyebrow text-[#8ab7cc]">Convidado localizado</p>
+                  <h3 className="mt-2 text-2xl font-semibold text-[#263f52]">
+                    {guest.name}
+                  </h3>
+                  <p className="mt-2 text-sm text-[#6f8494]">
+                    Status atual: {translateGuestStatus(guest.status)}
+                  </p>
+
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => handleRsvpAction("confirm")}
+                      disabled={rsvpLoading}
+                      className="rounded-2xl bg-emerald-600 px-5 py-4 text-sm font-bold text-white disabled:opacity-60"
+                    >
+                      Confirmar presença
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRsvpAction("decline")}
+                      disabled={rsvpLoading}
+                      className="rounded-2xl border border-[#cfe2ea] bg-white px-5 py-4 text-sm font-bold text-[#263f52] disabled:opacity-60"
+                    >
+                      Não poderei ir
+                    </button>
+                  </div>
+
+                  {rsvpSuccess ? (
+                    <div className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                      {rsvpSuccess}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <footer className="bg-[#0f3548] px-4 py-10 text-center text-white/60">
+        <p className="debut-serif text-3xl text-[#d7c4a6]">Baby</p>
+        <p className="mt-2 text-sm">
+          {formatDateShort(event.date)} • {event.location}
+        </p>
+      </footer>
+
+      {selectedGift ? (
+        <div className="fixed inset-0 z-[100] flex items-start justify-center bg-[rgba(9,1,17,0.82)] px-3 py-3 backdrop-blur-[5px] sm:px-6 sm:py-8 lg:items-center">
+          <div className="max-h-[96vh] w-full max-w-4xl overflow-y-auto rounded-[36px] border border-[#d7c4a6]/18 bg-[#ffffff] shadow-[0_38px_120px_rgba(15,23,42,0.22)]">
+            <div className="sticky top-0 z-10 border-b border-[#cfe2ea] bg-[#ffffff]/95 px-5 py-4 backdrop-blur">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="debut-eyebrow text-[#8ab7cc]">Pagamento</p>
+                  <h3 className="mt-2 text-2xl font-semibold text-[#263f52]">
+                    {selectedGift.title}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={closePaymentModal}
+                  className="rounded-full border border-[#cfe2ea] bg-white px-4 py-2 text-sm font-bold text-[#6f8494]"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+
+            <div className="grid gap-6 p-5 lg:grid-cols-[.9fr_1.1fr]">
+              <div className="overflow-hidden rounded-[30px] border border-[#cfe2ea] bg-white">
+                <img
+                  src={getGiftImage(selectedGift)}
+                  alt={selectedGift.title}
+                  className="aspect-[4/3] w-full object-cover"
+                />
+                <div className="p-5">
+                  <p className="text-xl font-semibold text-[#263f52]">
+                    {selectedGift.title}
+                  </p>
+                  <p className="mt-2 text-sm leading-7 text-[#6f8494]">
+                    {selectedGift.description || "Pagamento do presente selecionado."}
+                  </p>
+                  <p className="debut-serif mt-4 text-3xl text-[#6fa8bd]">
+                    {paymentPreviewAmount ? formatMoney(paymentPreviewAmount) : "-"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-[30px] border border-[#cfe2ea] bg-white p-5">
+                <div className="grid gap-4">
+                  <input
+                    value={buyerName}
+                    onChange={(event) => setBuyerName(event.target.value)}
+                    placeholder="Seu nome"
+                    className="rounded-2xl border border-[#cfe2ea] px-4 py-3.5 text-sm outline-none focus:border-[#8ab7cc]"
+                  />
+                  <input
+                    value={buyerEmail}
+                    onChange={(event) => setBuyerEmail(event.target.value)}
+                    placeholder="Seu e-mail"
+                    className="rounded-2xl border border-[#cfe2ea] px-4 py-3.5 text-sm outline-none focus:border-[#8ab7cc]"
+                  />
+                  <input
+                    value={buyerPhone}
+                    onChange={(event) => setBuyerPhone(event.target.value)}
+                    placeholder="Seu telefone"
+                    className="rounded-2xl border border-[#cfe2ea] px-4 py-3.5 text-sm outline-none focus:border-[#8ab7cc]"
+                  />
+                  <textarea
+                    value={buyerMessage}
+                    onChange={(event) => setBuyerMessage(event.target.value)}
+                    placeholder="Mensagem opcional"
+                    className="min-h-[110px] rounded-2xl border border-[#cfe2ea] px-4 py-3.5 text-sm outline-none focus:border-[#8ab7cc]"
+                  />
+
+                  {(selectedGift.ui?.acceptsCustomAmount ||
+                    selectedGift.giftType === "FREE_CONTRIBUTION") ? (
+                    <input
+                      value={customAmount}
+                      onChange={(event) => setCustomAmount(event.target.value)}
+                      placeholder="Valor"
+                      className="rounded-2xl border border-[#cfe2ea] px-4 py-3.5 text-sm outline-none focus:border-[#8ab7cc]"
+                    />
+                  ) : null}
+
+                  {selectedGift.giftType === "QUOTA" ? (
+                    <input
+                      type="number"
+                      min={1}
+                      max={selectedGift.quotaRemaining ?? undefined}
+                      value={quotaQuantity}
+                      onChange={(event) => setQuotaQuantity(event.target.value)}
+                      className="rounded-2xl border border-[#cfe2ea] px-4 py-3.5 text-sm outline-none focus:border-[#8ab7cc]"
+                    />
+                  ) : null}
+
+                  <select
+                    value={paymentMethod}
+                    onChange={(event) => setPaymentMethod(event.target.value)}
+                    className="rounded-2xl border border-[#cfe2ea] px-4 py-3.5 text-sm outline-none focus:border-[#8ab7cc]"
+                  >
+                    <option value="CARD">Cartão</option>
+                    <option value="PIX">Pix</option>
+                    <option value="BOLETO">Boleto</option>
+                  </select>
+
+                  {paymentError ? (
+                    <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                      {paymentError}
+                    </div>
+                  ) : null}
+
+                  <button
+                    type="button"
+                    onClick={handleCreatePublicPayment}
+                    disabled={paymentLoading}
+                    className="rounded-full bg-[#17384d] px-5 py-4 text-sm font-black uppercase tracking-[0.14em] text-[#d7c4a6] disabled:opacity-60"
+                  >
+                    {paymentLoading ? "Gerando pagamento..." : "Continuar para pagamento"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {showBackToTop ? (
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="fixed bottom-24 right-4 z-40 rounded-full bg-[#17384d] px-4 py-3 text-sm font-black uppercase tracking-[0.12em] text-[#d7c4a6] shadow-xl transition hover:-translate-y-0.5 md:bottom-6"
+        >
+          Topo
+        </button>
+      ) : null}
+
+      {(showGifts || showRsvp) ? (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#cfe2ea] bg-[#ffffff]/95 px-4 py-3 shadow-[0_-12px_30px_rgba(15,23,42,0.08)] backdrop-blur md:hidden">
+          <div className="mx-auto flex max-w-7xl gap-3">
+            {showGifts ? (
+              <a
+                href="#presentes"
+                className="flex-1 rounded-full bg-[#17384d] px-4 py-3 text-center text-sm font-bold text-[#d7c4a6]"
+              >
+                Presentes
+              </a>
+            ) : null}
+            {showRsvp ? (
+              <a
+                href="#confirmacao"
+                className="flex-1 rounded-full border border-[#cfe2ea] bg-white px-4 py-3 text-center text-sm font-bold text-[#263f52]"
+              >
+                Confirmar
+              </a>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+    </main>
+  );
+}
+
+
+
+const HOUSEWARMING_FALLBACK_IMAGES = [
+  "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1800&q=92",
+];
+
+function HousewarmingPublicPage({
+  event,
+  countdown,
+  galleryImages,
+  filteredGifts,
+  giftCategories,
+  financialSummary,
+  showStory,
+  showGallery,
+  showLocation,
+  showGifts,
+  showRsvp,
+  showCountdown,
+  copied,
+  handleCopyLink,
+  giftSearch,
+  setGiftSearch,
+  giftCategory,
+  setGiftCategory,
+  giftSort,
+  setGiftSort,
+  openPaymentModal,
+  selectedGift,
+  closePaymentModal,
+  buyerName,
+  setBuyerName,
+  buyerEmail,
+  setBuyerEmail,
+  buyerPhone,
+  setBuyerPhone,
+  buyerMessage,
+  setBuyerMessage,
+  customAmount,
+  setCustomAmount,
+  quotaQuantity,
+  setQuotaQuantity,
+  paymentMethod,
+  setPaymentMethod,
+  paymentLoading,
+  paymentError,
+  paymentPreviewAmount,
+  handleCreatePublicPayment,
+  rsvpCode,
+  setRsvpCode,
+  rsvpLoading,
+  rsvpError,
+  rsvpSuccess,
+  guest,
+  handleLookupGuest,
+  handleRsvpAction,
+  showBackToTop,
+}: WeddingPublicPageProps) {
+  const heroImage =
+    event.heroImage ||
+    event.coverImage ||
+    "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=2400&q=92";
+
+  const houseGallery =
+    galleryImages.filter((image) => image && image !== GIFT_PLACEHOLDER).length > 0
+      ? galleryImages
+      : HOUSEWARMING_FALLBACK_IMAGES;
+
+  return (
+    <main className="min-h-screen bg-[#f3f1ed] text-[#222629]">
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            html { scroll-behavior: smooth; }
+            .debut-display {
+              font-family: "Bodoni 72", "Didot", "Playfair Display", Georgia, serif;
+              font-weight: 400;
+              letter-spacing: -.055em;
+            }
+            .debut-serif {
+              font-family: "Bodoni 72", "Didot", "Playfair Display", Georgia, serif;
+              font-weight: 400;
+            }
+            .debut-eyebrow {
+              font-size: 11px;
+              font-weight: 900;
+              letter-spacing: .32em;
+              text-transform: uppercase;
+            }
+            .debut-photo {
+              background-size: cover;
+              background-position: center;
+            }
+            .debut-glow {
+              box-shadow:
+                0 34px 110px rgba(139, 63, 242, .18),
+                0 0 0 1px rgba(246, 203, 99, .18);
+            }
+            .debut-card {
+              border: 1px solid rgba(246, 203, 99, .20);
+              background:
+                radial-gradient(circle at 18% 12%, rgba(246,203,99,.12), transparent 30%),
+                linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.045));
+              box-shadow: 0 26px 80px rgba(0,0,0,.26);
+              backdrop-filter: blur(14px);
+            }
+            @media (max-width: 768px) {
+              .debut-display { letter-spacing: -.035em; }
+            }
+          `,
+        }}
+      />
+
+      <header className="sticky top-0 z-50 border-b border-[#c47a4a]/15 bg-[#10041b]/88 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+          <a href="#inicio" className="debut-serif text-2xl text-[#c47a4a]">
+            XV
+          </a>
+
+          <nav className="hidden items-center gap-6 md:flex">
+            <a href="#inicio" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#c47a4a]">
+              Início
+            </a>
+            {showStory ? (
+              <a href="#historia" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#c47a4a]">
+                História
+              </a>
+            ) : null}
+            <a href="#noite" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#c47a4a]">
+              Open house
+            </a>
+            {showGallery ? (
+              <a href="#galeria" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#c47a4a]">
+                Galeria
+              </a>
+            ) : null}
+            {showGifts ? (
+              <a href="#presentes" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#c47a4a]">
+                Presentes
+              </a>
+            ) : null}
+            {showRsvp ? (
+              <a href="#confirmacao" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#c47a4a]">
+                RSVP
+              </a>
+            ) : null}
+          </nav>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              className="hidden rounded-full border border-[#c47a4a]/20 bg-white/5 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-[#c47a4a] transition hover:bg-white/10 md:inline-flex"
+            >
+              {copied ? "Copiado" : "Copiar link"}
+            </button>
+
+            {showRsvp ? (
+              <a
+                href="#confirmacao"
+                className="rounded-full bg-[#c47a4a] px-5 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-[#171a1d] shadow-[0_16px_45px_rgba(246,203,99,.20)] transition hover:-translate-y-0.5"
+              >
+                Confirmar
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </header>
+
+      <section id="inicio" className="relative min-h-[800px] overflow-hidden bg-[#111315]">
+        <div
+          className="absolute inset-0 debut-photo opacity-72"
+          style={{ backgroundImage: `url("${heroImage}")` }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,1,17,.96)_0%,rgba(20,4,33,.78)_47%,rgba(20,4,33,.22)_100%)]" />
+        <div className="absolute left-[-12%] top-[-18%] h-[560px] w-[560px] rounded-full bg-[#a0603d]/26 blur-3xl" />
+        <div className="absolute bottom-[-24%] right-[-12%] h-[620px] w-[620px] rounded-full bg-[#c47a4a]/18 blur-3xl" />
+        <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#171a1d] to-transparent" />
+
+        <div className="relative z-10 mx-auto grid min-h-[800px] max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.08fr_.92fr] lg:px-8">
+          <div>
+            <p className="debut-eyebrow text-[#c47a4a]">Casa nova, vida nova</p>
+            <h1 className="debut-display mt-7 text-7xl leading-[0.82] text-white sm:text-8xl lg:text-[128px]">
+              {event.title}
+            </h1>
+            <p className="debut-serif mt-7 max-w-2xl text-3xl italic leading-tight text-[#eaded2] sm:text-4xl">
+              {event.publicSubtitle ||
+                event.welcomeMessage ||
+                "Um encontro sofisticado para celebrar o novo lar."}
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <span className="rounded-full border border-[#c47a4a]/18 bg-white/8 px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-[#f7e8ff] backdrop-blur">
+                {formatDateShort(event.date)}
+              </span>
+              <span className="rounded-full border border-[#c47a4a]/18 bg-white/8 px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-[#f7e8ff] backdrop-blur">
+                {event.location}
+              </span>
+            </div>
+
+            <div className="mt-10 flex flex-wrap gap-4">
+              {showRsvp ? (
+                <a
+                  href="#confirmacao"
+                  className="rounded-full bg-[#c47a4a] px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-[#171a1d] shadow-[0_18px_50px_rgba(0,0,0,.28)] transition hover:-translate-y-0.5"
+                >
+                  Confirmar presença
+                </a>
+              ) : null}
+
+              {showGifts ? (
+                <a
+                  href="#presentes"
+                  className="rounded-full border border-[#c47a4a]/22 bg-white/8 px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-white shadow-[0_18px_50px_rgba(0,0,0,.18)] backdrop-blur transition hover:bg-white/12"
+                >
+                  Ver presentes
+                </a>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="debut-card rounded-[46px] p-5">
+            <div
+              className="min-h-[520px] rounded-[34px] debut-photo"
+              style={{ backgroundImage: `url("${houseGallery[0] || heroImage}")` }}
+            />
+            <div className="px-4 py-5">
+              <p className="debut-eyebrow text-[#c47a4a]">novo lar</p>
+              <p className="debut-serif mt-2 text-3xl leading-tight text-white">
+                Uma abertura elegante para uma nova fase da vida.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showCountdown ? (
+        <section className="bg-[#171a1d] px-4 py-16 text-white sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-5xl text-center">
+            <p className="debut-eyebrow text-[#c47a4a]">Contagem regressiva</p>
+            <h2 className="debut-serif mt-4 text-4xl text-[#f6eadf] sm:text-5xl">
+              A inauguração do novo lar está perto.
+            </h2>
+
+            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              {countdown.map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-[30px] border border-[#c47a4a]/15 bg-white/[.07] px-4 py-7 debut-glow"
+                >
+                  <strong className="debut-serif block text-5xl font-normal text-[#c47a4a]">
+                    {item.value}
+                  </strong>
+                  <span className="mt-3 block text-[11px] font-black uppercase tracking-[0.24em] text-white/55">
+                    {item.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section className="bg-[#f3f1ed] px-4 py-20 text-center text-[#222629] sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl rounded-[42px] border border-[#d7cec4] bg-white/82 px-7 py-12 shadow-[0_30px_90px_rgba(49,14,74,.12)] sm:px-12">
+          <p className="debut-eyebrow text-[#a0603d]">Boas-vindas</p>
+          <h2 className="debut-serif mt-5 text-4xl leading-tight text-[#222629] sm:text-6xl">
+            Uma nova casa, uma nova história.
+          </h2>
+          <p className="mx-auto mt-7 max-w-3xl text-base leading-8 text-[#6a6864] sm:text-lg">
+            {event.welcomeMessage ||
+              event.openingMessage ||
+              event.description ||
+              "Criamos este espaço para compartilhar os detalhes da festa, confirmar presença e reunir todos em uma experiência especial."}
+          </p>
+        </div>
+      </section>
+
+      {showStory ? (
+        <section id="historia" className="bg-[#ffffff] px-4 py-24 text-[#222629] sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[.95fr_1.05fr]">
+            <div className="relative min-h-[560px]">
+              <div
+                className="absolute inset-0 right-20 bottom-24 rounded-[42px] border-[12px] border-white bg-[#d7cec4] shadow-[0_30px_90px_rgba(49,14,74,.12)] debut-photo"
+                style={{ backgroundImage: `url("${houseGallery[1] || houseGallery[0]}")` }}
+              />
+              <div
+                className="absolute bottom-0 right-0 h-[310px] w-[48%] rounded-[34px] border-[10px] border-white bg-[#d7cec4] shadow-[0_30px_90px_rgba(49,14,74,.12)] debut-photo"
+                style={{ backgroundImage: `url("${houseGallery[2] || houseGallery[0]}")` }}
+              />
+            </div>
+
+            <div>
+              <p className="debut-eyebrow text-[#a0603d]">Casa nova</p>
+              <h2 className="debut-display mt-5 text-6xl leading-[0.9] text-[#222629] sm:text-7xl">
+                Um lar que começa cheio de boas memórias.
+              </h2>
+              <p className="mt-7 text-lg leading-9 text-[#6a6864]">
+                Esta página reúne os detalhes do chá: data, local,
+                presentes, confirmação de presença e informações para que cada
+                convidado celebre esse momento com novo lar.
+              </p>
+              <p className="debut-serif mt-8 border-l-2 border-[#a0603d] pl-6 text-3xl leading-tight text-[#a0603d]">
+                Hoje é dia de celebrar novo lar, família e esperança.
+              </p>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section id="noite" className="relative overflow-hidden bg-[#111315] px-4 py-24 text-white sm:px-6 lg:px-8">
+        <div
+          className="absolute inset-0 opacity-30 debut-photo"
+          style={{ backgroundImage: `url("${houseGallery[3] || heroImage}")` }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,1,17,.98),rgba(17,5,28,.78),rgba(17,5,28,.48))]" />
+
+        <div className="relative z-10 mx-auto max-w-6xl text-center">
+          <p className="debut-eyebrow text-[#c47a4a]">Open house</p>
+          <h2 className="debut-serif mt-4 text-5xl leading-tight text-[#f6eadf] sm:text-6xl">
+            Família, novo lar, presentes e afeto.
+          </h2>
+
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            <div className="debut-card rounded-[34px] p-7">
+              <p className="text-5xl">✦</p>
+              <h3 className="mt-5 text-xs font-black uppercase tracking-[0.26em] text-[#c47a4a]">
+                Data
+              </h3>
+              <p className="debut-serif mt-3 text-3xl text-white">{formatDateShort(event.date)}</p>
+            </div>
+            <div className="debut-card rounded-[34px] p-7">
+              <p className="text-5xl">◆</p>
+              <h3 className="mt-5 text-xs font-black uppercase tracking-[0.26em] text-[#c47a4a]">
+                Local
+              </h3>
+              <p className="debut-serif mt-3 text-3xl text-white">{event.location}</p>
+            </div>
+            <div className="debut-card rounded-[34px] p-7">
+              <p className="text-5xl">★</p>
+              <h3 className="mt-5 text-xs font-black uppercase tracking-[0.26em] text-[#c47a4a]">
+                Experiência
+              </h3>
+              <p className="debut-serif mt-3 text-3xl text-white">Industrial clean</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showGallery ? (
+        <section id="galeria" className="bg-[#ffffff] py-16 text-center text-[#222629]">
+          <p className="debut-eyebrow text-[#a0603d]">Galeria</p>
+          <h2 className="debut-serif mt-3 text-5xl text-[#222629]">
+            Detalhes do novo lar
+          </h2>
+
+          <div className="mt-10 grid grid-cols-2 md:grid-cols-5">
+            {houseGallery.slice(0, 5).map((image, index) => (
+              <div key={`${image}-${index}`} className="h-64 overflow-hidden bg-[#d7cec4] md:h-80">
+                <div
+                  className="h-full w-full debut-photo transition duration-700 hover:scale-105"
+                  style={{ backgroundImage: `url("${image}")` }}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <section id="informacoes" className="bg-[#ebe5de] px-4 py-24 text-[#222629] sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[.82fr_1.18fr]">
+          <div className="rounded-[38px] border border-[#d7cec4] bg-white/78 p-8 shadow-[0_30px_90px_rgba(49,14,74,.12)]">
+            <p className="debut-eyebrow text-[#a0603d]">Informações</p>
+            <h2 className="debut-display mt-4 text-5xl leading-[0.95] text-[#222629] sm:text-6xl">
+              Tudo para celebrar o novo lar com tranquilidade.
+            </h2>
+            <p className="mt-6 text-base leading-8 text-[#6a6864]">
+              Encontre aqui data, local, confirmação, lista de presentes e as principais
+              orientações para celebrar essa nova fase.
+            </p>
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="rounded-[30px] border border-[#d7cec4] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#a0603d]">Data</p>
+              <p className="mt-4 text-2xl font-semibold text-[#222629]">{formatDate(event.date)}</p>
+            </div>
+            <div className="rounded-[30px] border border-[#d7cec4] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#a0603d]">Local</p>
+              <p className="mt-4 break-words text-2xl font-semibold text-[#222629]">{event.location}</p>
+            </div>
+            <div className="rounded-[30px] border border-[#d7cec4] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#a0603d]">Presentes</p>
+              <p className="mt-4 text-2xl font-semibold text-[#222629]">{filteredGifts.length} disponíveis</p>
+            </div>
+            <div className="rounded-[30px] border border-[#d7cec4] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#a0603d]">Arrecadado</p>
+              <p className="mt-4 text-2xl font-semibold text-[#222629]">{formatMoney(financialSummary.totalRaised)}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showLocation ? (
+        <section id="localizacao" className="bg-[#ffffff] px-4 py-24 text-[#222629] sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[.86fr_1.14fr]">
+            <div className="rounded-[38px] bg-[#111315] p-8 text-white shadow-[0_30px_90px_rgba(49,14,74,.20)]">
+              <p className="debut-eyebrow text-[#c47a4a]">Localização</p>
+              <h2 className="debut-serif mt-5 text-5xl leading-tight text-[#f6eadf]">
+                Como chegar
+              </h2>
+              <p className="mt-6 text-base leading-8 text-white/70">
+                {event.location}
+              </p>
+
+              <div className="mt-8 flex flex-wrap gap-3">
+                <a
+                  href={getMapsUrl(event.location)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full bg-[#c47a4a] px-6 py-3 text-sm font-black uppercase tracking-[0.14em] text-[#171a1d] transition hover:bg-[#d59a73]"
+                >
+                  Google Maps
+                </a>
+                <a
+                  href={getWazeUrl(event.location)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border border-[#c47a4a]/18 bg-white/8 px-6 py-3 text-sm font-black uppercase tracking-[0.14em] text-white transition hover:bg-white/12"
+                >
+                  Waze
+                </a>
+              </div>
+            </div>
+
+            <div className="grid min-h-[360px] place-items-center rounded-[38px] border border-[#d7cec4] bg-[#ebe5de] p-8 text-center shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <div>
+                <p className="debut-eyebrow text-[#a0603d]">Mapa</p>
+                <h3 className="debut-serif mt-3 text-4xl text-[#222629]">
+                  {event.location}
+                </h3>
+                <p className="mx-auto mt-4 max-w-md text-[#6a6864]">
+                  Use os botões de rota para chegar com tranquilidade.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {showGifts ? (
+        <section id="presentes" className="bg-[#ebe5de] px-4 py-24 text-[#222629] sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="mx-auto mb-12 max-w-4xl text-center">
+              <p className="debut-eyebrow text-[#a0603d]">Presentes</p>
+              <h2 className="debut-serif mt-4 text-5xl leading-tight text-[#222629] sm:text-6xl">
+                Lista para casa nova
+              </h2>
+              <p className="mt-5 text-base leading-8 text-[#6a6864]">
+                Escolha uma lembrança útil ou contribuição para o novo lar.
+              </p>
+            </div>
+
+            <div className="mb-8 rounded-[34px] border border-[#d7cec4] bg-white/82 p-5 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <div className="grid gap-4 md:grid-cols-3">
+                <input
+                  value={giftSearch}
+                  onChange={(event) => setGiftSearch(event.target.value)}
+                  placeholder="Buscar presente"
+                  className="rounded-2xl border border-[#d7cec4] bg-white px-4 py-3 text-sm outline-none focus:border-[#a0603d]"
+                />
+                <select
+                  value={giftCategory}
+                  onChange={(event) => setGiftCategory(event.target.value)}
+                  className="rounded-2xl border border-[#d7cec4] bg-white px-4 py-3 text-sm outline-none focus:border-[#a0603d]"
+                >
+                  <option value="all">Todas as categorias</option>
+                  {giftCategories.map((category) => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
+                <select
+                  value={giftSort}
+                  onChange={(event) => setGiftSort(event.target.value)}
+                  className="rounded-2xl border border-[#d7cec4] bg-white px-4 py-3 text-sm outline-none focus:border-[#a0603d]"
+                >
+                  <option value="featured">Destaques</option>
+                  <option value="az">A-Z</option>
+                  <option value="price-asc">Menor valor</option>
+                  <option value="price-desc">Maior valor</option>
+                </select>
+              </div>
+            </div>
+
+            {filteredGifts.length === 0 ? (
+              <div className="rounded-[38px] border border-[#d7cec4] bg-white/82 p-10 text-center shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+                <h3 className="debut-serif text-4xl text-[#222629]">
+                  Lista em preparação
+                </h3>
+                <p className="mx-auto mt-4 max-w-xl text-[#6a6864]">
+                  Os presentes ainda não foram cadastrados para este evento.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-7 md:grid-cols-2 xl:grid-cols-3">
+                {filteredGifts.map((gift) => {
+                  const disabled = getGiftActionDisabled(gift);
+
+                  return (
+                    <article
+                      key={gift.id}
+                      className="overflow-hidden rounded-[34px] border border-[#d7cec4] bg-white shadow-[0_30px_90px_rgba(49,14,74,.10)] transition hover:-translate-y-1"
+                    >
+                      <div className="relative aspect-[4/3] overflow-hidden">
+                        <img
+                          src={getGiftImage(gift)}
+                          alt={gift.title}
+                          className={`h-full w-full object-cover transition duration-500 ${getGiftImageStateClass(gift)}`}
+                        />
+                        <span className={`absolute left-4 top-4 rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] ${getGiftBadgeClass(gift)}`}>
+                          {getGiftBadge(gift)}
+                        </span>
+                      </div>
+
+                      <div className="p-6">
+                        {gift.category ? (
+                          <p className="debut-eyebrow text-[#a0603d]">{gift.category}</p>
+                        ) : null}
+                        <h3 className="mt-3 text-2xl font-semibold leading-tight text-[#222629]">
+                          {gift.title}
+                        </h3>
+                        <p className="mt-3 min-h-[70px] text-sm leading-7 text-[#6a6864]">
+                          {gift.description || "Presente disponível na lista do evento."}
+                        </p>
+                        <p className="debut-serif mt-4 text-3xl text-[#a0603d]">
+                          {gift.giftType === "FREE_CONTRIBUTION"
+                            ? "Valor livre"
+                            : formatMoney(gift.price)}
+                        </p>
+
+                        <button
+                          type="button"
+                          disabled={disabled}
+                          onClick={() => openPaymentModal(gift)}
+                          className={`mt-6 w-full rounded-full px-5 py-3.5 text-sm font-black uppercase tracking-[0.14em] transition ${
+                            disabled
+                              ? "cursor-not-allowed bg-[#e7ded4] text-[#6a6864]"
+                              : "bg-[#171a1d] text-[#c47a4a] hover:-translate-y-0.5"
+                          }`}
+                        >
+                          {getGiftActionLabel(gift)}
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </section>
+      ) : null}
+
+      <section className="bg-[#111315] px-4 py-20 text-white sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-[1fr_auto]">
+          <div>
+            <p className="debut-eyebrow text-[#c47a4a]">Próximo passo</p>
+            <h2 className="debut-serif mt-4 max-w-3xl text-5xl leading-tight text-[#f6eadf]">
+              Confirme sua presença e venha conhecer nosso novo lar.
+            </h2>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {showRsvp ? (
+              <a href="#confirmacao" className="rounded-full bg-[#c47a4a] px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-[#171a1d]">
+                Confirmar presença
+              </a>
+            ) : null}
+            {showGifts ? (
+              <a href="#presentes" className="rounded-full border border-[#c47a4a]/18 bg-white/8 px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-white">
+                Ver presentes
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </section>
+
+      {showRsvp ? (
+        <section id="confirmacao" className="bg-[#ffffff] px-4 py-24 text-[#222629] sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[.92fr_1.08fr]">
+            <div className="rounded-[38px] bg-[#111315] p-8 text-white shadow-[0_30px_90px_rgba(49,14,74,.20)]">
+              <p className="debut-eyebrow text-[#c47a4a]">RSVP</p>
+              <h2 className="debut-serif mt-5 text-5xl leading-tight text-[#f6eadf]">
+                Sua presença deixa a casa mais viva.
+              </h2>
+              <p className="mt-6 text-base leading-8 text-white/70">
+                Digite o código do convite para localizar seu cadastro e confirmar
+                sua presença.
+              </p>
+            </div>
+
+            <div className="rounded-[38px] border border-[#d7cec4] bg-white/82 p-7 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#a0603d]">Localizar convite</p>
+              <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]">
+                <input
+                  value={rsvpCode}
+                  onChange={(event) => setRsvpCode(event.target.value)}
+                  placeholder="Digite seu código RSVP"
+                  className="rounded-2xl border border-[#d7cec4] bg-white px-4 py-3.5 text-sm outline-none focus:border-[#a0603d]"
+                />
+                <button
+                  type="button"
+                  onClick={handleLookupGuest}
+                  disabled={rsvpLoading}
+                  className="rounded-2xl bg-[#171a1d] px-6 py-3.5 text-sm font-black uppercase tracking-[0.14em] text-[#c47a4a] disabled:opacity-60"
+                >
+                  {rsvpLoading ? "Buscando..." : "Buscar"}
+                </button>
+              </div>
+
+              {rsvpError ? (
+                <div className="mt-5 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {rsvpError}
+                </div>
+              ) : null}
+
+              {rsvpSuccess && !guest ? (
+                <div className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                  {rsvpSuccess}
+                </div>
+              ) : null}
+
+              {guest ? (
+                <div className="mt-6 rounded-[30px] border border-[#d7cec4] bg-[#f3f1ed] p-5">
+                  <p className="debut-eyebrow text-[#a0603d]">Convidado localizado</p>
+                  <h3 className="mt-2 text-2xl font-semibold text-[#222629]">
+                    {guest.name}
+                  </h3>
+                  <p className="mt-2 text-sm text-[#6a6864]">
+                    Status atual: {translateGuestStatus(guest.status)}
+                  </p>
+
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => handleRsvpAction("confirm")}
+                      disabled={rsvpLoading}
+                      className="rounded-2xl bg-emerald-600 px-5 py-4 text-sm font-bold text-white disabled:opacity-60"
+                    >
+                      Confirmar presença
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRsvpAction("decline")}
+                      disabled={rsvpLoading}
+                      className="rounded-2xl border border-[#d7cec4] bg-white px-5 py-4 text-sm font-bold text-[#222629] disabled:opacity-60"
+                    >
+                      Não poderei ir
+                    </button>
+                  </div>
+
+                  {rsvpSuccess ? (
+                    <div className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                      {rsvpSuccess}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <footer className="bg-[#111315] px-4 py-10 text-center text-white/60">
+        <p className="debut-serif text-3xl text-[#c47a4a]">Lar</p>
+        <p className="mt-2 text-sm">
+          {formatDateShort(event.date)} • {event.location}
+        </p>
+      </footer>
+
+      {selectedGift ? (
+        <div className="fixed inset-0 z-[100] flex items-start justify-center bg-[rgba(9,1,17,0.82)] px-3 py-3 backdrop-blur-[5px] sm:px-6 sm:py-8 lg:items-center">
+          <div className="max-h-[96vh] w-full max-w-4xl overflow-y-auto rounded-[36px] border border-[#c47a4a]/18 bg-[#ffffff] shadow-[0_38px_120px_rgba(15,23,42,0.22)]">
+            <div className="sticky top-0 z-10 border-b border-[#d7cec4] bg-[#ffffff]/95 px-5 py-4 backdrop-blur">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="debut-eyebrow text-[#a0603d]">Pagamento</p>
+                  <h3 className="mt-2 text-2xl font-semibold text-[#222629]">
+                    {selectedGift.title}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={closePaymentModal}
+                  className="rounded-full border border-[#d7cec4] bg-white px-4 py-2 text-sm font-bold text-[#6a6864]"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+
+            <div className="grid gap-6 p-5 lg:grid-cols-[.9fr_1.1fr]">
+              <div className="overflow-hidden rounded-[30px] border border-[#d7cec4] bg-white">
+                <img
+                  src={getGiftImage(selectedGift)}
+                  alt={selectedGift.title}
+                  className="aspect-[4/3] w-full object-cover"
+                />
+                <div className="p-5">
+                  <p className="text-xl font-semibold text-[#222629]">
+                    {selectedGift.title}
+                  </p>
+                  <p className="mt-2 text-sm leading-7 text-[#6a6864]">
+                    {selectedGift.description || "Pagamento do presente selecionado."}
+                  </p>
+                  <p className="debut-serif mt-4 text-3xl text-[#a0603d]">
+                    {paymentPreviewAmount ? formatMoney(paymentPreviewAmount) : "-"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-[30px] border border-[#d7cec4] bg-white p-5">
+                <div className="grid gap-4">
+                  <input
+                    value={buyerName}
+                    onChange={(event) => setBuyerName(event.target.value)}
+                    placeholder="Seu nome"
+                    className="rounded-2xl border border-[#d7cec4] px-4 py-3.5 text-sm outline-none focus:border-[#a0603d]"
+                  />
+                  <input
+                    value={buyerEmail}
+                    onChange={(event) => setBuyerEmail(event.target.value)}
+                    placeholder="Seu e-mail"
+                    className="rounded-2xl border border-[#d7cec4] px-4 py-3.5 text-sm outline-none focus:border-[#a0603d]"
+                  />
+                  <input
+                    value={buyerPhone}
+                    onChange={(event) => setBuyerPhone(event.target.value)}
+                    placeholder="Seu telefone"
+                    className="rounded-2xl border border-[#d7cec4] px-4 py-3.5 text-sm outline-none focus:border-[#a0603d]"
+                  />
+                  <textarea
+                    value={buyerMessage}
+                    onChange={(event) => setBuyerMessage(event.target.value)}
+                    placeholder="Mensagem opcional"
+                    className="min-h-[110px] rounded-2xl border border-[#d7cec4] px-4 py-3.5 text-sm outline-none focus:border-[#a0603d]"
+                  />
+
+                  {(selectedGift.ui?.acceptsCustomAmount ||
+                    selectedGift.giftType === "FREE_CONTRIBUTION") ? (
+                    <input
+                      value={customAmount}
+                      onChange={(event) => setCustomAmount(event.target.value)}
+                      placeholder="Valor"
+                      className="rounded-2xl border border-[#d7cec4] px-4 py-3.5 text-sm outline-none focus:border-[#a0603d]"
+                    />
+                  ) : null}
+
+                  {selectedGift.giftType === "QUOTA" ? (
+                    <input
+                      type="number"
+                      min={1}
+                      max={selectedGift.quotaRemaining ?? undefined}
+                      value={quotaQuantity}
+                      onChange={(event) => setQuotaQuantity(event.target.value)}
+                      className="rounded-2xl border border-[#d7cec4] px-4 py-3.5 text-sm outline-none focus:border-[#a0603d]"
+                    />
+                  ) : null}
+
+                  <select
+                    value={paymentMethod}
+                    onChange={(event) => setPaymentMethod(event.target.value)}
+                    className="rounded-2xl border border-[#d7cec4] px-4 py-3.5 text-sm outline-none focus:border-[#a0603d]"
+                  >
+                    <option value="CARD">Cartão</option>
+                    <option value="PIX">Pix</option>
+                    <option value="BOLETO">Boleto</option>
+                  </select>
+
+                  {paymentError ? (
+                    <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                      {paymentError}
+                    </div>
+                  ) : null}
+
+                  <button
+                    type="button"
+                    onClick={handleCreatePublicPayment}
+                    disabled={paymentLoading}
+                    className="rounded-full bg-[#171a1d] px-5 py-4 text-sm font-black uppercase tracking-[0.14em] text-[#c47a4a] disabled:opacity-60"
+                  >
+                    {paymentLoading ? "Gerando pagamento..." : "Continuar para pagamento"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {showBackToTop ? (
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="fixed bottom-24 right-4 z-40 rounded-full bg-[#171a1d] px-4 py-3 text-sm font-black uppercase tracking-[0.12em] text-[#c47a4a] shadow-xl transition hover:-translate-y-0.5 md:bottom-6"
+        >
+          Topo
+        </button>
+      ) : null}
+
+      {(showGifts || showRsvp) ? (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#d7cec4] bg-[#ffffff]/95 px-4 py-3 shadow-[0_-12px_30px_rgba(15,23,42,0.08)] backdrop-blur md:hidden">
+          <div className="mx-auto flex max-w-7xl gap-3">
+            {showGifts ? (
+              <a
+                href="#presentes"
+                className="flex-1 rounded-full bg-[#171a1d] px-4 py-3 text-center text-sm font-bold text-[#c47a4a]"
+              >
+                Presentes
+              </a>
+            ) : null}
+            {showRsvp ? (
+              <a
+                href="#confirmacao"
+                className="flex-1 rounded-full border border-[#d7cec4] bg-white px-4 py-3 text-center text-sm font-bold text-[#222629]"
+              >
+                Confirmar
+              </a>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+    </main>
+  );
+}
+
+
+
+const GRADUATION_FALLBACK_IMAGES = [
+  "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1492538368677-f6e0afe31dcc?auto=format&fit=crop&w=1800&q=92",
+];
+
+function GraduationPublicPage({
+  event,
+  countdown,
+  galleryImages,
+  filteredGifts,
+  giftCategories,
+  financialSummary,
+  showStory,
+  showGallery,
+  showLocation,
+  showGifts,
+  showRsvp,
+  showCountdown,
+  copied,
+  handleCopyLink,
+  giftSearch,
+  setGiftSearch,
+  giftCategory,
+  setGiftCategory,
+  giftSort,
+  setGiftSort,
+  openPaymentModal,
+  selectedGift,
+  closePaymentModal,
+  buyerName,
+  setBuyerName,
+  buyerEmail,
+  setBuyerEmail,
+  buyerPhone,
+  setBuyerPhone,
+  buyerMessage,
+  setBuyerMessage,
+  customAmount,
+  setCustomAmount,
+  quotaQuantity,
+  setQuotaQuantity,
+  paymentMethod,
+  setPaymentMethod,
+  paymentLoading,
+  paymentError,
+  paymentPreviewAmount,
+  handleCreatePublicPayment,
+  rsvpCode,
+  setRsvpCode,
+  rsvpLoading,
+  rsvpError,
+  rsvpSuccess,
+  guest,
+  handleLookupGuest,
+  handleRsvpAction,
+  showBackToTop,
+}: WeddingPublicPageProps) {
+  const heroImage =
+    event.heroImage ||
+    event.coverImage ||
+    "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=2400&q=92";
+
+  const graduationGallery =
+    galleryImages.filter((image) => image && image !== GIFT_PLACEHOLDER).length > 0
+      ? galleryImages
+      : GRADUATION_FALLBACK_IMAGES;
+
+  return (
+    <main className="min-h-screen bg-[#080808] text-[#f7f3ea]">
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            html { scroll-behavior: smooth; }
+            .debut-display {
+              font-family: "Bodoni 72", "Didot", "Playfair Display", Georgia, serif;
+              font-weight: 400;
+              letter-spacing: -.055em;
+            }
+            .debut-serif {
+              font-family: "Bodoni 72", "Didot", "Playfair Display", Georgia, serif;
+              font-weight: 400;
+            }
+            .debut-eyebrow {
+              font-size: 11px;
+              font-weight: 900;
+              letter-spacing: .32em;
+              text-transform: uppercase;
+            }
+            .debut-photo {
+              background-size: cover;
+              background-position: center;
+            }
+            .debut-glow {
+              box-shadow:
+                0 34px 110px rgba(139, 63, 242, .18),
+                0 0 0 1px rgba(246, 203, 99, .18);
+            }
+            .debut-card {
+              border: 1px solid rgba(246, 203, 99, .20);
+              background:
+                radial-gradient(circle at 18% 12%, rgba(246,203,99,.12), transparent 30%),
+                linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.045));
+              box-shadow: 0 26px 80px rgba(0,0,0,.26);
+              backdrop-filter: blur(14px);
+            }
+            @media (max-width: 768px) {
+              .debut-display { letter-spacing: -.035em; }
+            }
+          `,
+        }}
+      />
+
+      <header className="sticky top-0 z-50 border-b border-[#d6b557]/15 bg-[#10041b]/88 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+          <a href="#inicio" className="debut-serif text-2xl text-[#d6b557]">
+            XV
+          </a>
+
+          <nav className="hidden items-center gap-6 md:flex">
+            <a href="#inicio" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#d6b557]">
+              Início
+            </a>
+            {showStory ? (
+              <a href="#historia" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#d6b557]">
+                História
+              </a>
+            ) : null}
+            <a href="#noite" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#d6b557]">
+              Solenidade
+            </a>
+            {showGallery ? (
+              <a href="#galeria" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#d6b557]">
+                Galeria
+              </a>
+            ) : null}
+            {showGifts ? (
+              <a href="#presentes" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#d6b557]">
+                Presentes
+              </a>
+            ) : null}
+            {showRsvp ? (
+              <a href="#confirmacao" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#d6b557]">
+                RSVP
+              </a>
+            ) : null}
+          </nav>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              className="hidden rounded-full border border-[#d6b557]/20 bg-white/5 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-[#d6b557] transition hover:bg-white/10 md:inline-flex"
+            >
+              {copied ? "Copiado" : "Copiar link"}
+            </button>
+
+            {showRsvp ? (
+              <a
+                href="#confirmacao"
+                className="rounded-full bg-[#d6b557] px-5 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-[#030303] shadow-[0_16px_45px_rgba(246,203,99,.20)] transition hover:-translate-y-0.5"
+              >
+                Confirmar
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </header>
+
+      <section id="inicio" className="relative min-h-[800px] overflow-hidden bg-[#000000]">
+        <div
+          className="absolute inset-0 debut-photo opacity-72"
+          style={{ backgroundImage: `url("${heroImage}")` }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,1,17,.96)_0%,rgba(20,4,33,.78)_47%,rgba(20,4,33,.22)_100%)]" />
+        <div className="absolute left-[-12%] top-[-18%] h-[560px] w-[560px] rounded-full bg-[#d6b557]/26 blur-3xl" />
+        <div className="absolute bottom-[-24%] right-[-12%] h-[620px] w-[620px] rounded-full bg-[#d6b557]/18 blur-3xl" />
+        <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#030303] to-transparent" />
+
+        <div className="relative z-10 mx-auto grid min-h-[800px] max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.08fr_.92fr] lg:px-8">
+          <div>
+            <p className="debut-eyebrow text-[#d6b557]">Uma conquista para sempre</p>
+            <h1 className="debut-display mt-7 text-7xl leading-[0.82] text-white sm:text-8xl lg:text-[128px]">
+              {event.title}
+            </h1>
+            <p className="debut-serif mt-7 max-w-2xl text-3xl italic leading-tight text-[#f5e7bd] sm:text-4xl">
+              {event.publicSubtitle ||
+                event.welcomeMessage ||
+                "Uma celebração elegante para marcar uma grande conquista."}
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <span className="rounded-full border border-[#d6b557]/18 bg-white/8 px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-[#f7e8ff] backdrop-blur">
+                {formatDateShort(event.date)}
+              </span>
+              <span className="rounded-full border border-[#d6b557]/18 bg-white/8 px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-[#f7e8ff] backdrop-blur">
+                {event.location}
+              </span>
+            </div>
+
+            <div className="mt-10 flex flex-wrap gap-4">
+              {showRsvp ? (
+                <a
+                  href="#confirmacao"
+                  className="rounded-full bg-[#d6b557] px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-[#030303] shadow-[0_18px_50px_rgba(0,0,0,.28)] transition hover:-translate-y-0.5"
+                >
+                  Confirmar presença
+                </a>
+              ) : null}
+
+              {showGifts ? (
+                <a
+                  href="#presentes"
+                  className="rounded-full border border-[#d6b557]/22 bg-white/8 px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-white shadow-[0_18px_50px_rgba(0,0,0,.18)] backdrop-blur transition hover:bg-white/12"
+                >
+                  Ver presentes
+                </a>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="debut-card rounded-[46px] p-5">
+            <div
+              className="min-h-[520px] rounded-[34px] debut-photo"
+              style={{ backgroundImage: `url("${graduationGallery[0] || heroImage}")` }}
+            />
+            <div className="px-4 py-5">
+              <p className="debut-eyebrow text-[#d6b557]">conquista</p>
+              <p className="debut-serif mt-2 text-3xl leading-tight text-white">
+                Uma abertura solene para um capítulo inesquecível.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showCountdown ? (
+        <section className="bg-[#030303] px-4 py-16 text-white sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-5xl text-center">
+            <p className="debut-eyebrow text-[#d6b557]">Contagem regressiva</p>
+            <h2 className="debut-serif mt-4 text-4xl text-[#fff0c8] sm:text-5xl">
+              A inauguração do conquista está perto.
+            </h2>
+
+            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              {countdown.map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-[30px] border border-[#d6b557]/15 bg-white/[.07] px-4 py-7 debut-glow"
+                >
+                  <strong className="debut-serif block text-5xl font-normal text-[#d6b557]">
+                    {item.value}
+                  </strong>
+                  <span className="mt-3 block text-[11px] font-black uppercase tracking-[0.24em] text-white/55">
+                    {item.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section className="bg-[#f7f3ea] px-4 py-20 text-center text-[#111111] sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl rounded-[42px] border border-[#e4d3a4] bg-white/82 px-7 py-12 shadow-[0_30px_90px_rgba(49,14,74,.12)] sm:px-12">
+          <p className="debut-eyebrow text-[#d6b557]">Mensagem aos convidados</p>
+          <h2 className="debut-serif mt-5 text-4xl leading-tight text-[#111111] sm:text-6xl">
+            Um sonho realizado merece ser celebrado.
+          </h2>
+          <p className="mx-auto mt-7 max-w-3xl text-base leading-8 text-[#626262] sm:text-lg">
+            {event.welcomeMessage ||
+              event.openingMessage ||
+              event.description ||
+              "Criamos este espaço para compartilhar os detalhes da festa, confirmar presença e reunir todos em uma experiência especial."}
+          </p>
+        </div>
+      </section>
+
+      {showStory ? (
+        <section id="historia" className="bg-[#ffffff] px-4 py-24 text-[#111111] sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[.95fr_1.05fr]">
+            <div className="relative min-h-[560px]">
+              <div
+                className="absolute inset-0 right-20 bottom-24 rounded-[42px] border-[12px] border-white bg-[#e4d3a4] shadow-[0_30px_90px_rgba(49,14,74,.12)] debut-photo"
+                style={{ backgroundImage: `url("${graduationGallery[1] || graduationGallery[0]}")` }}
+              />
+              <div
+                className="absolute bottom-0 right-0 h-[310px] w-[48%] rounded-[34px] border-[10px] border-white bg-[#e4d3a4] shadow-[0_30px_90px_rgba(49,14,74,.12)] debut-photo"
+                style={{ backgroundImage: `url("${graduationGallery[2] || graduationGallery[0]}")` }}
+              />
+            </div>
+
+            <div>
+              <p className="debut-eyebrow text-[#d6b557]">Formatura</p>
+              <h2 className="debut-display mt-5 text-6xl leading-[0.9] text-[#111111] sm:text-7xl">
+                Uma jornada que termina abrindo novos caminhos.
+              </h2>
+              <p className="mt-7 text-lg leading-9 text-[#626262]">
+                Esta página reúne os detalhes do chá: data, local,
+                presentes, confirmação de presença e informações para que cada
+                convidado celebre esse momento com conquista.
+              </p>
+              <p className="debut-serif mt-8 border-l-2 border-[#d6b557] pl-6 text-3xl leading-tight text-[#d6b557]">
+                Hoje é dia de celebrar conquista, família e esperança.
+              </p>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section id="noite" className="relative overflow-hidden bg-[#000000] px-4 py-24 text-white sm:px-6 lg:px-8">
+        <div
+          className="absolute inset-0 opacity-30 debut-photo"
+          style={{ backgroundImage: `url("${graduationGallery[3] || heroImage}")` }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,1,17,.98),rgba(17,5,28,.78),rgba(17,5,28,.48))]" />
+
+        <div className="relative z-10 mx-auto max-w-6xl text-center">
+          <p className="debut-eyebrow text-[#d6b557]">Solenidade</p>
+          <h2 className="debut-serif mt-4 text-5xl leading-tight text-[#fff0c8] sm:text-6xl">
+            Família, conquista, presentes e afeto.
+          </h2>
+
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            <div className="debut-card rounded-[34px] p-7">
+              <p className="text-5xl">✦</p>
+              <h3 className="mt-5 text-xs font-black uppercase tracking-[0.26em] text-[#d6b557]">
+                Data
+              </h3>
+              <p className="debut-serif mt-3 text-3xl text-white">{formatDateShort(event.date)}</p>
+            </div>
+            <div className="debut-card rounded-[34px] p-7">
+              <p className="text-5xl">◆</p>
+              <h3 className="mt-5 text-xs font-black uppercase tracking-[0.26em] text-[#d6b557]">
+                Local
+              </h3>
+              <p className="debut-serif mt-3 text-3xl text-white">{event.location}</p>
+            </div>
+            <div className="debut-card rounded-[34px] p-7">
+              <p className="text-5xl">★</p>
+              <h3 className="mt-5 text-xs font-black uppercase tracking-[0.26em] text-[#d6b557]">
+                Experiência
+              </h3>
+              <p className="debut-serif mt-3 text-3xl text-white">Editorial de luxo</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showGallery ? (
+        <section id="galeria" className="bg-[#ffffff] py-16 text-center text-[#111111]">
+          <p className="debut-eyebrow text-[#d6b557]">Galeria</p>
+          <h2 className="debut-serif mt-3 text-5xl text-[#111111]">
+            Detalhes do conquista
+          </h2>
+
+          <div className="mt-10 grid grid-cols-2 md:grid-cols-5">
+            {graduationGallery.slice(0, 5).map((image, index) => (
+              <div key={`${image}-${index}`} className="h-64 overflow-hidden bg-[#e4d3a4] md:h-80">
+                <div
+                  className="h-full w-full debut-photo transition duration-700 hover:scale-105"
+                  style={{ backgroundImage: `url("${image}")` }}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <section id="informacoes" className="bg-[#efe6d0] px-4 py-24 text-[#111111] sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[.82fr_1.18fr]">
+          <div className="rounded-[38px] border border-[#e4d3a4] bg-white/78 p-8 shadow-[0_30px_90px_rgba(49,14,74,.12)]">
+            <p className="debut-eyebrow text-[#d6b557]">Informações</p>
+            <h2 className="debut-display mt-4 text-5xl leading-[0.95] text-[#111111] sm:text-6xl">
+              Tudo para celebrar o conquista com tranquilidade.
+            </h2>
+            <p className="mt-6 text-base leading-8 text-[#626262]">
+              Encontre aqui data, local, confirmação, lista de presentes e as principais
+              orientações para participar dessa celebração.
+            </p>
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="rounded-[30px] border border-[#e4d3a4] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#d6b557]">Data</p>
+              <p className="mt-4 text-2xl font-semibold text-[#111111]">{formatDate(event.date)}</p>
+            </div>
+            <div className="rounded-[30px] border border-[#e4d3a4] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#d6b557]">Local</p>
+              <p className="mt-4 break-words text-2xl font-semibold text-[#111111]">{event.location}</p>
+            </div>
+            <div className="rounded-[30px] border border-[#e4d3a4] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#d6b557]">Presentes</p>
+              <p className="mt-4 text-2xl font-semibold text-[#111111]">{filteredGifts.length} disponíveis</p>
+            </div>
+            <div className="rounded-[30px] border border-[#e4d3a4] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#d6b557]">Arrecadado</p>
+              <p className="mt-4 text-2xl font-semibold text-[#111111]">{formatMoney(financialSummary.totalRaised)}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showLocation ? (
+        <section id="localizacao" className="bg-[#ffffff] px-4 py-24 text-[#111111] sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[.86fr_1.14fr]">
+            <div className="rounded-[38px] bg-[#000000] p-8 text-white shadow-[0_30px_90px_rgba(49,14,74,.20)]">
+              <p className="debut-eyebrow text-[#d6b557]">Localização</p>
+              <h2 className="debut-serif mt-5 text-5xl leading-tight text-[#fff0c8]">
+                Como chegar
+              </h2>
+              <p className="mt-6 text-base leading-8 text-white/70">
+                {event.location}
+              </p>
+
+              <div className="mt-8 flex flex-wrap gap-3">
+                <a
+                  href={getMapsUrl(event.location)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full bg-[#d6b557] px-6 py-3 text-sm font-black uppercase tracking-[0.14em] text-[#030303] transition hover:bg-[#f0ce69]"
+                >
+                  Google Maps
+                </a>
+                <a
+                  href={getWazeUrl(event.location)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border border-[#d6b557]/18 bg-white/8 px-6 py-3 text-sm font-black uppercase tracking-[0.14em] text-white transition hover:bg-white/12"
+                >
+                  Waze
+                </a>
+              </div>
+            </div>
+
+            <div className="grid min-h-[360px] place-items-center rounded-[38px] border border-[#e4d3a4] bg-[#efe6d0] p-8 text-center shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <div>
+                <p className="debut-eyebrow text-[#d6b557]">Mapa</p>
+                <h3 className="debut-serif mt-3 text-4xl text-[#111111]">
+                  {event.location}
+                </h3>
+                <p className="mx-auto mt-4 max-w-md text-[#626262]">
+                  Use os botões de rota para chegar com tranquilidade.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {showGifts ? (
+        <section id="presentes" className="bg-[#efe6d0] px-4 py-24 text-[#111111] sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="mx-auto mb-12 max-w-4xl text-center">
+              <p className="debut-eyebrow text-[#d6b557]">Presentes</p>
+              <h2 className="debut-serif mt-4 text-5xl leading-tight text-[#111111] sm:text-6xl">
+                Lista de presentes
+              </h2>
+              <p className="mt-5 text-base leading-8 text-[#626262]">
+                Escolha uma lembrança útil ou contribuição para o conquista.
+              </p>
+            </div>
+
+            <div className="mb-8 rounded-[34px] border border-[#e4d3a4] bg-white/82 p-5 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <div className="grid gap-4 md:grid-cols-3">
+                <input
+                  value={giftSearch}
+                  onChange={(event) => setGiftSearch(event.target.value)}
+                  placeholder="Buscar presente"
+                  className="rounded-2xl border border-[#e4d3a4] bg-white px-4 py-3 text-sm outline-none focus:border-[#d6b557]"
+                />
+                <select
+                  value={giftCategory}
+                  onChange={(event) => setGiftCategory(event.target.value)}
+                  className="rounded-2xl border border-[#e4d3a4] bg-white px-4 py-3 text-sm outline-none focus:border-[#d6b557]"
+                >
+                  <option value="all">Todas as categorias</option>
+                  {giftCategories.map((category) => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
+                <select
+                  value={giftSort}
+                  onChange={(event) => setGiftSort(event.target.value)}
+                  className="rounded-2xl border border-[#e4d3a4] bg-white px-4 py-3 text-sm outline-none focus:border-[#d6b557]"
+                >
+                  <option value="featured">Destaques</option>
+                  <option value="az">A-Z</option>
+                  <option value="price-asc">Menor valor</option>
+                  <option value="price-desc">Maior valor</option>
+                </select>
+              </div>
+            </div>
+
+            {filteredGifts.length === 0 ? (
+              <div className="rounded-[38px] border border-[#e4d3a4] bg-white/82 p-10 text-center shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+                <h3 className="debut-serif text-4xl text-[#111111]">
+                  Lista em preparação
+                </h3>
+                <p className="mx-auto mt-4 max-w-xl text-[#626262]">
+                  Os presentes ainda não foram cadastrados para este evento.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-7 md:grid-cols-2 xl:grid-cols-3">
+                {filteredGifts.map((gift) => {
+                  const disabled = getGiftActionDisabled(gift);
+
+                  return (
+                    <article
+                      key={gift.id}
+                      className="overflow-hidden rounded-[34px] border border-[#e4d3a4] bg-white shadow-[0_30px_90px_rgba(49,14,74,.10)] transition hover:-translate-y-1"
+                    >
+                      <div className="relative aspect-[4/3] overflow-hidden">
+                        <img
+                          src={getGiftImage(gift)}
+                          alt={gift.title}
+                          className={`h-full w-full object-cover transition duration-500 ${getGiftImageStateClass(gift)}`}
+                        />
+                        <span className={`absolute left-4 top-4 rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] ${getGiftBadgeClass(gift)}`}>
+                          {getGiftBadge(gift)}
+                        </span>
+                      </div>
+
+                      <div className="p-6">
+                        {gift.category ? (
+                          <p className="debut-eyebrow text-[#d6b557]">{gift.category}</p>
+                        ) : null}
+                        <h3 className="mt-3 text-2xl font-semibold leading-tight text-[#111111]">
+                          {gift.title}
+                        </h3>
+                        <p className="mt-3 min-h-[70px] text-sm leading-7 text-[#626262]">
+                          {gift.description || "Presente disponível na lista do evento."}
+                        </p>
+                        <p className="debut-serif mt-4 text-3xl text-[#d6b557]">
+                          {gift.giftType === "FREE_CONTRIBUTION"
+                            ? "Valor livre"
+                            : formatMoney(gift.price)}
+                        </p>
+
+                        <button
+                          type="button"
+                          disabled={disabled}
+                          onClick={() => openPaymentModal(gift)}
+                          className={`mt-6 w-full rounded-full px-5 py-3.5 text-sm font-black uppercase tracking-[0.14em] transition ${
+                            disabled
+                              ? "cursor-not-allowed bg-[#e8dcc0] text-[#626262]"
+                              : "bg-[#030303] text-[#d6b557] hover:-translate-y-0.5"
+                          }`}
+                        >
+                          {getGiftActionLabel(gift)}
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </section>
+      ) : null}
+
+      <section className="bg-[#000000] px-4 py-20 text-white sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-[1fr_auto]">
+          <div>
+            <p className="debut-eyebrow text-[#d6b557]">Próximo passo</p>
+            <h2 className="debut-serif mt-4 max-w-3xl text-5xl leading-tight text-[#fff0c8]">
+              Confirme sua presença e venha conhecer nosso conquista.
+            </h2>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {showRsvp ? (
+              <a href="#confirmacao" className="rounded-full bg-[#d6b557] px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-[#030303]">
+                Confirmar presença
+              </a>
+            ) : null}
+            {showGifts ? (
+              <a href="#presentes" className="rounded-full border border-[#d6b557]/18 bg-white/8 px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-white">
+                Ver presentes
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </section>
+
+      {showRsvp ? (
+        <section id="confirmacao" className="bg-[#ffffff] px-4 py-24 text-[#111111] sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[.92fr_1.08fr]">
+            <div className="rounded-[38px] bg-[#000000] p-8 text-white shadow-[0_30px_90px_rgba(49,14,74,.20)]">
+              <p className="debut-eyebrow text-[#d6b557]">RSVP</p>
+              <h2 className="debut-serif mt-5 text-5xl leading-tight text-[#fff0c8]">
+                Sua presença torna essa conquista ainda maior.
+              </h2>
+              <p className="mt-6 text-base leading-8 text-white/70">
+                Digite o código do convite para localizar seu cadastro e confirmar
+                sua presença.
+              </p>
+            </div>
+
+            <div className="rounded-[38px] border border-[#e4d3a4] bg-white/82 p-7 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#d6b557]">Localizar convite</p>
+              <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]">
+                <input
+                  value={rsvpCode}
+                  onChange={(event) => setRsvpCode(event.target.value)}
+                  placeholder="Digite seu código RSVP"
+                  className="rounded-2xl border border-[#e4d3a4] bg-white px-4 py-3.5 text-sm outline-none focus:border-[#d6b557]"
+                />
+                <button
+                  type="button"
+                  onClick={handleLookupGuest}
+                  disabled={rsvpLoading}
+                  className="rounded-2xl bg-[#030303] px-6 py-3.5 text-sm font-black uppercase tracking-[0.14em] text-[#d6b557] disabled:opacity-60"
+                >
+                  {rsvpLoading ? "Buscando..." : "Buscar"}
+                </button>
+              </div>
+
+              {rsvpError ? (
+                <div className="mt-5 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {rsvpError}
+                </div>
+              ) : null}
+
+              {rsvpSuccess && !guest ? (
+                <div className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                  {rsvpSuccess}
+                </div>
+              ) : null}
+
+              {guest ? (
+                <div className="mt-6 rounded-[30px] border border-[#e4d3a4] bg-[#f7f3ea] p-5">
+                  <p className="debut-eyebrow text-[#d6b557]">Convidado localizado</p>
+                  <h3 className="mt-2 text-2xl font-semibold text-[#111111]">
+                    {guest.name}
+                  </h3>
+                  <p className="mt-2 text-sm text-[#626262]">
+                    Status atual: {translateGuestStatus(guest.status)}
+                  </p>
+
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => handleRsvpAction("confirm")}
+                      disabled={rsvpLoading}
+                      className="rounded-2xl bg-emerald-600 px-5 py-4 text-sm font-bold text-white disabled:opacity-60"
+                    >
+                      Confirmar presença
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRsvpAction("decline")}
+                      disabled={rsvpLoading}
+                      className="rounded-2xl border border-[#e4d3a4] bg-white px-5 py-4 text-sm font-bold text-[#111111] disabled:opacity-60"
+                    >
+                      Não poderei ir
+                    </button>
+                  </div>
+
+                  {rsvpSuccess ? (
+                    <div className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                      {rsvpSuccess}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <footer className="bg-[#000000] px-4 py-10 text-center text-white/60">
+        <p className="debut-serif text-3xl text-[#d6b557]">Formatura</p>
+        <p className="mt-2 text-sm">
+          {formatDateShort(event.date)} • {event.location}
+        </p>
+      </footer>
+
+      {selectedGift ? (
+        <div className="fixed inset-0 z-[100] flex items-start justify-center bg-[rgba(9,1,17,0.82)] px-3 py-3 backdrop-blur-[5px] sm:px-6 sm:py-8 lg:items-center">
+          <div className="max-h-[96vh] w-full max-w-4xl overflow-y-auto rounded-[36px] border border-[#d6b557]/18 bg-[#ffffff] shadow-[0_38px_120px_rgba(15,23,42,0.22)]">
+            <div className="sticky top-0 z-10 border-b border-[#e4d3a4] bg-[#ffffff]/95 px-5 py-4 backdrop-blur">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="debut-eyebrow text-[#d6b557]">Pagamento</p>
+                  <h3 className="mt-2 text-2xl font-semibold text-[#111111]">
+                    {selectedGift.title}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={closePaymentModal}
+                  className="rounded-full border border-[#e4d3a4] bg-white px-4 py-2 text-sm font-bold text-[#626262]"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+
+            <div className="grid gap-6 p-5 lg:grid-cols-[.9fr_1.1fr]">
+              <div className="overflow-hidden rounded-[30px] border border-[#e4d3a4] bg-white">
+                <img
+                  src={getGiftImage(selectedGift)}
+                  alt={selectedGift.title}
+                  className="aspect-[4/3] w-full object-cover"
+                />
+                <div className="p-5">
+                  <p className="text-xl font-semibold text-[#111111]">
+                    {selectedGift.title}
+                  </p>
+                  <p className="mt-2 text-sm leading-7 text-[#626262]">
+                    {selectedGift.description || "Pagamento do presente selecionado."}
+                  </p>
+                  <p className="debut-serif mt-4 text-3xl text-[#d6b557]">
+                    {paymentPreviewAmount ? formatMoney(paymentPreviewAmount) : "-"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-[30px] border border-[#e4d3a4] bg-white p-5">
+                <div className="grid gap-4">
+                  <input
+                    value={buyerName}
+                    onChange={(event) => setBuyerName(event.target.value)}
+                    placeholder="Seu nome"
+                    className="rounded-2xl border border-[#e4d3a4] px-4 py-3.5 text-sm outline-none focus:border-[#d6b557]"
+                  />
+                  <input
+                    value={buyerEmail}
+                    onChange={(event) => setBuyerEmail(event.target.value)}
+                    placeholder="Seu e-mail"
+                    className="rounded-2xl border border-[#e4d3a4] px-4 py-3.5 text-sm outline-none focus:border-[#d6b557]"
+                  />
+                  <input
+                    value={buyerPhone}
+                    onChange={(event) => setBuyerPhone(event.target.value)}
+                    placeholder="Seu telefone"
+                    className="rounded-2xl border border-[#e4d3a4] px-4 py-3.5 text-sm outline-none focus:border-[#d6b557]"
+                  />
+                  <textarea
+                    value={buyerMessage}
+                    onChange={(event) => setBuyerMessage(event.target.value)}
+                    placeholder="Mensagem opcional"
+                    className="min-h-[110px] rounded-2xl border border-[#e4d3a4] px-4 py-3.5 text-sm outline-none focus:border-[#d6b557]"
+                  />
+
+                  {(selectedGift.ui?.acceptsCustomAmount ||
+                    selectedGift.giftType === "FREE_CONTRIBUTION") ? (
+                    <input
+                      value={customAmount}
+                      onChange={(event) => setCustomAmount(event.target.value)}
+                      placeholder="Valor"
+                      className="rounded-2xl border border-[#e4d3a4] px-4 py-3.5 text-sm outline-none focus:border-[#d6b557]"
+                    />
+                  ) : null}
+
+                  {selectedGift.giftType === "QUOTA" ? (
+                    <input
+                      type="number"
+                      min={1}
+                      max={selectedGift.quotaRemaining ?? undefined}
+                      value={quotaQuantity}
+                      onChange={(event) => setQuotaQuantity(event.target.value)}
+                      className="rounded-2xl border border-[#e4d3a4] px-4 py-3.5 text-sm outline-none focus:border-[#d6b557]"
+                    />
+                  ) : null}
+
+                  <select
+                    value={paymentMethod}
+                    onChange={(event) => setPaymentMethod(event.target.value)}
+                    className="rounded-2xl border border-[#e4d3a4] px-4 py-3.5 text-sm outline-none focus:border-[#d6b557]"
+                  >
+                    <option value="CARD">Cartão</option>
+                    <option value="PIX">Pix</option>
+                    <option value="BOLETO">Boleto</option>
+                  </select>
+
+                  {paymentError ? (
+                    <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                      {paymentError}
+                    </div>
+                  ) : null}
+
+                  <button
+                    type="button"
+                    onClick={handleCreatePublicPayment}
+                    disabled={paymentLoading}
+                    className="rounded-full bg-[#030303] px-5 py-4 text-sm font-black uppercase tracking-[0.14em] text-[#d6b557] disabled:opacity-60"
+                  >
+                    {paymentLoading ? "Gerando pagamento..." : "Continuar para pagamento"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {showBackToTop ? (
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="fixed bottom-24 right-4 z-40 rounded-full bg-[#030303] px-4 py-3 text-sm font-black uppercase tracking-[0.12em] text-[#d6b557] shadow-xl transition hover:-translate-y-0.5 md:bottom-6"
+        >
+          Topo
+        </button>
+      ) : null}
+
+      {(showGifts || showRsvp) ? (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#e4d3a4] bg-[#ffffff]/95 px-4 py-3 shadow-[0_-12px_30px_rgba(15,23,42,0.08)] backdrop-blur md:hidden">
+          <div className="mx-auto flex max-w-7xl gap-3">
+            {showGifts ? (
+              <a
+                href="#presentes"
+                className="flex-1 rounded-full bg-[#030303] px-4 py-3 text-center text-sm font-bold text-[#d6b557]"
+              >
+                Presentes
+              </a>
+            ) : null}
+            {showRsvp ? (
+              <a
+                href="#confirmacao"
+                className="flex-1 rounded-full border border-[#e4d3a4] bg-white px-4 py-3 text-center text-sm font-bold text-[#111111]"
+              >
+                Confirmar
+              </a>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+    </main>
+  );
+}
+
+
+
+const CORPORATE_FALLBACK_IMAGES = [
+  "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1515169067865-5387ec356754?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1800&q=92",
+];
+
+function CorporatePublicPage({
+  event,
+  countdown,
+  galleryImages,
+  filteredGifts,
+  giftCategories,
+  financialSummary,
+  showStory,
+  showGallery,
+  showLocation,
+  showGifts,
+  showRsvp,
+  showCountdown,
+  copied,
+  handleCopyLink,
+  giftSearch,
+  setGiftSearch,
+  giftCategory,
+  setGiftCategory,
+  giftSort,
+  setGiftSort,
+  openPaymentModal,
+  selectedGift,
+  closePaymentModal,
+  buyerName,
+  setBuyerName,
+  buyerEmail,
+  setBuyerEmail,
+  buyerPhone,
+  setBuyerPhone,
+  buyerMessage,
+  setBuyerMessage,
+  customAmount,
+  setCustomAmount,
+  quotaQuantity,
+  setQuotaQuantity,
+  paymentMethod,
+  setPaymentMethod,
+  paymentLoading,
+  paymentError,
+  paymentPreviewAmount,
+  handleCreatePublicPayment,
+  rsvpCode,
+  setRsvpCode,
+  rsvpLoading,
+  rsvpError,
+  rsvpSuccess,
+  guest,
+  handleLookupGuest,
+  handleRsvpAction,
+  showBackToTop,
+}: WeddingPublicPageProps) {
+  const heroImage =
+    event.heroImage ||
+    event.coverImage ||
+    "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=2400&q=92";
+
+  const corporateGallery =
+    galleryImages.filter((image) => image && image !== GIFT_PLACEHOLDER).length > 0
+      ? galleryImages
+      : CORPORATE_FALLBACK_IMAGES;
+
+  return (
+    <main className="min-h-screen bg-[#020b16] text-[#edf8ff]">
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            html { scroll-behavior: smooth; }
+            .debut-display {
+              font-family: "Bodoni 72", "Didot", "Playfair Display", Georgia, serif;
+              font-weight: 400;
+              letter-spacing: -.055em;
+            }
+            .debut-serif {
+              font-family: "Bodoni 72", "Didot", "Playfair Display", Georgia, serif;
+              font-weight: 400;
+            }
+            .debut-eyebrow {
+              font-size: 11px;
+              font-weight: 900;
+              letter-spacing: .32em;
+              text-transform: uppercase;
+            }
+            .debut-photo {
+              background-size: cover;
+              background-position: center;
+            }
+            .debut-glow {
+              box-shadow:
+                0 34px 110px rgba(139, 63, 242, .18),
+                0 0 0 1px rgba(246, 203, 99, .18);
+            }
+            .debut-card {
+              border: 1px solid rgba(246, 203, 99, .20);
+              background:
+                radial-gradient(circle at 18% 12%, rgba(246,203,99,.12), transparent 30%),
+                linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.045));
+              box-shadow: 0 26px 80px rgba(0,0,0,.26);
+              backdrop-filter: blur(14px);
+            }
+            @media (max-width: 768px) {
+              .debut-display { letter-spacing: -.035em; }
+            }
+          `,
+        }}
+      />
+
+      <header className="sticky top-0 z-50 border-b border-[#21c8ff]/15 bg-[#10041b]/88 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+          <a href="#inicio" className="debut-serif text-2xl text-[#21c8ff]">
+            XV
+          </a>
+
+          <nav className="hidden items-center gap-6 md:flex">
+            <a href="#inicio" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#21c8ff]">
+              Início
+            </a>
+            {showStory ? (
+              <a href="#historia" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#21c8ff]">
+                História
+              </a>
+            ) : null}
+            <a href="#noite" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#21c8ff]">
+              Agenda
+            </a>
+            {showGallery ? (
+              <a href="#galeria" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#21c8ff]">
+                Galeria
+              </a>
+            ) : null}
+            {showGifts ? (
+              <a href="#presentes" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#21c8ff]">
+                Presentes
+              </a>
+            ) : null}
+            {showRsvp ? (
+              <a href="#confirmacao" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#21c8ff]">
+                RSVP
+              </a>
+            ) : null}
+          </nav>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              className="hidden rounded-full border border-[#21c8ff]/20 bg-white/5 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-[#21c8ff] transition hover:bg-white/10 md:inline-flex"
+            >
+              {copied ? "Copiado" : "Copiar link"}
+            </button>
+
+            {showRsvp ? (
+              <a
+                href="#confirmacao"
+                className="rounded-full bg-[#21c8ff] px-5 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-[#020b16] shadow-[0_16px_45px_rgba(246,203,99,.20)] transition hover:-translate-y-0.5"
+              >
+                Confirmar
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </header>
+
+      <section id="inicio" className="relative min-h-[800px] overflow-hidden bg-[#071526]">
+        <div
+          className="absolute inset-0 debut-photo opacity-72"
+          style={{ backgroundImage: `url("${heroImage}")` }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,1,17,.96)_0%,rgba(20,4,33,.78)_47%,rgba(20,4,33,.22)_100%)]" />
+        <div className="absolute left-[-12%] top-[-18%] h-[560px] w-[560px] rounded-full bg-[#21c8ff]/26 blur-3xl" />
+        <div className="absolute bottom-[-24%] right-[-12%] h-[620px] w-[620px] rounded-full bg-[#21c8ff]/18 blur-3xl" />
+        <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#020b16] to-transparent" />
+
+        <div className="relative z-10 mx-auto grid min-h-[800px] max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.08fr_.92fr] lg:px-8">
+          <div>
+            <p className="debut-eyebrow text-[#21c8ff]">Experiência corporativa premium</p>
+            <h1 className="debut-display mt-7 text-7xl leading-[0.82] text-white sm:text-8xl lg:text-[128px]">
+              {event.title}
+            </h1>
+            <p className="debut-serif mt-7 max-w-2xl text-3xl italic leading-tight text-[#dff7ff] sm:text-4xl">
+              {event.publicSubtitle ||
+                event.welcomeMessage ||
+                "Uma presença digital sofisticada para encontros, lançamentos e conferências."}
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <span className="rounded-full border border-[#21c8ff]/18 bg-white/8 px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-[#f7e8ff] backdrop-blur">
+                {formatDateShort(event.date)}
+              </span>
+              <span className="rounded-full border border-[#21c8ff]/18 bg-white/8 px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-[#f7e8ff] backdrop-blur">
+                {event.location}
+              </span>
+            </div>
+
+            <div className="mt-10 flex flex-wrap gap-4">
+              {showRsvp ? (
+                <a
+                  href="#confirmacao"
+                  className="rounded-full bg-[#21c8ff] px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-[#020b16] shadow-[0_18px_50px_rgba(0,0,0,.28)] transition hover:-translate-y-0.5"
+                >
+                  Confirmar presença
+                </a>
+              ) : null}
+
+              {showGifts ? (
+                <a
+                  href="#presentes"
+                  className="rounded-full border border-[#21c8ff]/22 bg-white/8 px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-white shadow-[0_18px_50px_rgba(0,0,0,.18)] backdrop-blur transition hover:bg-white/12"
+                >
+                  Ver presentes
+                </a>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="debut-card rounded-[46px] p-5">
+            <div
+              className="min-h-[520px] rounded-[34px] debut-photo"
+              style={{ backgroundImage: `url("${corporateGallery[0] || heroImage}")` }}
+            />
+            <div className="px-4 py-5">
+              <p className="debut-eyebrow text-[#21c8ff]">evento</p>
+              <p className="debut-serif mt-2 text-3xl leading-tight text-white">
+                Uma abertura moderna para uma experiência empresarial marcante.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showCountdown ? (
+        <section className="bg-[#020b16] px-4 py-16 text-white sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-5xl text-center">
+            <p className="debut-eyebrow text-[#21c8ff]">Contagem regressiva</p>
+            <h2 className="debut-serif mt-4 text-4xl text-[#e7fbff] sm:text-5xl">
+              A inauguração do evento está perto.
+            </h2>
+
+            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              {countdown.map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-[30px] border border-[#21c8ff]/15 bg-white/[.07] px-4 py-7 debut-glow"
+                >
+                  <strong className="debut-serif block text-5xl font-normal text-[#21c8ff]">
+                    {item.value}
+                  </strong>
+                  <span className="mt-3 block text-[11px] font-black uppercase tracking-[0.24em] text-white/55">
+                    {item.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section className="bg-[#edf4f8] px-4 py-20 text-center text-[#071526] sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl rounded-[42px] border border-[#bfefff] bg-white/82 px-7 py-12 shadow-[0_30px_90px_rgba(49,14,74,.12)] sm:px-12">
+          <p className="debut-eyebrow text-[#21c8ff]">Mensagem institucional</p>
+          <h2 className="debut-serif mt-5 text-4xl leading-tight text-[#071526] sm:text-6xl">
+            Uma grande ideia merece uma grande apresentação.
+          </h2>
+          <p className="mx-auto mt-7 max-w-3xl text-base leading-8 text-[#506173] sm:text-lg">
+            {event.welcomeMessage ||
+              event.openingMessage ||
+              event.description ||
+              "Criamos este espaço para compartilhar os detalhes da festa, confirmar presença e reunir todos em uma experiência especial."}
+          </p>
+        </div>
+      </section>
+
+      {showStory ? (
+        <section id="historia" className="bg-[#ffffff] px-4 py-24 text-[#071526] sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[.95fr_1.05fr]">
+            <div className="relative min-h-[560px]">
+              <div
+                className="absolute inset-0 right-20 bottom-24 rounded-[42px] border-[12px] border-white bg-[#bfefff] shadow-[0_30px_90px_rgba(49,14,74,.12)] debut-photo"
+                style={{ backgroundImage: `url("${corporateGallery[1] || corporateGallery[0]}")` }}
+              />
+              <div
+                className="absolute bottom-0 right-0 h-[310px] w-[48%] rounded-[34px] border-[10px] border-white bg-[#bfefff] shadow-[0_30px_90px_rgba(49,14,74,.12)] debut-photo"
+                style={{ backgroundImage: `url("${corporateGallery[2] || corporateGallery[0]}")` }}
+              />
+            </div>
+
+            <div>
+              <p className="debut-eyebrow text-[#21c8ff]">Summit</p>
+              <h2 className="debut-display mt-5 text-6xl leading-[0.9] text-[#071526] sm:text-7xl">
+                Um evento pensado para conectar pessoas, marcas e oportunidades.
+              </h2>
+              <p className="mt-7 text-lg leading-9 text-[#506173]">
+                Esta página reúne os detalhes do chá: data, local,
+                presentes, confirmação de presença e informações para que cada
+                convidado celebre esse momento com evento.
+              </p>
+              <p className="debut-serif mt-8 border-l-2 border-[#21c8ff] pl-6 text-3xl leading-tight text-[#21c8ff]">
+                Hoje é dia de celebrar evento, família e esperança.
+              </p>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section id="noite" className="relative overflow-hidden bg-[#071526] px-4 py-24 text-white sm:px-6 lg:px-8">
+        <div
+          className="absolute inset-0 opacity-30 debut-photo"
+          style={{ backgroundImage: `url("${corporateGallery[3] || heroImage}")` }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,1,17,.98),rgba(17,5,28,.78),rgba(17,5,28,.48))]" />
+
+        <div className="relative z-10 mx-auto max-w-6xl text-center">
+          <p className="debut-eyebrow text-[#21c8ff]">Agenda</p>
+          <h2 className="debut-serif mt-4 text-5xl leading-tight text-[#e7fbff] sm:text-6xl">
+            Família, evento, presentes e afeto.
+          </h2>
+
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            <div className="debut-card rounded-[34px] p-7">
+              <p className="text-5xl">✦</p>
+              <h3 className="mt-5 text-xs font-black uppercase tracking-[0.26em] text-[#21c8ff]">
+                Data
+              </h3>
+              <p className="debut-serif mt-3 text-3xl text-white">{formatDateShort(event.date)}</p>
+            </div>
+            <div className="debut-card rounded-[34px] p-7">
+              <p className="text-5xl">◆</p>
+              <h3 className="mt-5 text-xs font-black uppercase tracking-[0.26em] text-[#21c8ff]">
+                Local
+              </h3>
+              <p className="debut-serif mt-3 text-3xl text-white">{event.location}</p>
+            </div>
+            <div className="debut-card rounded-[34px] p-7">
+              <p className="text-5xl">★</p>
+              <h3 className="mt-5 text-xs font-black uppercase tracking-[0.26em] text-[#21c8ff]">
+                Experiência
+              </h3>
+              <p className="debut-serif mt-3 text-3xl text-white">Tech premium</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showGallery ? (
+        <section id="galeria" className="bg-[#ffffff] py-16 text-center text-[#071526]">
+          <p className="debut-eyebrow text-[#21c8ff]">Galeria</p>
+          <h2 className="debut-serif mt-3 text-5xl text-[#071526]">
+            Detalhes do evento
+          </h2>
+
+          <div className="mt-10 grid grid-cols-2 md:grid-cols-5">
+            {corporateGallery.slice(0, 5).map((image, index) => (
+              <div key={`${image}-${index}`} className="h-64 overflow-hidden bg-[#bfefff] md:h-80">
+                <div
+                  className="h-full w-full debut-photo transition duration-700 hover:scale-105"
+                  style={{ backgroundImage: `url("${image}")` }}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <section id="informacoes" className="bg-[#edf4f8] px-4 py-24 text-[#071526] sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[.82fr_1.18fr]">
+          <div className="rounded-[38px] border border-[#bfefff] bg-white/78 p-8 shadow-[0_30px_90px_rgba(49,14,74,.12)]">
+            <p className="debut-eyebrow text-[#21c8ff]">Informações</p>
+            <h2 className="debut-display mt-4 text-5xl leading-[0.95] text-[#071526] sm:text-6xl">
+              Tudo para celebrar o evento com tranquilidade.
+            </h2>
+            <p className="mt-6 text-base leading-8 text-[#506173]">
+              Encontre aqui data, local, confirmação, informações essenciais e as principais
+              orientações para participar do evento.
+            </p>
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="rounded-[30px] border border-[#bfefff] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#21c8ff]">Data</p>
+              <p className="mt-4 text-2xl font-semibold text-[#071526]">{formatDate(event.date)}</p>
+            </div>
+            <div className="rounded-[30px] border border-[#bfefff] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#21c8ff]">Local</p>
+              <p className="mt-4 break-words text-2xl font-semibold text-[#071526]">{event.location}</p>
+            </div>
+            <div className="rounded-[30px] border border-[#bfefff] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#21c8ff]">Presentes</p>
+              <p className="mt-4 text-2xl font-semibold text-[#071526]">{filteredGifts.length} disponíveis</p>
+            </div>
+            <div className="rounded-[30px] border border-[#bfefff] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#21c8ff]">Arrecadado</p>
+              <p className="mt-4 text-2xl font-semibold text-[#071526]">{formatMoney(financialSummary.totalRaised)}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showLocation ? (
+        <section id="localizacao" className="bg-[#ffffff] px-4 py-24 text-[#071526] sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[.86fr_1.14fr]">
+            <div className="rounded-[38px] bg-[#071526] p-8 text-white shadow-[0_30px_90px_rgba(49,14,74,.20)]">
+              <p className="debut-eyebrow text-[#21c8ff]">Localização</p>
+              <h2 className="debut-serif mt-5 text-5xl leading-tight text-[#e7fbff]">
+                Como chegar
+              </h2>
+              <p className="mt-6 text-base leading-8 text-white/70">
+                {event.location}
+              </p>
+
+              <div className="mt-8 flex flex-wrap gap-3">
+                <a
+                  href={getMapsUrl(event.location)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full bg-[#21c8ff] px-6 py-3 text-sm font-black uppercase tracking-[0.14em] text-[#020b16] transition hover:bg-[#62dcff]"
+                >
+                  Google Maps
+                </a>
+                <a
+                  href={getWazeUrl(event.location)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border border-[#21c8ff]/18 bg-white/8 px-6 py-3 text-sm font-black uppercase tracking-[0.14em] text-white transition hover:bg-white/12"
+                >
+                  Waze
+                </a>
+              </div>
+            </div>
+
+            <div className="grid min-h-[360px] place-items-center rounded-[38px] border border-[#bfefff] bg-[#edf4f8] p-8 text-center shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <div>
+                <p className="debut-eyebrow text-[#21c8ff]">Mapa</p>
+                <h3 className="debut-serif mt-3 text-4xl text-[#071526]">
+                  {event.location}
+                </h3>
+                <p className="mx-auto mt-4 max-w-md text-[#506173]">
+                  Use os botões de rota para chegar com tranquilidade.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {showGifts ? (
+        <section id="presentes" className="bg-[#edf4f8] px-4 py-24 text-[#071526] sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="mx-auto mb-12 max-w-4xl text-center">
+              <p className="debut-eyebrow text-[#21c8ff]">Presentes</p>
+              <h2 className="debut-serif mt-4 text-5xl leading-tight text-[#071526] sm:text-6xl">
+                Opções do evento
+              </h2>
+              <p className="mt-5 text-base leading-8 text-[#506173]">
+                Escolha uma lembrança útil ou contribuição para o evento.
+              </p>
+            </div>
+
+            <div className="mb-8 rounded-[34px] border border-[#bfefff] bg-white/82 p-5 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <div className="grid gap-4 md:grid-cols-3">
+                <input
+                  value={giftSearch}
+                  onChange={(event) => setGiftSearch(event.target.value)}
+                  placeholder="Buscar presente"
+                  className="rounded-2xl border border-[#bfefff] bg-white px-4 py-3 text-sm outline-none focus:border-[#21c8ff]"
+                />
+                <select
+                  value={giftCategory}
+                  onChange={(event) => setGiftCategory(event.target.value)}
+                  className="rounded-2xl border border-[#bfefff] bg-white px-4 py-3 text-sm outline-none focus:border-[#21c8ff]"
+                >
+                  <option value="all">Todas as categorias</option>
+                  {giftCategories.map((category) => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
+                <select
+                  value={giftSort}
+                  onChange={(event) => setGiftSort(event.target.value)}
+                  className="rounded-2xl border border-[#bfefff] bg-white px-4 py-3 text-sm outline-none focus:border-[#21c8ff]"
+                >
+                  <option value="featured">Destaques</option>
+                  <option value="az">A-Z</option>
+                  <option value="price-asc">Menor valor</option>
+                  <option value="price-desc">Maior valor</option>
+                </select>
+              </div>
+            </div>
+
+            {filteredGifts.length === 0 ? (
+              <div className="rounded-[38px] border border-[#bfefff] bg-white/82 p-10 text-center shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+                <h3 className="debut-serif text-4xl text-[#071526]">
+                  Lista em preparação
+                </h3>
+                <p className="mx-auto mt-4 max-w-xl text-[#506173]">
+                  Os presentes ainda não foram cadastrados para este evento.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-7 md:grid-cols-2 xl:grid-cols-3">
+                {filteredGifts.map((gift) => {
+                  const disabled = getGiftActionDisabled(gift);
+
+                  return (
+                    <article
+                      key={gift.id}
+                      className="overflow-hidden rounded-[34px] border border-[#bfefff] bg-white shadow-[0_30px_90px_rgba(49,14,74,.10)] transition hover:-translate-y-1"
+                    >
+                      <div className="relative aspect-[4/3] overflow-hidden">
+                        <img
+                          src={getGiftImage(gift)}
+                          alt={gift.title}
+                          className={`h-full w-full object-cover transition duration-500 ${getGiftImageStateClass(gift)}`}
+                        />
+                        <span className={`absolute left-4 top-4 rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] ${getGiftBadgeClass(gift)}`}>
+                          {getGiftBadge(gift)}
+                        </span>
+                      </div>
+
+                      <div className="p-6">
+                        {gift.category ? (
+                          <p className="debut-eyebrow text-[#21c8ff]">{gift.category}</p>
+                        ) : null}
+                        <h3 className="mt-3 text-2xl font-semibold leading-tight text-[#071526]">
+                          {gift.title}
+                        </h3>
+                        <p className="mt-3 min-h-[70px] text-sm leading-7 text-[#506173]">
+                          {gift.description || "Presente disponível na lista do evento."}
+                        </p>
+                        <p className="debut-serif mt-4 text-3xl text-[#21c8ff]">
+                          {gift.giftType === "FREE_CONTRIBUTION"
+                            ? "Valor livre"
+                            : formatMoney(gift.price)}
+                        </p>
+
+                        <button
+                          type="button"
+                          disabled={disabled}
+                          onClick={() => openPaymentModal(gift)}
+                          className={`mt-6 w-full rounded-full px-5 py-3.5 text-sm font-black uppercase tracking-[0.14em] transition ${
+                            disabled
+                              ? "cursor-not-allowed bg-[#d6eef7] text-[#506173]"
+                              : "bg-[#020b16] text-[#21c8ff] hover:-translate-y-0.5"
+                          }`}
+                        >
+                          {getGiftActionLabel(gift)}
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </section>
+      ) : null}
+
+      <section className="bg-[#071526] px-4 py-20 text-white sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-[1fr_auto]">
+          <div>
+            <p className="debut-eyebrow text-[#21c8ff]">Próximo passo</p>
+            <h2 className="debut-serif mt-4 max-w-3xl text-5xl leading-tight text-[#e7fbff]">
+              Confirme sua presença e venha conhecer nosso evento.
+            </h2>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {showRsvp ? (
+              <a href="#confirmacao" className="rounded-full bg-[#21c8ff] px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-[#020b16]">
+                Confirmar presença
+              </a>
+            ) : null}
+            {showGifts ? (
+              <a href="#presentes" className="rounded-full border border-[#21c8ff]/18 bg-white/8 px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-white">
+                Ver presentes
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </section>
+
+      {showRsvp ? (
+        <section id="confirmacao" className="bg-[#ffffff] px-4 py-24 text-[#071526] sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[.92fr_1.08fr]">
+            <div className="rounded-[38px] bg-[#071526] p-8 text-white shadow-[0_30px_90px_rgba(49,14,74,.20)]">
+              <p className="debut-eyebrow text-[#21c8ff]">RSVP</p>
+              <h2 className="debut-serif mt-5 text-5xl leading-tight text-[#e7fbff]">
+                Sua presença torna essa evento ainda maior.
+              </h2>
+              <p className="mt-6 text-base leading-8 text-white/70">
+                Digite o código do convite para localizar seu cadastro e confirmar
+                sua presença.
+              </p>
+            </div>
+
+            <div className="rounded-[38px] border border-[#bfefff] bg-white/82 p-7 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#21c8ff]">Localizar convite</p>
+              <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]">
+                <input
+                  value={rsvpCode}
+                  onChange={(event) => setRsvpCode(event.target.value)}
+                  placeholder="Digite seu código RSVP"
+                  className="rounded-2xl border border-[#bfefff] bg-white px-4 py-3.5 text-sm outline-none focus:border-[#21c8ff]"
+                />
+                <button
+                  type="button"
+                  onClick={handleLookupGuest}
+                  disabled={rsvpLoading}
+                  className="rounded-2xl bg-[#020b16] px-6 py-3.5 text-sm font-black uppercase tracking-[0.14em] text-[#21c8ff] disabled:opacity-60"
+                >
+                  {rsvpLoading ? "Buscando..." : "Buscar"}
+                </button>
+              </div>
+
+              {rsvpError ? (
+                <div className="mt-5 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {rsvpError}
+                </div>
+              ) : null}
+
+              {rsvpSuccess && !guest ? (
+                <div className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                  {rsvpSuccess}
+                </div>
+              ) : null}
+
+              {guest ? (
+                <div className="mt-6 rounded-[30px] border border-[#bfefff] bg-[#edf4f8] p-5">
+                  <p className="debut-eyebrow text-[#21c8ff]">Convidado localizado</p>
+                  <h3 className="mt-2 text-2xl font-semibold text-[#071526]">
+                    {guest.name}
+                  </h3>
+                  <p className="mt-2 text-sm text-[#506173]">
+                    Status atual: {translateGuestStatus(guest.status)}
+                  </p>
+
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => handleRsvpAction("confirm")}
+                      disabled={rsvpLoading}
+                      className="rounded-2xl bg-emerald-600 px-5 py-4 text-sm font-bold text-white disabled:opacity-60"
+                    >
+                      Confirmar presença
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRsvpAction("decline")}
+                      disabled={rsvpLoading}
+                      className="rounded-2xl border border-[#bfefff] bg-white px-5 py-4 text-sm font-bold text-[#071526] disabled:opacity-60"
+                    >
+                      Não poderei ir
+                    </button>
+                  </div>
+
+                  {rsvpSuccess ? (
+                    <div className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                      {rsvpSuccess}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <footer className="bg-[#071526] px-4 py-10 text-center text-white/60">
+        <p className="debut-serif text-3xl text-[#21c8ff]">Summit</p>
+        <p className="mt-2 text-sm">
+          {formatDateShort(event.date)} • {event.location}
+        </p>
+      </footer>
+
+      {selectedGift ? (
+        <div className="fixed inset-0 z-[100] flex items-start justify-center bg-[rgba(9,1,17,0.82)] px-3 py-3 backdrop-blur-[5px] sm:px-6 sm:py-8 lg:items-center">
+          <div className="max-h-[96vh] w-full max-w-4xl overflow-y-auto rounded-[36px] border border-[#21c8ff]/18 bg-[#ffffff] shadow-[0_38px_120px_rgba(15,23,42,0.22)]">
+            <div className="sticky top-0 z-10 border-b border-[#bfefff] bg-[#ffffff]/95 px-5 py-4 backdrop-blur">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="debut-eyebrow text-[#21c8ff]">Pagamento</p>
+                  <h3 className="mt-2 text-2xl font-semibold text-[#071526]">
+                    {selectedGift.title}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={closePaymentModal}
+                  className="rounded-full border border-[#bfefff] bg-white px-4 py-2 text-sm font-bold text-[#506173]"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+
+            <div className="grid gap-6 p-5 lg:grid-cols-[.9fr_1.1fr]">
+              <div className="overflow-hidden rounded-[30px] border border-[#bfefff] bg-white">
+                <img
+                  src={getGiftImage(selectedGift)}
+                  alt={selectedGift.title}
+                  className="aspect-[4/3] w-full object-cover"
+                />
+                <div className="p-5">
+                  <p className="text-xl font-semibold text-[#071526]">
+                    {selectedGift.title}
+                  </p>
+                  <p className="mt-2 text-sm leading-7 text-[#506173]">
+                    {selectedGift.description || "Pagamento do presente selecionado."}
+                  </p>
+                  <p className="debut-serif mt-4 text-3xl text-[#21c8ff]">
+                    {paymentPreviewAmount ? formatMoney(paymentPreviewAmount) : "-"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-[30px] border border-[#bfefff] bg-white p-5">
+                <div className="grid gap-4">
+                  <input
+                    value={buyerName}
+                    onChange={(event) => setBuyerName(event.target.value)}
+                    placeholder="Seu nome"
+                    className="rounded-2xl border border-[#bfefff] px-4 py-3.5 text-sm outline-none focus:border-[#21c8ff]"
+                  />
+                  <input
+                    value={buyerEmail}
+                    onChange={(event) => setBuyerEmail(event.target.value)}
+                    placeholder="Seu e-mail"
+                    className="rounded-2xl border border-[#bfefff] px-4 py-3.5 text-sm outline-none focus:border-[#21c8ff]"
+                  />
+                  <input
+                    value={buyerPhone}
+                    onChange={(event) => setBuyerPhone(event.target.value)}
+                    placeholder="Seu telefone"
+                    className="rounded-2xl border border-[#bfefff] px-4 py-3.5 text-sm outline-none focus:border-[#21c8ff]"
+                  />
+                  <textarea
+                    value={buyerMessage}
+                    onChange={(event) => setBuyerMessage(event.target.value)}
+                    placeholder="Mensagem opcional"
+                    className="min-h-[110px] rounded-2xl border border-[#bfefff] px-4 py-3.5 text-sm outline-none focus:border-[#21c8ff]"
+                  />
+
+                  {(selectedGift.ui?.acceptsCustomAmount ||
+                    selectedGift.giftType === "FREE_CONTRIBUTION") ? (
+                    <input
+                      value={customAmount}
+                      onChange={(event) => setCustomAmount(event.target.value)}
+                      placeholder="Valor"
+                      className="rounded-2xl border border-[#bfefff] px-4 py-3.5 text-sm outline-none focus:border-[#21c8ff]"
+                    />
+                  ) : null}
+
+                  {selectedGift.giftType === "QUOTA" ? (
+                    <input
+                      type="number"
+                      min={1}
+                      max={selectedGift.quotaRemaining ?? undefined}
+                      value={quotaQuantity}
+                      onChange={(event) => setQuotaQuantity(event.target.value)}
+                      className="rounded-2xl border border-[#bfefff] px-4 py-3.5 text-sm outline-none focus:border-[#21c8ff]"
+                    />
+                  ) : null}
+
+                  <select
+                    value={paymentMethod}
+                    onChange={(event) => setPaymentMethod(event.target.value)}
+                    className="rounded-2xl border border-[#bfefff] px-4 py-3.5 text-sm outline-none focus:border-[#21c8ff]"
+                  >
+                    <option value="CARD">Cartão</option>
+                    <option value="PIX">Pix</option>
+                    <option value="BOLETO">Boleto</option>
+                  </select>
+
+                  {paymentError ? (
+                    <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                      {paymentError}
+                    </div>
+                  ) : null}
+
+                  <button
+                    type="button"
+                    onClick={handleCreatePublicPayment}
+                    disabled={paymentLoading}
+                    className="rounded-full bg-[#020b16] px-5 py-4 text-sm font-black uppercase tracking-[0.14em] text-[#21c8ff] disabled:opacity-60"
+                  >
+                    {paymentLoading ? "Gerando pagamento..." : "Continuar para pagamento"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {showBackToTop ? (
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="fixed bottom-24 right-4 z-40 rounded-full bg-[#020b16] px-4 py-3 text-sm font-black uppercase tracking-[0.12em] text-[#21c8ff] shadow-xl transition hover:-translate-y-0.5 md:bottom-6"
+        >
+          Topo
+        </button>
+      ) : null}
+
+      {(showGifts || showRsvp) ? (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#bfefff] bg-[#ffffff]/95 px-4 py-3 shadow-[0_-12px_30px_rgba(15,23,42,0.08)] backdrop-blur md:hidden">
+          <div className="mx-auto flex max-w-7xl gap-3">
+            {showGifts ? (
+              <a
+                href="#presentes"
+                className="flex-1 rounded-full bg-[#020b16] px-4 py-3 text-center text-sm font-bold text-[#21c8ff]"
+              >
+                Presentes
+              </a>
+            ) : null}
+            {showRsvp ? (
+              <a
+                href="#confirmacao"
+                className="flex-1 rounded-full border border-[#bfefff] bg-white px-4 py-3 text-center text-sm font-bold text-[#071526]"
+              >
+                Confirmar
+              </a>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+    </main>
+  );
+}
+
+
+
+const BIRTHDAY_FALLBACK_IMAGES = [
+  "https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=1800&q=92",
+];
+
+function BirthdayPublicPage({
+  event,
+  countdown,
+  galleryImages,
+  filteredGifts,
+  giftCategories,
+  financialSummary,
+  showStory,
+  showGallery,
+  showLocation,
+  showGifts,
+  showRsvp,
+  showCountdown,
+  copied,
+  handleCopyLink,
+  giftSearch,
+  setGiftSearch,
+  giftCategory,
+  setGiftCategory,
+  giftSort,
+  setGiftSort,
+  openPaymentModal,
+  selectedGift,
+  closePaymentModal,
+  buyerName,
+  setBuyerName,
+  buyerEmail,
+  setBuyerEmail,
+  buyerPhone,
+  setBuyerPhone,
+  buyerMessage,
+  setBuyerMessage,
+  customAmount,
+  setCustomAmount,
+  quotaQuantity,
+  setQuotaQuantity,
+  paymentMethod,
+  setPaymentMethod,
+  paymentLoading,
+  paymentError,
+  paymentPreviewAmount,
+  handleCreatePublicPayment,
+  rsvpCode,
+  setRsvpCode,
+  rsvpLoading,
+  rsvpError,
+  rsvpSuccess,
+  guest,
+  handleLookupGuest,
+  handleRsvpAction,
+  showBackToTop,
+}: WeddingPublicPageProps) {
+  const heroImage =
+    event.heroImage ||
+    event.coverImage ||
+    "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=2400&q=92";
+
+  const birthdayGallery =
+    galleryImages.filter((image) => image && image !== GIFT_PLACEHOLDER).length > 0
+      ? galleryImages
+      : BIRTHDAY_FALLBACK_IMAGES;
+
+  return (
+    <main className="min-h-screen bg-[#fff6ed] text-[#33251f]">
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            html { scroll-behavior: smooth; }
+            .debut-display {
+              font-family: "Bodoni 72", "Didot", "Playfair Display", Georgia, serif;
+              font-weight: 400;
+              letter-spacing: -.055em;
+            }
+            .debut-serif {
+              font-family: "Bodoni 72", "Didot", "Playfair Display", Georgia, serif;
+              font-weight: 400;
+            }
+            .debut-eyebrow {
+              font-size: 11px;
+              font-weight: 900;
+              letter-spacing: .32em;
+              text-transform: uppercase;
+            }
+            .debut-photo {
+              background-size: cover;
+              background-position: center;
+            }
+            .debut-glow {
+              box-shadow:
+                0 34px 110px rgba(139, 63, 242, .18),
+                0 0 0 1px rgba(246, 203, 99, .18);
+            }
+            .debut-card {
+              border: 1px solid rgba(246, 203, 99, .20);
+              background:
+                radial-gradient(circle at 18% 12%, rgba(246,203,99,.12), transparent 30%),
+                linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.045));
+              box-shadow: 0 26px 80px rgba(0,0,0,.26);
+              backdrop-filter: blur(14px);
+            }
+            @media (max-width: 768px) {
+              .debut-display { letter-spacing: -.035em; }
+            }
+          `,
+        }}
+      />
+
+      <header className="sticky top-0 z-50 border-b border-[#d86f4d]/15 bg-[#10041b]/88 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+          <a href="#inicio" className="debut-serif text-2xl text-[#d86f4d]">
+            XV
+          </a>
+
+          <nav className="hidden items-center gap-6 md:flex">
+            <a href="#inicio" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#d86f4d]">
+              Início
+            </a>
+            {showStory ? (
+              <a href="#historia" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#d86f4d]">
+                História
+              </a>
+            ) : null}
+            <a href="#noite" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#d86f4d]">
+              A festa
+            </a>
+            {showGallery ? (
+              <a href="#galeria" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#d86f4d]">
+                Galeria
+              </a>
+            ) : null}
+            {showGifts ? (
+              <a href="#presentes" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#d86f4d]">
+                Presentes
+              </a>
+            ) : null}
+            {showRsvp ? (
+              <a href="#confirmacao" className="text-xs font-black uppercase tracking-[0.16em] text-[#dbc6f1] transition hover:text-[#d86f4d]">
+                RSVP
+              </a>
+            ) : null}
+          </nav>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              className="hidden rounded-full border border-[#d86f4d]/20 bg-white/5 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-[#d86f4d] transition hover:bg-white/10 md:inline-flex"
+            >
+              {copied ? "Copiado" : "Copiar link"}
+            </button>
+
+            {showRsvp ? (
+              <a
+                href="#confirmacao"
+                className="rounded-full bg-[#d86f4d] px-5 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-[#2b1514] shadow-[0_16px_45px_rgba(246,203,99,.20)] transition hover:-translate-y-0.5"
+              >
+                Confirmar
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </header>
+
+      <section id="inicio" className="relative min-h-[800px] overflow-hidden bg-[#3a1c1b]">
+        <div
+          className="absolute inset-0 debut-photo opacity-72"
+          style={{ backgroundImage: `url("${heroImage}")` }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,1,17,.96)_0%,rgba(20,4,33,.78)_47%,rgba(20,4,33,.22)_100%)]" />
+        <div className="absolute left-[-12%] top-[-18%] h-[560px] w-[560px] rounded-full bg-[#d86f4d]/26 blur-3xl" />
+        <div className="absolute bottom-[-24%] right-[-12%] h-[620px] w-[620px] rounded-full bg-[#d86f4d]/18 blur-3xl" />
+        <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-[#2b1514] to-transparent" />
+
+        <div className="relative z-10 mx-auto grid min-h-[800px] max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.08fr_.92fr] lg:px-8">
+          <div>
+            <p className="debut-eyebrow text-[#d86f4d]">Uma festa para celebrar a vida</p>
+            <h1 className="debut-display mt-7 text-7xl leading-[0.82] text-white sm:text-8xl lg:text-[128px]">
+              {event.title}
+            </h1>
+            <p className="debut-serif mt-7 max-w-2xl text-3xl italic leading-tight text-[#fff0df] sm:text-4xl">
+              {event.publicSubtitle ||
+                event.welcomeMessage ||
+                "Uma página alegre e elegante para reunir convidados, presentes e confirmações."}
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <span className="rounded-full border border-[#d86f4d]/18 bg-white/8 px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-[#f7e8ff] backdrop-blur">
+                {formatDateShort(event.date)}
+              </span>
+              <span className="rounded-full border border-[#d86f4d]/18 bg-white/8 px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-[#f7e8ff] backdrop-blur">
+                {event.location}
+              </span>
+            </div>
+
+            <div className="mt-10 flex flex-wrap gap-4">
+              {showRsvp ? (
+                <a
+                  href="#confirmacao"
+                  className="rounded-full bg-[#d86f4d] px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-[#2b1514] shadow-[0_18px_50px_rgba(0,0,0,.28)] transition hover:-translate-y-0.5"
+                >
+                  Confirmar presença
+                </a>
+              ) : null}
+
+              {showGifts ? (
+                <a
+                  href="#presentes"
+                  className="rounded-full border border-[#d86f4d]/22 bg-white/8 px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-white shadow-[0_18px_50px_rgba(0,0,0,.18)] backdrop-blur transition hover:bg-white/12"
+                >
+                  Ver presentes
+                </a>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="debut-card rounded-[46px] p-5">
+            <div
+              className="min-h-[520px] rounded-[34px] debut-photo"
+              style={{ backgroundImage: `url("${birthdayGallery[0] || heroImage}")` }}
+            />
+            <div className="px-4 py-5">
+              <p className="debut-eyebrow text-[#d86f4d]">festa</p>
+              <p className="debut-serif mt-2 text-3xl leading-tight text-white">
+                Uma abertura calorosa para uma comemoração cheia de boas memórias.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showCountdown ? (
+        <section className="bg-[#2b1514] px-4 py-16 text-white sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-5xl text-center">
+            <p className="debut-eyebrow text-[#d86f4d]">Contagem regressiva</p>
+            <h2 className="debut-serif mt-4 text-4xl text-[#ffe6ca] sm:text-5xl">
+              A inauguração do festa está perto.
+            </h2>
+
+            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              {countdown.map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-[30px] border border-[#d86f4d]/15 bg-white/[.07] px-4 py-7 debut-glow"
+                >
+                  <strong className="debut-serif block text-5xl font-normal text-[#d86f4d]">
+                    {item.value}
+                  </strong>
+                  <span className="mt-3 block text-[11px] font-black uppercase tracking-[0.24em] text-white/55">
+                    {item.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section className="bg-[#fff6ed] px-4 py-20 text-center text-[#3a1c1b] sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl rounded-[42px] border border-[#f4c8a7] bg-white/82 px-7 py-12 shadow-[0_30px_90px_rgba(49,14,74,.12)] sm:px-12">
+          <p className="debut-eyebrow text-[#d86f4d]">Mensagem aos convidados</p>
+          <h2 className="debut-serif mt-5 text-4xl leading-tight text-[#3a1c1b] sm:text-6xl">
+            Uma nova idade merece uma grande celebração.
+          </h2>
+          <p className="mx-auto mt-7 max-w-3xl text-base leading-8 text-[#7d665b] sm:text-lg">
+            {event.welcomeMessage ||
+              event.openingMessage ||
+              event.description ||
+              "Criamos este espaço para compartilhar os detalhes da festa, confirmar presença e reunir todos em uma experiência especial."}
+          </p>
+        </div>
+      </section>
+
+      {showStory ? (
+        <section id="historia" className="bg-[#ffffff] px-4 py-24 text-[#3a1c1b] sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[.95fr_1.05fr]">
+            <div className="relative min-h-[560px]">
+              <div
+                className="absolute inset-0 right-20 bottom-24 rounded-[42px] border-[12px] border-white bg-[#f4c8a7] shadow-[0_30px_90px_rgba(49,14,74,.12)] debut-photo"
+                style={{ backgroundImage: `url("${birthdayGallery[1] || birthdayGallery[0]}")` }}
+              />
+              <div
+                className="absolute bottom-0 right-0 h-[310px] w-[48%] rounded-[34px] border-[10px] border-white bg-[#f4c8a7] shadow-[0_30px_90px_rgba(49,14,74,.12)] debut-photo"
+                style={{ backgroundImage: `url("${birthdayGallery[2] || birthdayGallery[0]}")` }}
+              />
+            </div>
+
+            <div>
+              <p className="debut-eyebrow text-[#d86f4d]">Aniversário</p>
+              <h2 className="debut-display mt-5 text-6xl leading-[0.9] text-[#3a1c1b] sm:text-7xl">
+                Um festa pensado para conectar pessoas, marcas e oportunidades.
+              </h2>
+              <p className="mt-7 text-lg leading-9 text-[#7d665b]">
+                Esta página reúne os detalhes do chá: data, local,
+                presentes, confirmação de presença e informações para que cada
+                convidado celebre esse momento com festa.
+              </p>
+              <p className="debut-serif mt-8 border-l-2 border-[#d86f4d] pl-6 text-3xl leading-tight text-[#d86f4d]">
+                Hoje é dia de celebrar festa, família e esperança.
+              </p>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section id="noite" className="relative overflow-hidden bg-[#3a1c1b] px-4 py-24 text-white sm:px-6 lg:px-8">
+        <div
+          className="absolute inset-0 opacity-30 debut-photo"
+          style={{ backgroundImage: `url("${birthdayGallery[3] || heroImage}")` }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,1,17,.98),rgba(17,5,28,.78),rgba(17,5,28,.48))]" />
+
+        <div className="relative z-10 mx-auto max-w-6xl text-center">
+          <p className="debut-eyebrow text-[#d86f4d]">A festa</p>
+          <h2 className="debut-serif mt-4 text-5xl leading-tight text-[#ffe6ca] sm:text-6xl">
+            Família, festa, presentes e afeto.
+          </h2>
+
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            <div className="debut-card rounded-[34px] p-7">
+              <p className="text-5xl">✦</p>
+              <h3 className="mt-5 text-xs font-black uppercase tracking-[0.26em] text-[#d86f4d]">
+                Data
+              </h3>
+              <p className="debut-serif mt-3 text-3xl text-white">{formatDateShort(event.date)}</p>
+            </div>
+            <div className="debut-card rounded-[34px] p-7">
+              <p className="text-5xl">◆</p>
+              <h3 className="mt-5 text-xs font-black uppercase tracking-[0.26em] text-[#d86f4d]">
+                Local
+              </h3>
+              <p className="debut-serif mt-3 text-3xl text-white">{event.location}</p>
+            </div>
+            <div className="debut-card rounded-[34px] p-7">
+              <p className="text-5xl">★</p>
+              <h3 className="mt-5 text-xs font-black uppercase tracking-[0.26em] text-[#d86f4d]">
+                Experiência
+              </h3>
+              <p className="debut-serif mt-3 text-3xl text-white">Festa premium</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showGallery ? (
+        <section id="galeria" className="bg-[#ffffff] py-16 text-center text-[#3a1c1b]">
+          <p className="debut-eyebrow text-[#d86f4d]">Galeria</p>
+          <h2 className="debut-serif mt-3 text-5xl text-[#3a1c1b]">
+            Detalhes do festa
+          </h2>
+
+          <div className="mt-10 grid grid-cols-2 md:grid-cols-5">
+            {birthdayGallery.slice(0, 5).map((image, index) => (
+              <div key={`${image}-${index}`} className="h-64 overflow-hidden bg-[#f4c8a7] md:h-80">
+                <div
+                  className="h-full w-full debut-photo transition duration-700 hover:scale-105"
+                  style={{ backgroundImage: `url("${image}")` }}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <section id="informacoes" className="bg-[#fff6ed] px-4 py-24 text-[#3a1c1b] sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[.82fr_1.18fr]">
+          <div className="rounded-[38px] border border-[#f4c8a7] bg-white/78 p-8 shadow-[0_30px_90px_rgba(49,14,74,.12)]">
+            <p className="debut-eyebrow text-[#d86f4d]">Informações</p>
+            <h2 className="debut-display mt-4 text-5xl leading-[0.95] text-[#3a1c1b] sm:text-6xl">
+              Tudo para celebrar o festa com tranquilidade.
+            </h2>
+            <p className="mt-6 text-base leading-8 text-[#7d665b]">
+              Encontre aqui data, local, confirmação, informações essenciais e as principais
+              orientações para participar do festa.
+            </p>
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="rounded-[30px] border border-[#f4c8a7] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#d86f4d]">Data</p>
+              <p className="mt-4 text-2xl font-semibold text-[#3a1c1b]">{formatDate(event.date)}</p>
+            </div>
+            <div className="rounded-[30px] border border-[#f4c8a7] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#d86f4d]">Local</p>
+              <p className="mt-4 break-words text-2xl font-semibold text-[#3a1c1b]">{event.location}</p>
+            </div>
+            <div className="rounded-[30px] border border-[#f4c8a7] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#d86f4d]">Presentes</p>
+              <p className="mt-4 text-2xl font-semibold text-[#3a1c1b]">{filteredGifts.length} disponíveis</p>
+            </div>
+            <div className="rounded-[30px] border border-[#f4c8a7] bg-white/80 p-6 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#d86f4d]">Arrecadado</p>
+              <p className="mt-4 text-2xl font-semibold text-[#3a1c1b]">{formatMoney(financialSummary.totalRaised)}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showLocation ? (
+        <section id="localizacao" className="bg-[#ffffff] px-4 py-24 text-[#3a1c1b] sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[.86fr_1.14fr]">
+            <div className="rounded-[38px] bg-[#3a1c1b] p-8 text-white shadow-[0_30px_90px_rgba(49,14,74,.20)]">
+              <p className="debut-eyebrow text-[#d86f4d]">Localização</p>
+              <h2 className="debut-serif mt-5 text-5xl leading-tight text-[#ffe6ca]">
+                Como chegar
+              </h2>
+              <p className="mt-6 text-base leading-8 text-white/70">
+                {event.location}
+              </p>
+
+              <div className="mt-8 flex flex-wrap gap-3">
+                <a
+                  href={getMapsUrl(event.location)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full bg-[#d86f4d] px-6 py-3 text-sm font-black uppercase tracking-[0.14em] text-[#2b1514] transition hover:bg-[#f39a61]"
+                >
+                  Google Maps
+                </a>
+                <a
+                  href={getWazeUrl(event.location)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border border-[#d86f4d]/18 bg-white/8 px-6 py-3 text-sm font-black uppercase tracking-[0.14em] text-white transition hover:bg-white/12"
+                >
+                  Waze
+                </a>
+              </div>
+            </div>
+
+            <div className="grid min-h-[360px] place-items-center rounded-[38px] border border-[#f4c8a7] bg-[#fff6ed] p-8 text-center shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <div>
+                <p className="debut-eyebrow text-[#d86f4d]">Mapa</p>
+                <h3 className="debut-serif mt-3 text-4xl text-[#3a1c1b]">
+                  {event.location}
+                </h3>
+                <p className="mx-auto mt-4 max-w-md text-[#7d665b]">
+                  Use os botões de rota para chegar com tranquilidade.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {showGifts ? (
+        <section id="presentes" className="bg-[#fff6ed] px-4 py-24 text-[#3a1c1b] sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="mx-auto mb-12 max-w-4xl text-center">
+              <p className="debut-eyebrow text-[#d86f4d]">Presentes</p>
+              <h2 className="debut-serif mt-4 text-5xl leading-tight text-[#3a1c1b] sm:text-6xl">
+                Opções do festa
+              </h2>
+              <p className="mt-5 text-base leading-8 text-[#7d665b]">
+                Escolha uma lembrança útil ou contribuição para o festa.
+              </p>
+            </div>
+
+            <div className="mb-8 rounded-[34px] border border-[#f4c8a7] bg-white/82 p-5 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <div className="grid gap-4 md:grid-cols-3">
+                <input
+                  value={giftSearch}
+                  onChange={(event) => setGiftSearch(event.target.value)}
+                  placeholder="Buscar presente"
+                  className="rounded-2xl border border-[#f4c8a7] bg-white px-4 py-3 text-sm outline-none focus:border-[#d86f4d]"
+                />
+                <select
+                  value={giftCategory}
+                  onChange={(event) => setGiftCategory(event.target.value)}
+                  className="rounded-2xl border border-[#f4c8a7] bg-white px-4 py-3 text-sm outline-none focus:border-[#d86f4d]"
+                >
+                  <option value="all">Todas as categorias</option>
+                  {giftCategories.map((category) => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
+                <select
+                  value={giftSort}
+                  onChange={(event) => setGiftSort(event.target.value)}
+                  className="rounded-2xl border border-[#f4c8a7] bg-white px-4 py-3 text-sm outline-none focus:border-[#d86f4d]"
+                >
+                  <option value="featured">Destaques</option>
+                  <option value="az">A-Z</option>
+                  <option value="price-asc">Menor valor</option>
+                  <option value="price-desc">Maior valor</option>
+                </select>
+              </div>
+            </div>
+
+            {filteredGifts.length === 0 ? (
+              <div className="rounded-[38px] border border-[#f4c8a7] bg-white/82 p-10 text-center shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+                <h3 className="debut-serif text-4xl text-[#3a1c1b]">
+                  Lista em preparação
+                </h3>
+                <p className="mx-auto mt-4 max-w-xl text-[#7d665b]">
+                  Os presentes ainda não foram cadastrados para este festa.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-7 md:grid-cols-2 xl:grid-cols-3">
+                {filteredGifts.map((gift) => {
+                  const disabled = getGiftActionDisabled(gift);
+
+                  return (
+                    <article
+                      key={gift.id}
+                      className="overflow-hidden rounded-[34px] border border-[#f4c8a7] bg-white shadow-[0_30px_90px_rgba(49,14,74,.10)] transition hover:-translate-y-1"
+                    >
+                      <div className="relative aspect-[4/3] overflow-hidden">
+                        <img
+                          src={getGiftImage(gift)}
+                          alt={gift.title}
+                          className={`h-full w-full object-cover transition duration-500 ${getGiftImageStateClass(gift)}`}
+                        />
+                        <span className={`absolute left-4 top-4 rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] ${getGiftBadgeClass(gift)}`}>
+                          {getGiftBadge(gift)}
+                        </span>
+                      </div>
+
+                      <div className="p-6">
+                        {gift.category ? (
+                          <p className="debut-eyebrow text-[#d86f4d]">{gift.category}</p>
+                        ) : null}
+                        <h3 className="mt-3 text-2xl font-semibold leading-tight text-[#3a1c1b]">
+                          {gift.title}
+                        </h3>
+                        <p className="mt-3 min-h-[70px] text-sm leading-7 text-[#7d665b]">
+                          {gift.description || "Presente disponível na lista do festa."}
+                        </p>
+                        <p className="debut-serif mt-4 text-3xl text-[#d86f4d]">
+                          {gift.giftType === "FREE_CONTRIBUTION"
+                            ? "Valor livre"
+                            : formatMoney(gift.price)}
+                        </p>
+
+                        <button
+                          type="button"
+                          disabled={disabled}
+                          onClick={() => openPaymentModal(gift)}
+                          className={`mt-6 w-full rounded-full px-5 py-3.5 text-sm font-black uppercase tracking-[0.14em] transition ${
+                            disabled
+                              ? "cursor-not-allowed bg-[#f3d7c3] text-[#7d665b]"
+                              : "bg-[#2b1514] text-[#d86f4d] hover:-translate-y-0.5"
+                          }`}
+                        >
+                          {getGiftActionLabel(gift)}
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </section>
+      ) : null}
+
+      <section className="bg-[#3a1c1b] px-4 py-20 text-white sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-[1fr_auto]">
+          <div>
+            <p className="debut-eyebrow text-[#d86f4d]">Próximo passo</p>
+            <h2 className="debut-serif mt-4 max-w-3xl text-5xl leading-tight text-[#ffe6ca]">
+              Confirme sua presença e venha conhecer nosso festa.
+            </h2>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {showRsvp ? (
+              <a href="#confirmacao" className="rounded-full bg-[#d86f4d] px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-[#2b1514]">
+                Confirmar presença
+              </a>
+            ) : null}
+            {showGifts ? (
+              <a href="#presentes" className="rounded-full border border-[#d86f4d]/18 bg-white/8 px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-white">
+                Ver presentes
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </section>
+
+      {showRsvp ? (
+        <section id="confirmacao" className="bg-[#ffffff] px-4 py-24 text-[#3a1c1b] sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[.92fr_1.08fr]">
+            <div className="rounded-[38px] bg-[#3a1c1b] p-8 text-white shadow-[0_30px_90px_rgba(49,14,74,.20)]">
+              <p className="debut-eyebrow text-[#d86f4d]">RSVP</p>
+              <h2 className="debut-serif mt-5 text-5xl leading-tight text-[#ffe6ca]">
+                Sua presença torna essa festa ainda maior.
+              </h2>
+              <p className="mt-6 text-base leading-8 text-white/70">
+                Digite o código do convite para localizar seu cadastro e confirmar
+                sua presença.
+              </p>
+            </div>
+
+            <div className="rounded-[38px] border border-[#f4c8a7] bg-white/82 p-7 shadow-[0_30px_90px_rgba(49,14,74,.10)]">
+              <p className="debut-eyebrow text-[#d86f4d]">Localizar convite</p>
+              <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]">
+                <input
+                  value={rsvpCode}
+                  onChange={(event) => setRsvpCode(event.target.value)}
+                  placeholder="Digite seu código RSVP"
+                  className="rounded-2xl border border-[#f4c8a7] bg-white px-4 py-3.5 text-sm outline-none focus:border-[#d86f4d]"
+                />
+                <button
+                  type="button"
+                  onClick={handleLookupGuest}
+                  disabled={rsvpLoading}
+                  className="rounded-2xl bg-[#2b1514] px-6 py-3.5 text-sm font-black uppercase tracking-[0.14em] text-[#d86f4d] disabled:opacity-60"
+                >
+                  {rsvpLoading ? "Buscando..." : "Buscar"}
+                </button>
+              </div>
+
+              {rsvpError ? (
+                <div className="mt-5 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {rsvpError}
+                </div>
+              ) : null}
+
+              {rsvpSuccess && !guest ? (
+                <div className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                  {rsvpSuccess}
+                </div>
+              ) : null}
+
+              {guest ? (
+                <div className="mt-6 rounded-[30px] border border-[#f4c8a7] bg-[#fff6ed] p-5">
+                  <p className="debut-eyebrow text-[#d86f4d]">Convidado localizado</p>
+                  <h3 className="mt-2 text-2xl font-semibold text-[#3a1c1b]">
+                    {guest.name}
+                  </h3>
+                  <p className="mt-2 text-sm text-[#7d665b]">
+                    Status atual: {translateGuestStatus(guest.status)}
+                  </p>
+
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => handleRsvpAction("confirm")}
+                      disabled={rsvpLoading}
+                      className="rounded-2xl bg-emerald-600 px-5 py-4 text-sm font-bold text-white disabled:opacity-60"
+                    >
+                      Confirmar presença
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRsvpAction("decline")}
+                      disabled={rsvpLoading}
+                      className="rounded-2xl border border-[#f4c8a7] bg-white px-5 py-4 text-sm font-bold text-[#3a1c1b] disabled:opacity-60"
+                    >
+                      Não poderei ir
+                    </button>
+                  </div>
+
+                  {rsvpSuccess ? (
+                    <div className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                      {rsvpSuccess}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <footer className="bg-[#3a1c1b] px-4 py-10 text-center text-white/60">
+        <p className="debut-serif text-3xl text-[#d86f4d]">Aniversário</p>
+        <p className="mt-2 text-sm">
+          {formatDateShort(event.date)} • {event.location}
+        </p>
+      </footer>
+
+      {selectedGift ? (
+        <div className="fixed inset-0 z-[100] flex items-start justify-center bg-[rgba(9,1,17,0.82)] px-3 py-3 backdrop-blur-[5px] sm:px-6 sm:py-8 lg:items-center">
+          <div className="max-h-[96vh] w-full max-w-4xl overflow-y-auto rounded-[36px] border border-[#d86f4d]/18 bg-[#ffffff] shadow-[0_38px_120px_rgba(15,23,42,0.22)]">
+            <div className="sticky top-0 z-10 border-b border-[#f4c8a7] bg-[#ffffff]/95 px-5 py-4 backdrop-blur">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="debut-eyebrow text-[#d86f4d]">Pagamento</p>
+                  <h3 className="mt-2 text-2xl font-semibold text-[#3a1c1b]">
+                    {selectedGift.title}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={closePaymentModal}
+                  className="rounded-full border border-[#f4c8a7] bg-white px-4 py-2 text-sm font-bold text-[#7d665b]"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+
+            <div className="grid gap-6 p-5 lg:grid-cols-[.9fr_1.1fr]">
+              <div className="overflow-hidden rounded-[30px] border border-[#f4c8a7] bg-white">
+                <img
+                  src={getGiftImage(selectedGift)}
+                  alt={selectedGift.title}
+                  className="aspect-[4/3] w-full object-cover"
+                />
+                <div className="p-5">
+                  <p className="text-xl font-semibold text-[#3a1c1b]">
+                    {selectedGift.title}
+                  </p>
+                  <p className="mt-2 text-sm leading-7 text-[#7d665b]">
+                    {selectedGift.description || "Pagamento do presente selecionado."}
+                  </p>
+                  <p className="debut-serif mt-4 text-3xl text-[#d86f4d]">
+                    {paymentPreviewAmount ? formatMoney(paymentPreviewAmount) : "-"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-[30px] border border-[#f4c8a7] bg-white p-5">
+                <div className="grid gap-4">
+                  <input
+                    value={buyerName}
+                    onChange={(event) => setBuyerName(event.target.value)}
+                    placeholder="Seu nome"
+                    className="rounded-2xl border border-[#f4c8a7] px-4 py-3.5 text-sm outline-none focus:border-[#d86f4d]"
+                  />
+                  <input
+                    value={buyerEmail}
+                    onChange={(event) => setBuyerEmail(event.target.value)}
+                    placeholder="Seu e-mail"
+                    className="rounded-2xl border border-[#f4c8a7] px-4 py-3.5 text-sm outline-none focus:border-[#d86f4d]"
+                  />
+                  <input
+                    value={buyerPhone}
+                    onChange={(event) => setBuyerPhone(event.target.value)}
+                    placeholder="Seu telefone"
+                    className="rounded-2xl border border-[#f4c8a7] px-4 py-3.5 text-sm outline-none focus:border-[#d86f4d]"
+                  />
+                  <textarea
+                    value={buyerMessage}
+                    onChange={(event) => setBuyerMessage(event.target.value)}
+                    placeholder="Mensagem opcional"
+                    className="min-h-[110px] rounded-2xl border border-[#f4c8a7] px-4 py-3.5 text-sm outline-none focus:border-[#d86f4d]"
+                  />
+
+                  {(selectedGift.ui?.acceptsCustomAmount ||
+                    selectedGift.giftType === "FREE_CONTRIBUTION") ? (
+                    <input
+                      value={customAmount}
+                      onChange={(event) => setCustomAmount(event.target.value)}
+                      placeholder="Valor"
+                      className="rounded-2xl border border-[#f4c8a7] px-4 py-3.5 text-sm outline-none focus:border-[#d86f4d]"
+                    />
+                  ) : null}
+
+                  {selectedGift.giftType === "QUOTA" ? (
+                    <input
+                      type="number"
+                      min={1}
+                      max={selectedGift.quotaRemaining ?? undefined}
+                      value={quotaQuantity}
+                      onChange={(event) => setQuotaQuantity(event.target.value)}
+                      className="rounded-2xl border border-[#f4c8a7] px-4 py-3.5 text-sm outline-none focus:border-[#d86f4d]"
+                    />
+                  ) : null}
+
+                  <select
+                    value={paymentMethod}
+                    onChange={(event) => setPaymentMethod(event.target.value)}
+                    className="rounded-2xl border border-[#f4c8a7] px-4 py-3.5 text-sm outline-none focus:border-[#d86f4d]"
+                  >
+                    <option value="CARD">Cartão</option>
+                    <option value="PIX">Pix</option>
+                    <option value="BOLETO">Boleto</option>
+                  </select>
+
+                  {paymentError ? (
+                    <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                      {paymentError}
+                    </div>
+                  ) : null}
+
+                  <button
+                    type="button"
+                    onClick={handleCreatePublicPayment}
+                    disabled={paymentLoading}
+                    className="rounded-full bg-[#2b1514] px-5 py-4 text-sm font-black uppercase tracking-[0.14em] text-[#d86f4d] disabled:opacity-60"
+                  >
+                    {paymentLoading ? "Gerando pagamento..." : "Continuar para pagamento"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {showBackToTop ? (
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="fixed bottom-24 right-4 z-40 rounded-full bg-[#2b1514] px-4 py-3 text-sm font-black uppercase tracking-[0.12em] text-[#d86f4d] shadow-xl transition hover:-translate-y-0.5 md:bottom-6"
+        >
+          Topo
+        </button>
+      ) : null}
+
+      {(showGifts || showRsvp) ? (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#f4c8a7] bg-[#ffffff]/95 px-4 py-3 shadow-[0_-12px_30px_rgba(15,23,42,0.08)] backdrop-blur md:hidden">
+          <div className="mx-auto flex max-w-7xl gap-3">
+            {showGifts ? (
+              <a
+                href="#presentes"
+                className="flex-1 rounded-full bg-[#2b1514] px-4 py-3 text-center text-sm font-bold text-[#d86f4d]"
+              >
+                Presentes
+              </a>
+            ) : null}
+            {showRsvp ? (
+              <a
+                href="#confirmacao"
+                className="flex-1 rounded-full border border-[#f4c8a7] bg-white px-4 py-3 text-center text-sm font-bold text-[#3a1c1b]"
+              >
+                Confirmar
+              </a>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+    </main>
+  );
+}
+
+
+
 export default function EventPage() {
   const params = useParams<{ slug: string }>();
   const slug = typeof params?.slug === "string" ? params.slug : "";
@@ -3214,6 +8243,34 @@ export default function EventPage() {
     event.themeKey === "cha-cozinha-elegante" ||
     event.eventType === "KITCHEN_SHOWER";
 
+  const isDebutanteTemplate =
+    event.templateKey === "debutante-luxo" ||
+    event.themeKey === "debutante-luxo";
+
+  const isBabyShowerTemplate =
+    event.templateKey === "cha-bebe-delicado" ||
+    event.themeKey === "cha-bebe-delicado" ||
+    event.eventType === "BABY_SHOWER";
+
+  const isHousewarmingTemplate =
+    event.templateKey === "casa-nova-clean" ||
+    event.themeKey === "casa-nova-clean" ||
+    event.eventType === "HOUSEWARMING";
+
+  const isGraduationTemplate =
+    event.templateKey === "formatura-classica" ||
+    event.themeKey === "formatura-classica" ||
+    event.eventType === "GRADUATION";
+
+  const isCorporateTemplate =
+    event.templateKey === "corporativo-premium" ||
+    event.themeKey === "corporativo-premium" ||
+    event.eventType === "CORPORATE";
+
+  const isBirthdayTemplate =
+    event.templateKey === "aniversario" ||
+    event.themeKey === "aniversario";
+
   if (isWeddingTemplate) {
     return (
       <WeddingPublicPage
@@ -3274,6 +8331,348 @@ export default function EventPage() {
   if (isKitchenShowerTemplate) {
     return (
       <KitchenShowerPublicPage
+        event={event}
+        countdown={countdown}
+        galleryImages={galleryImages}
+        filteredGifts={filteredGifts}
+        giftCategories={giftCategories}
+        financialSummary={financialSummary}
+        showStory={showStory}
+        showGallery={showGallery}
+        showLocation={showLocation}
+        showGifts={showGifts}
+        showRsvp={showRsvp}
+        showCountdown={showCountdown}
+        copied={copied}
+        handleCopyLink={handleCopyLink}
+        giftSearch={giftSearch}
+        setGiftSearch={setGiftSearch}
+        giftCategory={giftCategory}
+        setGiftCategory={setGiftCategory}
+        giftSort={giftSort}
+        setGiftSort={setGiftSort}
+        openPaymentModal={openPaymentModal}
+        selectedGift={selectedGift}
+        closePaymentModal={closePaymentModal}
+        buyerName={buyerName}
+        setBuyerName={setBuyerName}
+        buyerEmail={buyerEmail}
+        setBuyerEmail={setBuyerEmail}
+        buyerPhone={buyerPhone}
+        setBuyerPhone={setBuyerPhone}
+        buyerMessage={buyerMessage}
+        setBuyerMessage={setBuyerMessage}
+        customAmount={customAmount}
+        setCustomAmount={setCustomAmount}
+        quotaQuantity={quotaQuantity}
+        setQuotaQuantity={setQuotaQuantity}
+        paymentMethod={paymentMethod}
+        setPaymentMethod={setPaymentMethod}
+        paymentLoading={paymentLoading}
+        paymentError={paymentError}
+        paymentPreviewAmount={paymentPreviewAmount}
+        handleCreatePublicPayment={handleCreatePublicPayment}
+        rsvpCode={rsvpCode}
+        setRsvpCode={setRsvpCode}
+        rsvpLoading={rsvpLoading}
+        rsvpError={rsvpError}
+        rsvpSuccess={rsvpSuccess}
+        guest={guest}
+        handleLookupGuest={handleLookupGuest}
+        handleRsvpAction={handleRsvpAction}
+        showBackToTop={showBackToTop}
+      />
+    );
+  }
+
+  if (isDebutanteTemplate) {
+    return (
+      <DebutantePublicPage
+        event={event}
+        countdown={countdown}
+        galleryImages={galleryImages}
+        filteredGifts={filteredGifts}
+        giftCategories={giftCategories}
+        financialSummary={financialSummary}
+        showStory={showStory}
+        showGallery={showGallery}
+        showLocation={showLocation}
+        showGifts={showGifts}
+        showRsvp={showRsvp}
+        showCountdown={showCountdown}
+        copied={copied}
+        handleCopyLink={handleCopyLink}
+        giftSearch={giftSearch}
+        setGiftSearch={setGiftSearch}
+        giftCategory={giftCategory}
+        setGiftCategory={setGiftCategory}
+        giftSort={giftSort}
+        setGiftSort={setGiftSort}
+        openPaymentModal={openPaymentModal}
+        selectedGift={selectedGift}
+        closePaymentModal={closePaymentModal}
+        buyerName={buyerName}
+        setBuyerName={setBuyerName}
+        buyerEmail={buyerEmail}
+        setBuyerEmail={setBuyerEmail}
+        buyerPhone={buyerPhone}
+        setBuyerPhone={setBuyerPhone}
+        buyerMessage={buyerMessage}
+        setBuyerMessage={setBuyerMessage}
+        customAmount={customAmount}
+        setCustomAmount={setCustomAmount}
+        quotaQuantity={quotaQuantity}
+        setQuotaQuantity={setQuotaQuantity}
+        paymentMethod={paymentMethod}
+        setPaymentMethod={setPaymentMethod}
+        paymentLoading={paymentLoading}
+        paymentError={paymentError}
+        paymentPreviewAmount={paymentPreviewAmount}
+        handleCreatePublicPayment={handleCreatePublicPayment}
+        rsvpCode={rsvpCode}
+        setRsvpCode={setRsvpCode}
+        rsvpLoading={rsvpLoading}
+        rsvpError={rsvpError}
+        rsvpSuccess={rsvpSuccess}
+        guest={guest}
+        handleLookupGuest={handleLookupGuest}
+        handleRsvpAction={handleRsvpAction}
+        showBackToTop={showBackToTop}
+      />
+    );
+  }
+
+  if (isBabyShowerTemplate) {
+    return (
+      <BabyShowerPublicPage
+        event={event}
+        countdown={countdown}
+        galleryImages={galleryImages}
+        filteredGifts={filteredGifts}
+        giftCategories={giftCategories}
+        financialSummary={financialSummary}
+        showStory={showStory}
+        showGallery={showGallery}
+        showLocation={showLocation}
+        showGifts={showGifts}
+        showRsvp={showRsvp}
+        showCountdown={showCountdown}
+        copied={copied}
+        handleCopyLink={handleCopyLink}
+        giftSearch={giftSearch}
+        setGiftSearch={setGiftSearch}
+        giftCategory={giftCategory}
+        setGiftCategory={setGiftCategory}
+        giftSort={giftSort}
+        setGiftSort={setGiftSort}
+        openPaymentModal={openPaymentModal}
+        selectedGift={selectedGift}
+        closePaymentModal={closePaymentModal}
+        buyerName={buyerName}
+        setBuyerName={setBuyerName}
+        buyerEmail={buyerEmail}
+        setBuyerEmail={setBuyerEmail}
+        buyerPhone={buyerPhone}
+        setBuyerPhone={setBuyerPhone}
+        buyerMessage={buyerMessage}
+        setBuyerMessage={setBuyerMessage}
+        customAmount={customAmount}
+        setCustomAmount={setCustomAmount}
+        quotaQuantity={quotaQuantity}
+        setQuotaQuantity={setQuotaQuantity}
+        paymentMethod={paymentMethod}
+        setPaymentMethod={setPaymentMethod}
+        paymentLoading={paymentLoading}
+        paymentError={paymentError}
+        paymentPreviewAmount={paymentPreviewAmount}
+        handleCreatePublicPayment={handleCreatePublicPayment}
+        rsvpCode={rsvpCode}
+        setRsvpCode={setRsvpCode}
+        rsvpLoading={rsvpLoading}
+        rsvpError={rsvpError}
+        rsvpSuccess={rsvpSuccess}
+        guest={guest}
+        handleLookupGuest={handleLookupGuest}
+        handleRsvpAction={handleRsvpAction}
+        showBackToTop={showBackToTop}
+      />
+    );
+  }
+
+  if (isHousewarmingTemplate) {
+    return (
+      <HousewarmingPublicPage
+        event={event}
+        countdown={countdown}
+        galleryImages={galleryImages}
+        filteredGifts={filteredGifts}
+        giftCategories={giftCategories}
+        financialSummary={financialSummary}
+        showStory={showStory}
+        showGallery={showGallery}
+        showLocation={showLocation}
+        showGifts={showGifts}
+        showRsvp={showRsvp}
+        showCountdown={showCountdown}
+        copied={copied}
+        handleCopyLink={handleCopyLink}
+        giftSearch={giftSearch}
+        setGiftSearch={setGiftSearch}
+        giftCategory={giftCategory}
+        setGiftCategory={setGiftCategory}
+        giftSort={giftSort}
+        setGiftSort={setGiftSort}
+        openPaymentModal={openPaymentModal}
+        selectedGift={selectedGift}
+        closePaymentModal={closePaymentModal}
+        buyerName={buyerName}
+        setBuyerName={setBuyerName}
+        buyerEmail={buyerEmail}
+        setBuyerEmail={setBuyerEmail}
+        buyerPhone={buyerPhone}
+        setBuyerPhone={setBuyerPhone}
+        buyerMessage={buyerMessage}
+        setBuyerMessage={setBuyerMessage}
+        customAmount={customAmount}
+        setCustomAmount={setCustomAmount}
+        quotaQuantity={quotaQuantity}
+        setQuotaQuantity={setQuotaQuantity}
+        paymentMethod={paymentMethod}
+        setPaymentMethod={setPaymentMethod}
+        paymentLoading={paymentLoading}
+        paymentError={paymentError}
+        paymentPreviewAmount={paymentPreviewAmount}
+        handleCreatePublicPayment={handleCreatePublicPayment}
+        rsvpCode={rsvpCode}
+        setRsvpCode={setRsvpCode}
+        rsvpLoading={rsvpLoading}
+        rsvpError={rsvpError}
+        rsvpSuccess={rsvpSuccess}
+        guest={guest}
+        handleLookupGuest={handleLookupGuest}
+        handleRsvpAction={handleRsvpAction}
+        showBackToTop={showBackToTop}
+      />
+    );
+  }
+
+  if (isGraduationTemplate) {
+    return (
+      <GraduationPublicPage
+        event={event}
+        countdown={countdown}
+        galleryImages={galleryImages}
+        filteredGifts={filteredGifts}
+        giftCategories={giftCategories}
+        financialSummary={financialSummary}
+        showStory={showStory}
+        showGallery={showGallery}
+        showLocation={showLocation}
+        showGifts={showGifts}
+        showRsvp={showRsvp}
+        showCountdown={showCountdown}
+        copied={copied}
+        handleCopyLink={handleCopyLink}
+        giftSearch={giftSearch}
+        setGiftSearch={setGiftSearch}
+        giftCategory={giftCategory}
+        setGiftCategory={setGiftCategory}
+        giftSort={giftSort}
+        setGiftSort={setGiftSort}
+        openPaymentModal={openPaymentModal}
+        selectedGift={selectedGift}
+        closePaymentModal={closePaymentModal}
+        buyerName={buyerName}
+        setBuyerName={setBuyerName}
+        buyerEmail={buyerEmail}
+        setBuyerEmail={setBuyerEmail}
+        buyerPhone={buyerPhone}
+        setBuyerPhone={setBuyerPhone}
+        buyerMessage={buyerMessage}
+        setBuyerMessage={setBuyerMessage}
+        customAmount={customAmount}
+        setCustomAmount={setCustomAmount}
+        quotaQuantity={quotaQuantity}
+        setQuotaQuantity={setQuotaQuantity}
+        paymentMethod={paymentMethod}
+        setPaymentMethod={setPaymentMethod}
+        paymentLoading={paymentLoading}
+        paymentError={paymentError}
+        paymentPreviewAmount={paymentPreviewAmount}
+        handleCreatePublicPayment={handleCreatePublicPayment}
+        rsvpCode={rsvpCode}
+        setRsvpCode={setRsvpCode}
+        rsvpLoading={rsvpLoading}
+        rsvpError={rsvpError}
+        rsvpSuccess={rsvpSuccess}
+        guest={guest}
+        handleLookupGuest={handleLookupGuest}
+        handleRsvpAction={handleRsvpAction}
+        showBackToTop={showBackToTop}
+      />
+    );
+  }
+
+  if (isCorporateTemplate) {
+    return (
+      <CorporatePublicPage
+        event={event}
+        countdown={countdown}
+        galleryImages={galleryImages}
+        filteredGifts={filteredGifts}
+        giftCategories={giftCategories}
+        financialSummary={financialSummary}
+        showStory={showStory}
+        showGallery={showGallery}
+        showLocation={showLocation}
+        showGifts={showGifts}
+        showRsvp={showRsvp}
+        showCountdown={showCountdown}
+        copied={copied}
+        handleCopyLink={handleCopyLink}
+        giftSearch={giftSearch}
+        setGiftSearch={setGiftSearch}
+        giftCategory={giftCategory}
+        setGiftCategory={setGiftCategory}
+        giftSort={giftSort}
+        setGiftSort={setGiftSort}
+        openPaymentModal={openPaymentModal}
+        selectedGift={selectedGift}
+        closePaymentModal={closePaymentModal}
+        buyerName={buyerName}
+        setBuyerName={setBuyerName}
+        buyerEmail={buyerEmail}
+        setBuyerEmail={setBuyerEmail}
+        buyerPhone={buyerPhone}
+        setBuyerPhone={setBuyerPhone}
+        buyerMessage={buyerMessage}
+        setBuyerMessage={setBuyerMessage}
+        customAmount={customAmount}
+        setCustomAmount={setCustomAmount}
+        quotaQuantity={quotaQuantity}
+        setQuotaQuantity={setQuotaQuantity}
+        paymentMethod={paymentMethod}
+        setPaymentMethod={setPaymentMethod}
+        paymentLoading={paymentLoading}
+        paymentError={paymentError}
+        paymentPreviewAmount={paymentPreviewAmount}
+        handleCreatePublicPayment={handleCreatePublicPayment}
+        rsvpCode={rsvpCode}
+        setRsvpCode={setRsvpCode}
+        rsvpLoading={rsvpLoading}
+        rsvpError={rsvpError}
+        rsvpSuccess={rsvpSuccess}
+        guest={guest}
+        handleLookupGuest={handleLookupGuest}
+        handleRsvpAction={handleRsvpAction}
+        showBackToTop={showBackToTop}
+      />
+    );
+  }
+
+  if (isBirthdayTemplate) {
+    return (
+      <BirthdayPublicPage
         event={event}
         countdown={countdown}
         galleryImages={galleryImages}
