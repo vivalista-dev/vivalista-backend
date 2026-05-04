@@ -1906,6 +1906,802 @@ function WeddingPublicPage({
 }
 
 
+
+
+const KITCHEN_FALLBACK_IMAGES = [
+  "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1556909212-d5b604d0c90d?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1551218808-94e220e084d2?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1543353071-873f17a7a088?auto=format&fit=crop&w=1800&q=92",
+];
+
+function KitchenShowerPublicPage({
+  event,
+  countdown,
+  galleryImages,
+  filteredGifts,
+  giftCategories,
+  financialSummary,
+  showStory,
+  showGallery,
+  showLocation,
+  showGifts,
+  showRsvp,
+  showCountdown,
+  copied,
+  handleCopyLink,
+  giftSearch,
+  setGiftSearch,
+  giftCategory,
+  setGiftCategory,
+  giftSort,
+  setGiftSort,
+  openPaymentModal,
+  selectedGift,
+  closePaymentModal,
+  buyerName,
+  setBuyerName,
+  buyerEmail,
+  setBuyerEmail,
+  buyerPhone,
+  setBuyerPhone,
+  buyerMessage,
+  setBuyerMessage,
+  customAmount,
+  setCustomAmount,
+  quotaQuantity,
+  setQuotaQuantity,
+  paymentMethod,
+  setPaymentMethod,
+  paymentLoading,
+  paymentError,
+  paymentPreviewAmount,
+  handleCreatePublicPayment,
+  rsvpCode,
+  setRsvpCode,
+  rsvpLoading,
+  rsvpError,
+  rsvpSuccess,
+  guest,
+  handleLookupGuest,
+  handleRsvpAction,
+  showBackToTop,
+}: WeddingPublicPageProps) {
+  const heroImage =
+    event.heroImage ||
+    event.coverImage ||
+    "https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=2400&q=92";
+
+  const kitchenGallery =
+    galleryImages.filter((image) => image && image !== GIFT_PLACEHOLDER).length > 0
+      ? galleryImages
+      : KITCHEN_FALLBACK_IMAGES;
+
+  return (
+    <main className="min-h-screen bg-[#f3ede3] text-[#2e3e35]">
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            html { scroll-behavior: smooth; }
+            .kitchen-display {
+              font-family: "Cormorant Garamond", "Georgia", serif;
+              font-weight: 500;
+              letter-spacing: -.035em;
+            }
+            .kitchen-serif {
+              font-family: "Cormorant Garamond", "Georgia", serif;
+              font-weight: 500;
+            }
+            .kitchen-eyebrow {
+              font-size: 11px;
+              font-weight: 900;
+              letter-spacing: .28em;
+              text-transform: uppercase;
+            }
+            .kitchen-shadow {
+              box-shadow: 0 24px 70px rgba(73, 55, 39, .10);
+            }
+            .kitchen-photo {
+              background-size: cover;
+              background-position: center;
+            }
+            .kitchen-paper {
+              background-image:
+                radial-gradient(circle at 1px 1px, rgba(100,124,98,.10) 1px, transparent 0),
+                linear-gradient(180deg, rgba(255,250,241,.96), rgba(255,246,232,.92));
+              background-size: 18px 18px, 100% 100%;
+            }
+          `,
+        }}
+      />
+
+      <header className="sticky top-0 z-50 border-b border-[#d9cbb9]/80 bg-[#fffaf1]/90 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+          <a href="#inicio" className="kitchen-serif text-2xl text-[#647c62]">
+            VivaLista
+          </a>
+
+          <nav className="hidden items-center gap-6 md:flex">
+            <a href="#inicio" className="text-xs font-bold uppercase tracking-[0.16em] text-[#6d6259] transition hover:text-[#647c62]">
+              Início
+            </a>
+            {showStory ? (
+              <a href="#historia" className="text-xs font-bold uppercase tracking-[0.16em] text-[#6d6259] transition hover:text-[#647c62]">
+                História
+              </a>
+            ) : null}
+            <a href="#detalhes" className="text-xs font-bold uppercase tracking-[0.16em] text-[#6d6259] transition hover:text-[#647c62]">
+              Detalhes
+            </a>
+            {showGallery ? (
+              <a href="#galeria" className="text-xs font-bold uppercase tracking-[0.16em] text-[#6d6259] transition hover:text-[#647c62]">
+                Galeria
+              </a>
+            ) : null}
+            {showGifts ? (
+              <a href="#presentes" className="text-xs font-bold uppercase tracking-[0.16em] text-[#6d6259] transition hover:text-[#647c62]">
+                Presentes
+              </a>
+            ) : null}
+            {showRsvp ? (
+              <a href="#confirmacao" className="text-xs font-bold uppercase tracking-[0.16em] text-[#6d6259] transition hover:text-[#647c62]">
+                RSVP
+              </a>
+            ) : null}
+          </nav>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              className="hidden rounded-full border border-[#d8c9b8] bg-white/70 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#6d6259] transition hover:bg-white md:inline-flex"
+            >
+              {copied ? "Copiado" : "Copiar link"}
+            </button>
+
+            {showRsvp ? (
+              <a
+                href="#confirmacao"
+                className="rounded-full bg-[#647c62] px-5 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-white shadow-lg transition hover:-translate-y-0.5"
+              >
+                Confirmar
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </header>
+
+      <section id="inicio" className="relative overflow-hidden bg-[#203129] text-white">
+        <div
+          className="absolute inset-0 kitchen-photo opacity-80"
+          style={{ backgroundImage: `url("${heroImage}")` }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(32,49,41,.96)_0%,rgba(32,49,41,.70)_52%,rgba(32,49,41,.20)_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#f3ede3] to-transparent" />
+        <div className="absolute left-8 top-12 h-80 w-80 rounded-full bg-[#b46545]/20 blur-3xl" />
+
+        <div className="relative z-10 mx-auto grid min-h-[740px] max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1.05fr_.95fr] lg:px-8">
+          <div>
+            <p className="kitchen-eyebrow text-[#d9b48f]">Chá de cozinha</p>
+            <h1 className="kitchen-display mt-7 max-w-3xl text-6xl leading-[0.9] text-[#fff5e8] sm:text-8xl lg:text-[108px]">
+              {event.title}
+            </h1>
+            <p className="kitchen-serif mt-7 max-w-2xl text-3xl leading-tight text-[#f3dbc6] sm:text-4xl">
+              {event.publicSubtitle ||
+                event.welcomeMessage ||
+                "Um encontro aconchegante para celebrar a nova fase."}
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <span className="rounded-full border border-white/15 bg-white/10 px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-white/85 backdrop-blur">
+                {formatDateShort(event.date)}
+              </span>
+              <span className="rounded-full border border-white/15 bg-white/10 px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-white/85 backdrop-blur">
+                {event.location}
+              </span>
+            </div>
+
+            <div className="mt-10 flex flex-wrap gap-4">
+              {showRsvp ? (
+                <a
+                  href="#confirmacao"
+                  className="rounded-full bg-[#d7a070] px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-[#203129] shadow-[0_18px_50px_rgba(0,0,0,.25)] transition hover:-translate-y-0.5"
+                >
+                  Confirmar presença
+                </a>
+              ) : null}
+
+              {showGifts ? (
+                <a
+                  href="#presentes"
+                  className="rounded-full border border-white/20 bg-white/10 px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-white shadow-[0_18px_50px_rgba(0,0,0,.18)] backdrop-blur transition hover:bg-white/15"
+                >
+                  Ver presentes
+                </a>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="relative hidden lg:block">
+            <div className="rounded-[42px] border border-white/15 bg-white/10 p-4 backdrop-blur-md kitchen-shadow">
+              <div
+                className="min-h-[520px] rounded-[32px] kitchen-photo"
+                style={{ backgroundImage: `url("${kitchenGallery[0] || heroImage}")` }}
+              />
+            </div>
+            <div className="absolute -bottom-8 -left-8 rounded-[28px] border border-[#d8c0a5] bg-[#fffaf1] p-6 text-[#2e3e35] kitchen-shadow">
+              <p className="kitchen-eyebrow text-[#b46545]">lista</p>
+              <p className="kitchen-serif mt-2 text-4xl">{filteredGifts.length}</p>
+              <p className="text-sm text-[#6d6259]">presentes cadastrados</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showCountdown ? (
+        <section className="bg-[#203129] px-4 py-16 text-white sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-5xl text-center">
+            <p className="kitchen-eyebrow text-[#d7a070]">Contagem regressiva</p>
+            <h2 className="kitchen-serif mt-4 text-4xl text-[#fff5e8] sm:text-5xl">
+              Falta pouco para esse encontro especial.
+            </h2>
+
+            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              {countdown.map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-[28px] border border-white/10 bg-white/[.075] px-4 py-7 shadow-[0_20px_60px_rgba(0,0,0,.24)] backdrop-blur"
+                >
+                  <strong className="kitchen-serif block text-5xl font-normal text-[#d7a070]">
+                    {item.value}
+                  </strong>
+                  <span className="mt-3 block text-[11px] font-black uppercase tracking-[0.24em] text-white/55">
+                    {item.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section className="kitchen-paper px-4 py-20 text-center sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl rounded-[38px] border border-[#d9cbb9] bg-white/70 px-7 py-12 kitchen-shadow sm:px-12">
+          <p className="kitchen-eyebrow text-[#b46545]">Mensagem aos convidados</p>
+          <h2 className="kitchen-serif mt-5 text-4xl leading-tight text-[#2e3e35] sm:text-6xl">
+            Uma nova casa começa com afeto.
+          </h2>
+          <p className="mx-auto mt-7 max-w-3xl text-base leading-8 text-[#6d6259] sm:text-lg">
+            {event.welcomeMessage ||
+              event.openingMessage ||
+              event.description ||
+              "Preparamos este cantinho para reunir os detalhes do nosso chá de cozinha, confirmar presença e organizar os presentes com carinho."}
+          </p>
+        </div>
+      </section>
+
+      {showStory ? (
+        <section id="historia" className="px-4 py-24 sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[.95fr_1.05fr]">
+            <div className="rounded-[36px] border border-[#d9cbb9] bg-[#fffaf1] p-7 kitchen-shadow">
+              <div
+                className="min-h-[520px] rounded-[28px] kitchen-photo"
+                style={{ backgroundImage: `url("${kitchenGallery[1] || kitchenGallery[0]}")` }}
+              />
+            </div>
+
+            <div>
+              <p className="kitchen-eyebrow text-[#b46545]">Nossa nova fase</p>
+              <h2 className="kitchen-display mt-5 text-6xl leading-[0.94] text-[#2e3e35] sm:text-7xl">
+                Entre receitas, casa e boas memórias.
+              </h2>
+              <p className="mt-7 text-lg leading-9 text-[#6d6259]">
+                Este encontro foi pensado para reunir pessoas queridas em um clima
+                leve, bonito e acolhedor. Aqui os convidados encontram detalhes,
+                confirmação de presença, localização e a lista de presentes.
+              </p>
+              <p className="kitchen-serif mt-8 border-l-2 border-[#b46545] pl-6 text-3xl leading-tight text-[#647c62]">
+                Cada presente ajuda a montar um lar cheio de significado.
+              </p>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section id="detalhes" className="bg-[#e8ddce] px-4 py-24 sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[.86fr_1.14fr]">
+          <div className="rounded-[36px] bg-[#203129] p-8 text-white kitchen-shadow">
+            <p className="kitchen-eyebrow text-[#d7a070]">Detalhes</p>
+            <h2 className="kitchen-serif mt-5 text-5xl leading-tight text-[#fff5e8]">
+              Tudo para o dia ficar gostoso e organizado.
+            </h2>
+            <p className="mt-6 text-base leading-8 text-white/70">
+              Data, local, presentes e confirmação reunidos em uma página clara,
+              elegante e fácil de compartilhar.
+            </p>
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="rounded-[28px] border border-[#d9cbb9] bg-[#fffaf1]/85 p-6 kitchen-shadow">
+              <p className="kitchen-eyebrow text-[#b46545]">Data</p>
+              <p className="mt-4 text-2xl font-semibold text-[#2e3e35]">
+                {formatDate(event.date)}
+              </p>
+            </div>
+            <div className="rounded-[28px] border border-[#d9cbb9] bg-[#fffaf1]/85 p-6 kitchen-shadow">
+              <p className="kitchen-eyebrow text-[#b46545]">Local</p>
+              <p className="mt-4 break-words text-2xl font-semibold text-[#2e3e35]">
+                {event.location}
+              </p>
+            </div>
+            <div className="rounded-[28px] border border-[#d9cbb9] bg-[#fffaf1]/85 p-6 kitchen-shadow">
+              <p className="kitchen-eyebrow text-[#b46545]">Presentes</p>
+              <p className="mt-4 text-2xl font-semibold text-[#2e3e35]">
+                {filteredGifts.length} disponíveis
+              </p>
+            </div>
+            <div className="rounded-[28px] border border-[#d9cbb9] bg-[#fffaf1]/85 p-6 kitchen-shadow">
+              <p className="kitchen-eyebrow text-[#b46545]">Arrecadado</p>
+              <p className="mt-4 text-2xl font-semibold text-[#2e3e35]">
+                {formatMoney(financialSummary.totalRaised)}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showGallery ? (
+        <section id="galeria" className="bg-[#fffaf1] py-16 text-center">
+          <p className="kitchen-eyebrow text-[#b46545]">Galeria</p>
+          <h2 className="kitchen-serif mt-3 text-4xl text-[#2e3e35] sm:text-5xl">
+            Clima de casa, mesa posta e carinho
+          </h2>
+
+          <div className="mt-10 grid grid-cols-2 md:grid-cols-5">
+            {kitchenGallery.slice(0, 5).map((image, index) => (
+              <div key={`${image}-${index}`} className="h-64 overflow-hidden bg-[#e8ddce] md:h-80">
+                <div
+                  className="h-full w-full kitchen-photo transition duration-700 hover:scale-105"
+                  style={{ backgroundImage: `url("${image}")` }}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {showLocation ? (
+        <section id="localizacao" className="bg-[#f3ede3] px-4 py-24 sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[.86fr_1.14fr]">
+            <div className="rounded-[34px] bg-[#203129] p-8 text-white kitchen-shadow">
+              <p className="kitchen-eyebrow text-[#d7a070]">Localização</p>
+              <h2 className="kitchen-serif mt-5 text-5xl leading-tight text-[#fff5e8]">
+                Como chegar
+              </h2>
+              <p className="mt-6 text-base leading-8 text-white/70">
+                {event.location}
+              </p>
+
+              <div className="mt-8 flex flex-wrap gap-3">
+                <a
+                  href={getMapsUrl(event.location)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full bg-white px-6 py-3 text-sm font-bold text-[#203129] transition hover:bg-[#f7eadf]"
+                >
+                  Google Maps
+                </a>
+                <a
+                  href={getWazeUrl(event.location)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border border-white/15 bg-white/10 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/15"
+                >
+                  Waze
+                </a>
+              </div>
+            </div>
+
+            <div className="grid min-h-[360px] place-items-center rounded-[34px] border border-[#d9cbb9] bg-[#fffaf1] p-8 text-center kitchen-shadow">
+              <div>
+                <p className="kitchen-eyebrow text-[#b46545]">Mapa</p>
+                <h3 className="kitchen-serif mt-3 text-4xl text-[#2e3e35]">
+                  {event.location}
+                </h3>
+                <p className="mx-auto mt-4 max-w-md text-[#6d6259]">
+                  Use os botões de rota para chegar com tranquilidade ao encontro.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {showGifts ? (
+        <section id="presentes" className="bg-[#e8ddce] px-4 py-24 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="mx-auto mb-12 max-w-4xl text-center">
+              <p className="kitchen-eyebrow text-[#b46545]">Presentes</p>
+              <h2 className="kitchen-serif mt-4 text-5xl leading-tight text-[#2e3e35] sm:text-6xl">
+                Lista para o novo lar
+              </h2>
+              <p className="mt-5 text-base leading-8 text-[#6d6259]">
+                Escolha um presente para ajudar a montar essa nova fase com carinho.
+              </p>
+            </div>
+
+            <div className="mb-8 rounded-[30px] border border-[#d9cbb9] bg-[#fffaf1]/85 p-5 kitchen-shadow">
+              <div className="grid gap-4 md:grid-cols-3">
+                <input
+                  value={giftSearch}
+                  onChange={(event) => setGiftSearch(event.target.value)}
+                  placeholder="Buscar presente"
+                  className="rounded-2xl border border-[#d8c9b8] bg-white px-4 py-3 text-sm outline-none focus:border-[#647c62]"
+                />
+                <select
+                  value={giftCategory}
+                  onChange={(event) => setGiftCategory(event.target.value)}
+                  className="rounded-2xl border border-[#d8c9b8] bg-white px-4 py-3 text-sm outline-none focus:border-[#647c62]"
+                >
+                  <option value="all">Todas as categorias</option>
+                  {giftCategories.map((category) => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
+                <select
+                  value={giftSort}
+                  onChange={(event) => setGiftSort(event.target.value)}
+                  className="rounded-2xl border border-[#d8c9b8] bg-white px-4 py-3 text-sm outline-none focus:border-[#647c62]"
+                >
+                  <option value="featured">Destaques</option>
+                  <option value="az">A-Z</option>
+                  <option value="price-asc">Menor valor</option>
+                  <option value="price-desc">Maior valor</option>
+                </select>
+              </div>
+            </div>
+
+            {filteredGifts.length === 0 ? (
+              <div className="rounded-[34px] border border-[#d9cbb9] bg-[#fffaf1]/85 p-10 text-center kitchen-shadow">
+                <h3 className="kitchen-serif text-4xl text-[#2e3e35]">
+                  Lista em preparação
+                </h3>
+                <p className="mx-auto mt-4 max-w-xl text-[#6d6259]">
+                  Os presentes ainda não foram cadastrados para este evento.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-7 md:grid-cols-2 xl:grid-cols-3">
+                {filteredGifts.map((gift) => {
+                  const disabled = getGiftActionDisabled(gift);
+
+                  return (
+                    <article
+                      key={gift.id}
+                      className="overflow-hidden rounded-[32px] border border-[#d9cbb9] bg-[#fffaf1] kitchen-shadow transition hover:-translate-y-1"
+                    >
+                      <div className="relative aspect-[4/3] overflow-hidden">
+                        <img
+                          src={getGiftImage(gift)}
+                          alt={gift.title}
+                          className={`h-full w-full object-cover transition duration-500 ${getGiftImageStateClass(gift)}`}
+                        />
+                        <span className={`absolute left-4 top-4 rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] ${getGiftBadgeClass(gift)}`}>
+                          {getGiftBadge(gift)}
+                        </span>
+                      </div>
+
+                      <div className="p-6">
+                        {gift.category ? (
+                          <p className="kitchen-eyebrow text-[#b46545]">{gift.category}</p>
+                        ) : null}
+                        <h3 className="mt-3 text-2xl font-semibold leading-tight text-[#2e3e35]">
+                          {gift.title}
+                        </h3>
+                        <p className="mt-3 min-h-[70px] text-sm leading-7 text-[#6d6259]">
+                          {gift.description || "Presente disponível na lista do evento."}
+                        </p>
+                        <p className="kitchen-serif mt-4 text-3xl text-[#647c62]">
+                          {gift.giftType === "FREE_CONTRIBUTION"
+                            ? "Valor livre"
+                            : formatMoney(gift.price)}
+                        </p>
+
+                        <button
+                          type="button"
+                          disabled={disabled}
+                          onClick={() => openPaymentModal(gift)}
+                          className={`mt-6 w-full rounded-full px-5 py-3.5 text-sm font-black uppercase tracking-[0.14em] transition ${
+                            disabled
+                              ? "cursor-not-allowed bg-[#dfd2c3] text-[#6d6259]"
+                              : "bg-[#647c62] text-white hover:-translate-y-0.5"
+                          }`}
+                        >
+                          {getGiftActionLabel(gift)}
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </section>
+      ) : null}
+
+      <section className="bg-[#203129] px-4 py-20 text-white sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-[1fr_auto]">
+          <div>
+            <p className="kitchen-eyebrow text-[#d7a070]">Próximo passo</p>
+            <h2 className="kitchen-serif mt-4 max-w-3xl text-5xl leading-tight text-[#fff5e8]">
+              Confirme sua presença e escolha um presente para o novo lar.
+            </h2>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {showRsvp ? (
+              <a href="#confirmacao" className="rounded-full bg-[#d7a070] px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-[#203129]">
+                Confirmar presença
+              </a>
+            ) : null}
+            {showGifts ? (
+              <a href="#presentes" className="rounded-full border border-white/15 bg-white/10 px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-white">
+                Ver presentes
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </section>
+
+      {showRsvp ? (
+        <section id="confirmacao" className="bg-[#fffaf1] px-4 py-24 sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[.92fr_1.08fr]">
+            <div className="rounded-[34px] bg-[#203129] p-8 text-white kitchen-shadow">
+              <p className="kitchen-eyebrow text-[#d7a070]">RSVP</p>
+              <h2 className="kitchen-serif mt-5 text-5xl leading-tight text-[#fff5e8]">
+                Sua presença deixa a mesa mais completa.
+              </h2>
+              <p className="mt-6 text-base leading-8 text-white/70">
+                Digite o código do convite para localizar seu cadastro e confirmar.
+              </p>
+            </div>
+
+            <div className="rounded-[34px] border border-[#d9cbb9] bg-white/80 p-7 kitchen-shadow">
+              <p className="kitchen-eyebrow text-[#b46545]">Localizar convite</p>
+              <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]">
+                <input
+                  value={rsvpCode}
+                  onChange={(event) => setRsvpCode(event.target.value)}
+                  placeholder="Digite seu código RSVP"
+                  className="rounded-2xl border border-[#d8c9b8] bg-white px-4 py-3.5 text-sm outline-none focus:border-[#647c62]"
+                />
+                <button
+                  type="button"
+                  onClick={handleLookupGuest}
+                  disabled={rsvpLoading}
+                  className="rounded-2xl bg-[#647c62] px-6 py-3.5 text-sm font-black uppercase tracking-[0.14em] text-white disabled:opacity-60"
+                >
+                  {rsvpLoading ? "Buscando..." : "Buscar"}
+                </button>
+              </div>
+
+              {rsvpError ? (
+                <div className="mt-5 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {rsvpError}
+                </div>
+              ) : null}
+
+              {rsvpSuccess && !guest ? (
+                <div className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                  {rsvpSuccess}
+                </div>
+              ) : null}
+
+              {guest ? (
+                <div className="mt-6 rounded-[28px] border border-[#d9cbb9] bg-[#fffaf1] p-5">
+                  <p className="kitchen-eyebrow text-[#b46545]">Convidado localizado</p>
+                  <h3 className="mt-2 text-2xl font-semibold text-[#2e3e35]">
+                    {guest.name}
+                  </h3>
+                  <p className="mt-2 text-sm text-[#6d6259]">
+                    Status atual: {translateGuestStatus(guest.status)}
+                  </p>
+
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => handleRsvpAction("confirm")}
+                      disabled={rsvpLoading}
+                      className="rounded-2xl bg-emerald-600 px-5 py-4 text-sm font-bold text-white disabled:opacity-60"
+                    >
+                      Confirmar presença
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRsvpAction("decline")}
+                      disabled={rsvpLoading}
+                      className="rounded-2xl border border-[#d8c9b8] bg-white px-5 py-4 text-sm font-bold text-[#2e3e35] disabled:opacity-60"
+                    >
+                      Não poderei ir
+                    </button>
+                  </div>
+
+                  {rsvpSuccess ? (
+                    <div className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                      {rsvpSuccess}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <footer className="bg-[#203129] px-4 py-10 text-center text-white/60">
+        <p className="kitchen-serif text-3xl text-[#d7a070]">Chá de cozinha</p>
+        <p className="mt-2 text-sm">
+          {formatDateShort(event.date)} • {event.location}
+        </p>
+      </footer>
+
+      {selectedGift ? (
+        <div className="fixed inset-0 z-[100] flex items-start justify-center bg-[rgba(17,24,39,0.78)] px-3 py-3 backdrop-blur-[5px] sm:px-6 sm:py-8 lg:items-center">
+          <div className="max-h-[96vh] w-full max-w-4xl overflow-y-auto rounded-[34px] border border-white/40 bg-[#fffaf1] shadow-[0_38px_120px_rgba(15,23,42,0.22)]">
+            <div className="sticky top-0 z-10 border-b border-[#d9cbb9] bg-[#fffaf1]/95 px-5 py-4 backdrop-blur">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="kitchen-eyebrow text-[#b46545]">Pagamento</p>
+                  <h3 className="mt-2 text-2xl font-semibold text-[#2e3e35]">
+                    {selectedGift.title}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={closePaymentModal}
+                  className="rounded-full border border-[#d8c9b8] bg-white px-4 py-2 text-sm font-bold text-[#6d6259]"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+
+            <div className="grid gap-6 p-5 lg:grid-cols-[.9fr_1.1fr]">
+              <div className="overflow-hidden rounded-[28px] border border-[#d9cbb9] bg-white">
+                <img
+                  src={getGiftImage(selectedGift)}
+                  alt={selectedGift.title}
+                  className="aspect-[4/3] w-full object-cover"
+                />
+                <div className="p-5">
+                  <p className="text-xl font-semibold text-[#2e3e35]">
+                    {selectedGift.title}
+                  </p>
+                  <p className="mt-2 text-sm leading-7 text-[#6d6259]">
+                    {selectedGift.description || "Pagamento do presente selecionado."}
+                  </p>
+                  <p className="kitchen-serif mt-4 text-3xl text-[#647c62]">
+                    {paymentPreviewAmount ? formatMoney(paymentPreviewAmount) : "-"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-[28px] border border-[#d9cbb9] bg-white p-5">
+                <div className="grid gap-4">
+                  <input
+                    value={buyerName}
+                    onChange={(event) => setBuyerName(event.target.value)}
+                    placeholder="Seu nome"
+                    className="rounded-2xl border border-[#d8c9b8] px-4 py-3.5 text-sm outline-none focus:border-[#647c62]"
+                  />
+                  <input
+                    value={buyerEmail}
+                    onChange={(event) => setBuyerEmail(event.target.value)}
+                    placeholder="Seu e-mail"
+                    className="rounded-2xl border border-[#d8c9b8] px-4 py-3.5 text-sm outline-none focus:border-[#647c62]"
+                  />
+                  <input
+                    value={buyerPhone}
+                    onChange={(event) => setBuyerPhone(event.target.value)}
+                    placeholder="Seu telefone"
+                    className="rounded-2xl border border-[#d8c9b8] px-4 py-3.5 text-sm outline-none focus:border-[#647c62]"
+                  />
+                  <textarea
+                    value={buyerMessage}
+                    onChange={(event) => setBuyerMessage(event.target.value)}
+                    placeholder="Mensagem opcional"
+                    className="min-h-[110px] rounded-2xl border border-[#d8c9b8] px-4 py-3.5 text-sm outline-none focus:border-[#647c62]"
+                  />
+
+                  {(selectedGift.ui?.acceptsCustomAmount ||
+                    selectedGift.giftType === "FREE_CONTRIBUTION") ? (
+                    <input
+                      value={customAmount}
+                      onChange={(event) => setCustomAmount(event.target.value)}
+                      placeholder="Valor"
+                      className="rounded-2xl border border-[#d8c9b8] px-4 py-3.5 text-sm outline-none focus:border-[#647c62]"
+                    />
+                  ) : null}
+
+                  {selectedGift.giftType === "QUOTA" ? (
+                    <input
+                      type="number"
+                      min={1}
+                      max={selectedGift.quotaRemaining ?? undefined}
+                      value={quotaQuantity}
+                      onChange={(event) => setQuotaQuantity(event.target.value)}
+                      className="rounded-2xl border border-[#d8c9b8] px-4 py-3.5 text-sm outline-none focus:border-[#647c62]"
+                    />
+                  ) : null}
+
+                  <select
+                    value={paymentMethod}
+                    onChange={(event) => setPaymentMethod(event.target.value)}
+                    className="rounded-2xl border border-[#d8c9b8] px-4 py-3.5 text-sm outline-none focus:border-[#647c62]"
+                  >
+                    <option value="CARD">Cartão</option>
+                    <option value="PIX">Pix</option>
+                    <option value="BOLETO">Boleto</option>
+                  </select>
+
+                  {paymentError ? (
+                    <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                      {paymentError}
+                    </div>
+                  ) : null}
+
+                  <button
+                    type="button"
+                    onClick={handleCreatePublicPayment}
+                    disabled={paymentLoading}
+                    className="rounded-full bg-[#647c62] px-5 py-4 text-sm font-black uppercase tracking-[0.14em] text-white disabled:opacity-60"
+                  >
+                    {paymentLoading ? "Gerando pagamento..." : "Continuar para pagamento"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {showBackToTop ? (
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="fixed bottom-24 right-4 z-40 rounded-full bg-[#647c62] px-4 py-3 text-sm font-black uppercase tracking-[0.12em] text-white shadow-xl transition hover:-translate-y-0.5 md:bottom-6"
+        >
+          Topo
+        </button>
+      ) : null}
+
+      {(showGifts || showRsvp) ? (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#d9cbb9] bg-[#fffaf1]/95 px-4 py-3 shadow-[0_-12px_30px_rgba(15,23,42,0.08)] backdrop-blur md:hidden">
+          <div className="mx-auto flex max-w-7xl gap-3">
+            {showGifts ? (
+              <a
+                href="#presentes"
+                className="flex-1 rounded-full bg-[#647c62] px-4 py-3 text-center text-sm font-bold text-white"
+              >
+                Presentes
+              </a>
+            ) : null}
+            {showRsvp ? (
+              <a
+                href="#confirmacao"
+                className="flex-1 rounded-full border border-[#d8c9b8] bg-white px-4 py-3 text-center text-sm font-bold text-[#2e3e35]"
+              >
+                Confirmar
+              </a>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+    </main>
+  );
+}
+
+
 export default function EventPage() {
   const params = useParams<{ slug: string }>();
   const slug = typeof params?.slug === "string" ? params.slug : "";
@@ -2413,9 +3209,71 @@ export default function EventPage() {
     event.themeKey === "casamento-romantico" ||
     event.eventType === "WEDDING";
 
+  const isKitchenShowerTemplate =
+    event.templateKey === "cha-cozinha-elegante" ||
+    event.themeKey === "cha-cozinha-elegante" ||
+    event.eventType === "KITCHEN_SHOWER";
+
   if (isWeddingTemplate) {
     return (
       <WeddingPublicPage
+        event={event}
+        countdown={countdown}
+        galleryImages={galleryImages}
+        filteredGifts={filteredGifts}
+        giftCategories={giftCategories}
+        financialSummary={financialSummary}
+        showStory={showStory}
+        showGallery={showGallery}
+        showLocation={showLocation}
+        showGifts={showGifts}
+        showRsvp={showRsvp}
+        showCountdown={showCountdown}
+        copied={copied}
+        handleCopyLink={handleCopyLink}
+        giftSearch={giftSearch}
+        setGiftSearch={setGiftSearch}
+        giftCategory={giftCategory}
+        setGiftCategory={setGiftCategory}
+        giftSort={giftSort}
+        setGiftSort={setGiftSort}
+        openPaymentModal={openPaymentModal}
+        selectedGift={selectedGift}
+        closePaymentModal={closePaymentModal}
+        buyerName={buyerName}
+        setBuyerName={setBuyerName}
+        buyerEmail={buyerEmail}
+        setBuyerEmail={setBuyerEmail}
+        buyerPhone={buyerPhone}
+        setBuyerPhone={setBuyerPhone}
+        buyerMessage={buyerMessage}
+        setBuyerMessage={setBuyerMessage}
+        customAmount={customAmount}
+        setCustomAmount={setCustomAmount}
+        quotaQuantity={quotaQuantity}
+        setQuotaQuantity={setQuotaQuantity}
+        paymentMethod={paymentMethod}
+        setPaymentMethod={setPaymentMethod}
+        paymentLoading={paymentLoading}
+        paymentError={paymentError}
+        paymentPreviewAmount={paymentPreviewAmount}
+        handleCreatePublicPayment={handleCreatePublicPayment}
+        rsvpCode={rsvpCode}
+        setRsvpCode={setRsvpCode}
+        rsvpLoading={rsvpLoading}
+        rsvpError={rsvpError}
+        rsvpSuccess={rsvpSuccess}
+        guest={guest}
+        handleLookupGuest={handleLookupGuest}
+        handleRsvpAction={handleRsvpAction}
+        showBackToTop={showBackToTop}
+      />
+    );
+  }
+
+  if (isKitchenShowerTemplate) {
+    return (
+      <KitchenShowerPublicPage
         event={event}
         countdown={countdown}
         galleryImages={galleryImages}
