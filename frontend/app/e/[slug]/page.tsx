@@ -1032,6 +1032,880 @@ function HeroSection({
   );
 }
 
+
+type WeddingPublicPageProps = {
+  event: PublicEvent;
+  countdown: { label: string; value: string }[];
+  galleryImages: string[];
+  filteredGifts: Gift[];
+  giftCategories: string[];
+  financialSummary: FinancialSummary;
+  showStory: boolean;
+  showGallery: boolean;
+  showLocation: boolean;
+  showGifts: boolean;
+  showRsvp: boolean;
+  showCountdown: boolean;
+  copied: boolean;
+  handleCopyLink: () => Promise<void>;
+  giftSearch: string;
+  setGiftSearch: (value: string) => void;
+  giftCategory: string;
+  setGiftCategory: (value: string) => void;
+  giftSort: string;
+  setGiftSort: (value: string) => void;
+  openPaymentModal: (gift: Gift) => void;
+  selectedGift: Gift | null;
+  closePaymentModal: () => void;
+  buyerName: string;
+  setBuyerName: (value: string) => void;
+  buyerEmail: string;
+  setBuyerEmail: (value: string) => void;
+  buyerPhone: string;
+  setBuyerPhone: (value: string) => void;
+  buyerMessage: string;
+  setBuyerMessage: (value: string) => void;
+  customAmount: string;
+  setCustomAmount: (value: string) => void;
+  quotaQuantity: string;
+  setQuotaQuantity: (value: string) => void;
+  paymentMethod: string;
+  setPaymentMethod: (value: string) => void;
+  paymentLoading: boolean;
+  paymentError: string;
+  paymentPreviewAmount: number | null;
+  handleCreatePublicPayment: () => Promise<void>;
+  rsvpCode: string;
+  setRsvpCode: (value: string) => void;
+  rsvpLoading: boolean;
+  rsvpError: string;
+  rsvpSuccess: string;
+  guest: LookupResponse["guest"] | null;
+  handleLookupGuest: () => Promise<void>;
+  handleRsvpAction: (action: "confirm" | "decline") => Promise<void>;
+  showBackToTop: boolean;
+};
+
+const WEDDING_FALLBACK_IMAGES = [
+  "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=1800&q=92",
+  "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1800&q=92",
+];
+
+function WeddingPublicPage({
+  event,
+  countdown,
+  galleryImages,
+  filteredGifts,
+  giftCategories,
+  financialSummary,
+  showStory,
+  showGallery,
+  showLocation,
+  showGifts,
+  showRsvp,
+  showCountdown,
+  copied,
+  handleCopyLink,
+  giftSearch,
+  setGiftSearch,
+  giftCategory,
+  setGiftCategory,
+  giftSort,
+  setGiftSort,
+  openPaymentModal,
+  selectedGift,
+  closePaymentModal,
+  buyerName,
+  setBuyerName,
+  buyerEmail,
+  setBuyerEmail,
+  buyerPhone,
+  setBuyerPhone,
+  buyerMessage,
+  setBuyerMessage,
+  customAmount,
+  setCustomAmount,
+  quotaQuantity,
+  setQuotaQuantity,
+  paymentMethod,
+  setPaymentMethod,
+  paymentLoading,
+  paymentError,
+  paymentPreviewAmount,
+  handleCreatePublicPayment,
+  rsvpCode,
+  setRsvpCode,
+  rsvpLoading,
+  rsvpError,
+  rsvpSuccess,
+  guest,
+  handleLookupGuest,
+  handleRsvpAction,
+  showBackToTop,
+}: WeddingPublicPageProps) {
+  const gold = "#b88b54";
+  const champagne = "#fbf3ea";
+  const paper = "#fffaf3";
+  const dark = "#0d0a08";
+  const heroImage =
+    event.heroImage ||
+    event.coverImage ||
+    "https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=2400&q=92";
+
+  const weddingGallery =
+    galleryImages.filter((image) => image && image !== GIFT_PLACEHOLDER).length > 0
+      ? galleryImages
+      : WEDDING_FALLBACK_IMAGES;
+
+  return (
+    <main className="min-h-screen bg-[#f6eadf] text-[#2f2721]">
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            html { scroll-behavior: smooth; }
+            .wedding-display {
+              font-family: "Bodoni 72", "Didot", "Playfair Display", Georgia, serif;
+              font-weight: 400;
+              letter-spacing: -.055em;
+            }
+            .wedding-serif {
+              font-family: "Bodoni 72", "Didot", "Playfair Display", Georgia, serif;
+              font-weight: 400;
+            }
+            .wedding-eyebrow {
+              font-size: 11px;
+              font-weight: 900;
+              letter-spacing: .30em;
+              text-transform: uppercase;
+            }
+            .wedding-card-shadow {
+              box-shadow: 0 26px 80px rgba(73, 49, 31, .10);
+            }
+            .wedding-photo {
+              background-size: cover;
+              background-position: center;
+            }
+            @media (max-width: 768px) {
+              .wedding-display { letter-spacing: -.035em; }
+            }
+          `,
+        }}
+      />
+
+      <header className="sticky top-0 z-50 border-b border-[#e4d2bf]/70 bg-[#fffaf3]/90 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+          <a href="#inicio" className="wedding-serif text-2xl text-[#9d7442]">
+            A / L
+          </a>
+
+          <nav className="hidden items-center gap-6 md:flex">
+            <a href="#inicio" className="text-xs font-bold uppercase tracking-[0.16em] text-[#746053] transition hover:text-[#9d7442]">
+              Início
+            </a>
+            {showStory ? (
+              <a href="#historia" className="text-xs font-bold uppercase tracking-[0.16em] text-[#746053] transition hover:text-[#9d7442]">
+                Nossa história
+              </a>
+            ) : null}
+            <a href="#cerimonia" className="text-xs font-bold uppercase tracking-[0.16em] text-[#746053] transition hover:text-[#9d7442]">
+              Cerimônia
+            </a>
+            {showGallery ? (
+              <a href="#galeria" className="text-xs font-bold uppercase tracking-[0.16em] text-[#746053] transition hover:text-[#9d7442]">
+                Galeria
+              </a>
+            ) : null}
+            {showGifts ? (
+              <a href="#presentes" className="text-xs font-bold uppercase tracking-[0.16em] text-[#746053] transition hover:text-[#9d7442]">
+                Presentes
+              </a>
+            ) : null}
+            {showRsvp ? (
+              <a href="#confirmacao" className="text-xs font-bold uppercase tracking-[0.16em] text-[#746053] transition hover:text-[#9d7442]">
+                RSVP
+              </a>
+            ) : null}
+          </nav>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              className="hidden rounded-full border border-[#dfc9b3] bg-white/70 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#746053] transition hover:bg-white md:inline-flex"
+            >
+              {copied ? "Copiado" : "Copiar link"}
+            </button>
+
+            {showRsvp ? (
+              <a
+                href="#confirmacao"
+                className="rounded-full bg-[#16110e] px-5 py-2.5 text-xs font-black uppercase tracking-[0.14em] text-[#e5c18a] shadow-lg transition hover:-translate-y-0.5"
+              >
+                Confirmar
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </header>
+
+      <section id="inicio" className="relative min-h-[760px] overflow-hidden bg-[#0d0a08] text-white">
+        <div
+          className="absolute inset-0 wedding-photo opacity-95"
+          style={{ backgroundImage: `url("${heroImage}")` }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(13,10,8,.95)_0%,rgba(13,10,8,.62)_47%,rgba(13,10,8,.18)_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#f6eadf] to-transparent" />
+        <div className="absolute left-0 top-0 h-full w-1/2 bg-[radial-gradient(circle_at_22%_20%,rgba(184,139,84,.18),transparent_34%)]" />
+
+        <div className="relative z-10 mx-auto flex min-h-[760px] max-w-7xl items-center px-4 py-20 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <p className="wedding-eyebrow text-[#d2ad78]">Com muito amor</p>
+            <h1 className="wedding-display mt-7 text-6xl leading-[0.86] text-[#fff2df] sm:text-8xl lg:text-[118px]">
+              {event.title}
+            </h1>
+            <p className="wedding-serif mt-7 max-w-2xl text-3xl italic leading-tight text-[#eed7bb] sm:text-4xl">
+              {event.publicSubtitle || event.welcomeMessage || "O início do nosso para sempre."}
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <span className="rounded-full border border-white/15 bg-white/10 px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-white/85 backdrop-blur">
+                {formatDateShort(event.date)}
+              </span>
+              <span className="rounded-full border border-white/15 bg-white/10 px-5 py-3 text-xs font-black uppercase tracking-[0.18em] text-white/85 backdrop-blur">
+                {event.location}
+              </span>
+            </div>
+
+            <div className="mt-10 flex flex-wrap gap-4">
+              {showRsvp ? (
+                <a
+                  href="#confirmacao"
+                  className="rounded-full bg-[#d1a05f] px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-[#17100b] shadow-[0_18px_50px_rgba(0,0,0,.28)] transition hover:-translate-y-0.5"
+                >
+                  Confirmar presença
+                </a>
+              ) : null}
+
+              {showGifts ? (
+                <a
+                  href="#presentes"
+                  className="rounded-full border border-white/20 bg-white/10 px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-white shadow-[0_18px_50px_rgba(0,0,0,.18)] backdrop-blur transition hover:bg-white/15"
+                >
+                  Ver presentes
+                </a>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showCountdown ? (
+        <section className="bg-[#0d0a08] px-4 py-16 text-white sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-5xl text-center">
+            <p className="wedding-eyebrow text-[#d1a05f]">Contagem regressiva</p>
+            <h2 className="wedding-serif mt-4 text-4xl text-[#fff2df] sm:text-5xl">
+              Está chegando o grande dia.
+            </h2>
+
+            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              {countdown.map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-[28px] border border-white/10 bg-white/[.075] px-4 py-7 shadow-[0_20px_60px_rgba(0,0,0,.26)] backdrop-blur"
+                >
+                  <strong className="wedding-serif block text-5xl font-normal text-[#d1a05f]">
+                    {item.value}
+                  </strong>
+                  <span className="mt-3 block text-[11px] font-black uppercase tracking-[0.24em] text-white/55">
+                    {item.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section className="bg-[#fffaf3] px-4 py-20 text-center sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl rounded-[38px] border border-[#ead8c5] bg-white/75 px-7 py-12 wedding-card-shadow sm:px-12">
+          <p className="wedding-eyebrow text-[#b88b54]">Mensagem aos convidados</p>
+          <h2 className="wedding-serif mt-5 text-4xl leading-tight text-[#2f2721] sm:text-6xl">
+            O que Deus uniu, ninguém separe.
+          </h2>
+          <p className="mx-auto mt-7 max-w-3xl text-base leading-8 text-[#746053] sm:text-lg">
+            {event.welcomeMessage ||
+              event.openingMessage ||
+              event.description ||
+              "Criamos este site para compartilhar com vocês os detalhes do nosso casamento. Estamos muito felizes e contamos com a presença de todos no nosso grande dia."}
+          </p>
+        </div>
+      </section>
+
+      {showStory ? (
+        <section id="historia" className="px-4 py-24 sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[1.05fr_.95fr]">
+            <div className="relative min-h-[560px]">
+              <div
+                className="absolute inset-0 right-20 bottom-24 border-[12px] border-white bg-[#ead8c5] wedding-card-shadow wedding-photo"
+                style={{ backgroundImage: `url("${weddingGallery[1] || weddingGallery[0]}")` }}
+              />
+              <div
+                className="absolute bottom-0 right-0 h-[310px] w-[48%] border-[10px] border-white bg-[#ead8c5] wedding-card-shadow wedding-photo"
+                style={{ backgroundImage: `url("${weddingGallery[0]}")` }}
+              />
+            </div>
+
+            <div>
+              <p className="wedding-eyebrow text-[#b88b54]">Nossa história</p>
+              <h2 className="wedding-display mt-5 text-6xl leading-[0.9] text-[#2f2721] sm:text-7xl">
+                Dois caminhos. Um mesmo destino.
+              </h2>
+              <p className="mt-7 text-lg leading-9 text-[#746053]">
+                Entre sonhos, escolhas e momentos especiais, este dia marca o começo
+                de uma nova fase. Esta página reúne as informações mais importantes
+                para que todos participem com carinho e tranquilidade.
+              </p>
+              <p className="wedding-serif mt-8 border-l-2 border-[#b88b54] pl-6 text-3xl leading-tight text-[#9d7442]">
+                Cada detalhe foi pensado para celebrar o amor.
+              </p>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <section id="cerimonia" className="relative overflow-hidden bg-[#0d0a08] px-4 py-20 text-white sm:px-6 lg:px-8">
+        <div
+          className="absolute inset-0 opacity-25 wedding-photo"
+          style={{ backgroundImage: `url("${weddingGallery[2] || heroImage}")` }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(13,10,8,.96),rgba(13,10,8,.72),rgba(13,10,8,.46))]" />
+
+        <div className="relative z-10 mx-auto max-w-5xl text-center">
+          <p className="wedding-eyebrow text-[#d1a05f]">Cerimônia & Recepção</p>
+          <h2 className="wedding-serif mt-4 text-4xl text-[#fff2df] sm:text-5xl">
+            Informações do grande dia
+          </h2>
+
+          <div className="mt-12 grid items-center gap-8 md:grid-cols-[1fr_auto_1fr]">
+            <div>
+              <div className="text-5xl text-[#d1a05f]">♙</div>
+              <h3 className="mt-5 text-xs font-black uppercase tracking-[0.26em] text-[#d1a05f]">
+                Cerimônia
+              </h3>
+              <strong className="wedding-serif mt-3 block text-4xl font-normal text-white">
+                {formatDateShort(event.date)}
+              </strong>
+              <p className="mt-3 text-white/65">{event.location}</p>
+            </div>
+
+            <div className="hidden h-36 w-px bg-white/15 md:block" />
+
+            <div>
+              <div className="text-5xl text-[#d1a05f]">♢</div>
+              <h3 className="mt-5 text-xs font-black uppercase tracking-[0.26em] text-[#d1a05f]">
+                Recepção
+              </h3>
+              <strong className="wedding-serif mt-3 block text-4xl font-normal text-white">
+                Após a cerimônia
+              </strong>
+              <p className="mt-3 text-white/65">
+                Celebração, presentes, localização e confirmação em um só lugar.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showGallery ? (
+        <section id="galeria" className="bg-[#fffaf3] py-16 text-center">
+          <p className="wedding-eyebrow text-[#b88b54]">Galeria</p>
+          <h2 className="wedding-serif mt-3 text-4xl text-[#2f2721] sm:text-5xl">
+            Atmosfera do evento
+          </h2>
+
+          <div className="mt-10 grid grid-cols-2 md:grid-cols-5">
+            {weddingGallery.slice(0, 5).map((image, index) => (
+              <div key={`${image}-${index}`} className="h-64 overflow-hidden bg-[#ead8c5] md:h-80">
+                <div
+                  className="h-full w-full wedding-photo transition duration-700 hover:scale-105"
+                  style={{ backgroundImage: `url("${image}")` }}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <section id="informacoes" className="bg-[#f3dfd3] px-4 py-24 sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[.82fr_1.18fr]">
+          <div className="rounded-[34px] border border-[#e1c7b1] bg-[#fffaf3]/80 p-8 wedding-card-shadow">
+            <p className="wedding-eyebrow text-[#b88b54]">Informações</p>
+            <h2 className="wedding-display mt-4 text-5xl leading-[0.95] text-[#2f2721] sm:text-6xl">
+              Tudo pensado para você chegar tranquilo.
+            </h2>
+            <p className="mt-6 text-base leading-8 text-[#746053]">
+              Confira data, local, rotas, presentes e confirmação nesta página.
+              O objetivo é deixar a experiência mais clara e mais bonita para os convidados.
+            </p>
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div className="rounded-[28px] border border-[#e1c7b1] bg-white/70 p-6 wedding-card-shadow">
+              <p className="wedding-eyebrow text-[#b88b54]">Data</p>
+              <p className="mt-4 text-2xl font-semibold text-[#2f2721]">{formatDate(event.date)}</p>
+            </div>
+            <div className="rounded-[28px] border border-[#e1c7b1] bg-white/70 p-6 wedding-card-shadow">
+              <p className="wedding-eyebrow text-[#b88b54]">Local</p>
+              <p className="mt-4 break-words text-2xl font-semibold text-[#2f2721]">{event.location}</p>
+            </div>
+            <div className="rounded-[28px] border border-[#e1c7b1] bg-white/70 p-6 wedding-card-shadow">
+              <p className="wedding-eyebrow text-[#b88b54]">Presentes</p>
+              <p className="mt-4 text-2xl font-semibold text-[#2f2721]">{filteredGifts.length} disponíveis</p>
+            </div>
+            <div className="rounded-[28px] border border-[#e1c7b1] bg-white/70 p-6 wedding-card-shadow">
+              <p className="wedding-eyebrow text-[#b88b54]">Arrecadado</p>
+              <p className="mt-4 text-2xl font-semibold text-[#2f2721]">{formatMoney(financialSummary.totalRaised)}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {showLocation ? (
+        <section id="localizacao" className="bg-[#fffaf3] px-4 py-24 sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[.86fr_1.14fr]">
+            <div className="rounded-[34px] bg-[#0d0a08] p-8 text-white wedding-card-shadow">
+              <p className="wedding-eyebrow text-[#d1a05f]">Localização</p>
+              <h2 className="wedding-serif mt-5 text-5xl leading-tight text-[#fff2df]">
+                Como chegar
+              </h2>
+              <p className="mt-6 text-base leading-8 text-white/70">
+                {event.location}
+              </p>
+
+              <div className="mt-8 flex flex-wrap gap-3">
+                <a
+                  href={getMapsUrl(event.location)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full bg-white px-6 py-3 text-sm font-bold text-[#0d0a08] transition hover:bg-[#f7eadf]"
+                >
+                  Google Maps
+                </a>
+                <a
+                  href={getWazeUrl(event.location)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border border-white/15 bg-white/10 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/15"
+                >
+                  Waze
+                </a>
+              </div>
+            </div>
+
+            <div className="grid min-h-[360px] place-items-center rounded-[34px] border border-[#e1c7b1] bg-[#f7eadf] p-8 text-center wedding-card-shadow">
+              <div>
+                <p className="wedding-eyebrow text-[#b88b54]">Mapa</p>
+                <h3 className="wedding-serif mt-3 text-4xl text-[#2f2721]">
+                  {event.location}
+                </h3>
+                <p className="mx-auto mt-4 max-w-md text-[#746053]">
+                  No site final, esta área pode receber mapa incorporado e botões de rota.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {showGifts ? (
+        <section id="presentes" className="bg-[#f3dfd3] px-4 py-24 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="mx-auto mb-12 max-w-4xl text-center">
+              <p className="wedding-eyebrow text-[#b88b54]">Presentes</p>
+              <h2 className="wedding-serif mt-4 text-5xl leading-tight text-[#2f2721] sm:text-6xl">
+                Lista de presentes
+              </h2>
+              <p className="mt-5 text-base leading-8 text-[#746053]">
+                Sua presença é o nosso maior presente. Se desejar nos presentear,
+                escolha uma das opções abaixo.
+              </p>
+            </div>
+
+            <div className="mb-8 rounded-[30px] border border-[#e1c7b1] bg-[#fffaf3]/85 p-5 wedding-card-shadow">
+              <div className="grid gap-4 md:grid-cols-3">
+                <input
+                  value={giftSearch}
+                  onChange={(event) => setGiftSearch(event.target.value)}
+                  placeholder="Buscar presente"
+                  className="rounded-2xl border border-[#dec7b2] bg-white px-4 py-3 text-sm outline-none focus:border-[#b88b54]"
+                />
+                <select
+                  value={giftCategory}
+                  onChange={(event) => setGiftCategory(event.target.value)}
+                  className="rounded-2xl border border-[#dec7b2] bg-white px-4 py-3 text-sm outline-none focus:border-[#b88b54]"
+                >
+                  <option value="all">Todas as categorias</option>
+                  {giftCategories.map((category) => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
+                <select
+                  value={giftSort}
+                  onChange={(event) => setGiftSort(event.target.value)}
+                  className="rounded-2xl border border-[#dec7b2] bg-white px-4 py-3 text-sm outline-none focus:border-[#b88b54]"
+                >
+                  <option value="featured">Destaques</option>
+                  <option value="az">A-Z</option>
+                  <option value="price-asc">Menor valor</option>
+                  <option value="price-desc">Maior valor</option>
+                </select>
+              </div>
+            </div>
+
+            {filteredGifts.length === 0 ? (
+              <div className="rounded-[34px] border border-[#e1c7b1] bg-[#fffaf3]/85 p-10 text-center wedding-card-shadow">
+                <h3 className="wedding-serif text-4xl text-[#2f2721]">
+                  Lista em preparação
+                </h3>
+                <p className="mx-auto mt-4 max-w-xl text-[#746053]">
+                  Os presentes ainda não foram cadastrados para este evento.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-7 md:grid-cols-2 xl:grid-cols-3">
+                {filteredGifts.map((gift) => {
+                  const disabled = getGiftActionDisabled(gift);
+
+                  return (
+                    <article
+                      key={gift.id}
+                      className="overflow-hidden rounded-[32px] border border-[#e1c7b1] bg-[#fffaf3] wedding-card-shadow transition hover:-translate-y-1"
+                    >
+                      <div className="relative aspect-[4/3] overflow-hidden">
+                        <img
+                          src={getGiftImage(gift)}
+                          alt={gift.title}
+                          className={`h-full w-full object-cover transition duration-500 ${getGiftImageStateClass(gift)}`}
+                        />
+                        <span className={`absolute left-4 top-4 rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] ${getGiftBadgeClass(gift)}`}>
+                          {getGiftBadge(gift)}
+                        </span>
+                      </div>
+
+                      <div className="p-6">
+                        {gift.category ? (
+                          <p className="wedding-eyebrow text-[#b88b54]">{gift.category}</p>
+                        ) : null}
+                        <h3 className="mt-3 text-2xl font-semibold leading-tight text-[#2f2721]">
+                          {gift.title}
+                        </h3>
+                        <p className="mt-3 min-h-[70px] text-sm leading-7 text-[#746053]">
+                          {gift.description || "Presente disponível na lista do evento."}
+                        </p>
+                        <p className="wedding-serif mt-4 text-3xl text-[#9d7442]">
+                          {gift.giftType === "FREE_CONTRIBUTION"
+                            ? "Valor livre"
+                            : formatMoney(gift.price)}
+                        </p>
+
+                        <button
+                          type="button"
+                          disabled={disabled}
+                          onClick={() => openPaymentModal(gift)}
+                          className={`mt-6 w-full rounded-full px-5 py-3.5 text-sm font-black uppercase tracking-[0.14em] transition ${
+                            disabled
+                              ? "cursor-not-allowed bg-[#ead8c5] text-[#746053]"
+                              : "bg-[#0d0a08] text-[#d1a05f] hover:-translate-y-0.5"
+                          }`}
+                        >
+                          {getGiftActionLabel(gift)}
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </section>
+      ) : null}
+
+      <section className="bg-[#0d0a08] px-4 py-20 text-white sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-[1fr_auto]">
+          <div>
+            <p className="wedding-eyebrow text-[#d1a05f]">Próximo passo</p>
+            <h2 className="wedding-serif mt-4 max-w-3xl text-5xl leading-tight text-[#fff2df]">
+              Confirme sua presença e participe deste momento especial.
+            </h2>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {showRsvp ? (
+              <a href="#confirmacao" className="rounded-full bg-[#d1a05f] px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-[#17100b]">
+                Confirmar presença
+              </a>
+            ) : null}
+            {showGifts ? (
+              <a href="#presentes" className="rounded-full border border-white/15 bg-white/10 px-7 py-4 text-sm font-black uppercase tracking-[0.16em] text-white">
+                Ver presentes
+              </a>
+            ) : null}
+          </div>
+        </div>
+      </section>
+
+      {showRsvp ? (
+        <section id="confirmacao" className="bg-[#fffaf3] px-4 py-24 sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[.92fr_1.08fr]">
+            <div className="rounded-[34px] bg-[#0d0a08] p-8 text-white wedding-card-shadow">
+              <p className="wedding-eyebrow text-[#d1a05f]">RSVP</p>
+              <h2 className="wedding-serif mt-5 text-5xl leading-tight text-[#fff2df]">
+                Sua presença é muito importante.
+              </h2>
+              <p className="mt-6 text-base leading-8 text-white/70">
+                Digite o código do convite para localizar seu cadastro e confirmar
+                sua presença.
+              </p>
+            </div>
+
+            <div className="rounded-[34px] border border-[#e1c7b1] bg-white/80 p-7 wedding-card-shadow">
+              <p className="wedding-eyebrow text-[#b88b54]">Localizar convite</p>
+              <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]">
+                <input
+                  value={rsvpCode}
+                  onChange={(event) => setRsvpCode(event.target.value)}
+                  placeholder="Digite seu código RSVP"
+                  className="rounded-2xl border border-[#dec7b2] bg-white px-4 py-3.5 text-sm outline-none focus:border-[#b88b54]"
+                />
+                <button
+                  type="button"
+                  onClick={handleLookupGuest}
+                  disabled={rsvpLoading}
+                  className="rounded-2xl bg-[#0d0a08] px-6 py-3.5 text-sm font-black uppercase tracking-[0.14em] text-[#d1a05f] disabled:opacity-60"
+                >
+                  {rsvpLoading ? "Buscando..." : "Buscar"}
+                </button>
+              </div>
+
+              {rsvpError ? (
+                <div className="mt-5 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {rsvpError}
+                </div>
+              ) : null}
+
+              {rsvpSuccess && !guest ? (
+                <div className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                  {rsvpSuccess}
+                </div>
+              ) : null}
+
+              {guest ? (
+                <div className="mt-6 rounded-[28px] border border-[#ead8c5] bg-[#fffaf3] p-5">
+                  <p className="wedding-eyebrow text-[#b88b54]">Convidado localizado</p>
+                  <h3 className="mt-2 text-2xl font-semibold text-[#2f2721]">
+                    {guest.name}
+                  </h3>
+                  <p className="mt-2 text-sm text-[#746053]">
+                    Status atual: {translateGuestStatus(guest.status)}
+                  </p>
+
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => handleRsvpAction("confirm")}
+                      disabled={rsvpLoading}
+                      className="rounded-2xl bg-emerald-600 px-5 py-4 text-sm font-bold text-white disabled:opacity-60"
+                    >
+                      Confirmar presença
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRsvpAction("decline")}
+                      disabled={rsvpLoading}
+                      className="rounded-2xl border border-[#dec7b2] bg-white px-5 py-4 text-sm font-bold text-[#2f2721] disabled:opacity-60"
+                    >
+                      Não poderei ir
+                    </button>
+                  </div>
+
+                  {rsvpSuccess ? (
+                    <div className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                      {rsvpSuccess}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      <footer className="bg-[#0d0a08] px-4 py-10 text-center text-white/60">
+        <p className="wedding-serif text-3xl text-[#d1a05f]">A / L</p>
+        <p className="mt-2 text-sm">
+          {formatDateShort(event.date)} • {event.location}
+        </p>
+      </footer>
+
+      {selectedGift ? (
+        <div className="fixed inset-0 z-[100] flex items-start justify-center bg-[rgba(17,24,39,0.78)] px-3 py-3 backdrop-blur-[5px] sm:px-6 sm:py-8 lg:items-center">
+          <div className="max-h-[96vh] w-full max-w-4xl overflow-y-auto rounded-[34px] border border-white/40 bg-[#fffaf3] shadow-[0_38px_120px_rgba(15,23,42,0.22)]">
+            <div className="sticky top-0 z-10 border-b border-[#ead8c5] bg-[#fffaf3]/95 px-5 py-4 backdrop-blur">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="wedding-eyebrow text-[#b88b54]">Pagamento</p>
+                  <h3 className="mt-2 text-2xl font-semibold text-[#2f2721]">
+                    {selectedGift.title}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={closePaymentModal}
+                  className="rounded-full border border-[#dec7b2] bg-white px-4 py-2 text-sm font-bold text-[#746053]"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+
+            <div className="grid gap-6 p-5 lg:grid-cols-[.9fr_1.1fr]">
+              <div className="overflow-hidden rounded-[28px] border border-[#ead8c5] bg-white">
+                <img
+                  src={getGiftImage(selectedGift)}
+                  alt={selectedGift.title}
+                  className="aspect-[4/3] w-full object-cover"
+                />
+                <div className="p-5">
+                  <p className="text-xl font-semibold text-[#2f2721]">
+                    {selectedGift.title}
+                  </p>
+                  <p className="mt-2 text-sm leading-7 text-[#746053]">
+                    {selectedGift.description || "Pagamento do presente selecionado."}
+                  </p>
+                  <p className="wedding-serif mt-4 text-3xl text-[#9d7442]">
+                    {paymentPreviewAmount ? formatMoney(paymentPreviewAmount) : "-"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-[28px] border border-[#ead8c5] bg-white p-5">
+                <div className="grid gap-4">
+                  <input
+                    value={buyerName}
+                    onChange={(event) => setBuyerName(event.target.value)}
+                    placeholder="Seu nome"
+                    className="rounded-2xl border border-[#dec7b2] px-4 py-3.5 text-sm outline-none focus:border-[#b88b54]"
+                  />
+                  <input
+                    value={buyerEmail}
+                    onChange={(event) => setBuyerEmail(event.target.value)}
+                    placeholder="Seu e-mail"
+                    className="rounded-2xl border border-[#dec7b2] px-4 py-3.5 text-sm outline-none focus:border-[#b88b54]"
+                  />
+                  <input
+                    value={buyerPhone}
+                    onChange={(event) => setBuyerPhone(event.target.value)}
+                    placeholder="Seu telefone"
+                    className="rounded-2xl border border-[#dec7b2] px-4 py-3.5 text-sm outline-none focus:border-[#b88b54]"
+                  />
+                  <textarea
+                    value={buyerMessage}
+                    onChange={(event) => setBuyerMessage(event.target.value)}
+                    placeholder="Mensagem opcional"
+                    className="min-h-[110px] rounded-2xl border border-[#dec7b2] px-4 py-3.5 text-sm outline-none focus:border-[#b88b54]"
+                  />
+
+                  {(selectedGift.ui?.acceptsCustomAmount ||
+                    selectedGift.giftType === "FREE_CONTRIBUTION") ? (
+                    <input
+                      value={customAmount}
+                      onChange={(event) => setCustomAmount(event.target.value)}
+                      placeholder="Valor"
+                      className="rounded-2xl border border-[#dec7b2] px-4 py-3.5 text-sm outline-none focus:border-[#b88b54]"
+                    />
+                  ) : null}
+
+                  {selectedGift.giftType === "QUOTA" ? (
+                    <input
+                      type="number"
+                      min={1}
+                      max={selectedGift.quotaRemaining ?? undefined}
+                      value={quotaQuantity}
+                      onChange={(event) => setQuotaQuantity(event.target.value)}
+                      className="rounded-2xl border border-[#dec7b2] px-4 py-3.5 text-sm outline-none focus:border-[#b88b54]"
+                    />
+                  ) : null}
+
+                  <select
+                    value={paymentMethod}
+                    onChange={(event) => setPaymentMethod(event.target.value)}
+                    className="rounded-2xl border border-[#dec7b2] px-4 py-3.5 text-sm outline-none focus:border-[#b88b54]"
+                  >
+                    <option value="CARD">Cartão</option>
+                    <option value="PIX">Pix</option>
+                    <option value="BOLETO">Boleto</option>
+                  </select>
+
+                  {paymentError ? (
+                    <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                      {paymentError}
+                    </div>
+                  ) : null}
+
+                  <button
+                    type="button"
+                    onClick={handleCreatePublicPayment}
+                    disabled={paymentLoading}
+                    className="rounded-full bg-[#0d0a08] px-5 py-4 text-sm font-black uppercase tracking-[0.14em] text-[#d1a05f] disabled:opacity-60"
+                  >
+                    {paymentLoading ? "Gerando pagamento..." : "Continuar para pagamento"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {showBackToTop ? (
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="fixed bottom-24 right-4 z-40 rounded-full bg-[#0d0a08] px-4 py-3 text-sm font-black uppercase tracking-[0.12em] text-[#d1a05f] shadow-xl transition hover:-translate-y-0.5 md:bottom-6"
+        >
+          Topo
+        </button>
+      ) : null}
+
+      {(showGifts || showRsvp) ? (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#e1c7b1] bg-[#fffaf3]/95 px-4 py-3 shadow-[0_-12px_30px_rgba(15,23,42,0.08)] backdrop-blur md:hidden">
+          <div className="mx-auto flex max-w-7xl gap-3">
+            {showGifts ? (
+              <a
+                href="#presentes"
+                className="flex-1 rounded-full bg-[#0d0a08] px-4 py-3 text-center text-sm font-bold text-[#d1a05f]"
+              >
+                Presentes
+              </a>
+            ) : null}
+            {showRsvp ? (
+              <a
+                href="#confirmacao"
+                className="flex-1 rounded-full border border-[#dec7b2] bg-white px-4 py-3 text-center text-sm font-bold text-[#2f2721]"
+              >
+                Confirmar
+              </a>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+    </main>
+  );
+}
+
+
 export default function EventPage() {
   const params = useParams<{ slug: string }>();
   const slug = typeof params?.slug === "string" ? params.slug : "";
@@ -1533,6 +2407,68 @@ export default function EventPage() {
     event.quotaEnabled ? "Sistema de cotas" : null,
     showRsvp ? "Confirmação online" : null,
   ].filter(Boolean) as string[];
+
+  const isWeddingTemplate =
+    event.templateKey === "casamento-romantico" ||
+    event.themeKey === "casamento-romantico" ||
+    event.eventType === "WEDDING";
+
+  if (isWeddingTemplate) {
+    return (
+      <WeddingPublicPage
+        event={event}
+        countdown={countdown}
+        galleryImages={galleryImages}
+        filteredGifts={filteredGifts}
+        giftCategories={giftCategories}
+        financialSummary={financialSummary}
+        showStory={showStory}
+        showGallery={showGallery}
+        showLocation={showLocation}
+        showGifts={showGifts}
+        showRsvp={showRsvp}
+        showCountdown={showCountdown}
+        copied={copied}
+        handleCopyLink={handleCopyLink}
+        giftSearch={giftSearch}
+        setGiftSearch={setGiftSearch}
+        giftCategory={giftCategory}
+        setGiftCategory={setGiftCategory}
+        giftSort={giftSort}
+        setGiftSort={setGiftSort}
+        openPaymentModal={openPaymentModal}
+        selectedGift={selectedGift}
+        closePaymentModal={closePaymentModal}
+        buyerName={buyerName}
+        setBuyerName={setBuyerName}
+        buyerEmail={buyerEmail}
+        setBuyerEmail={setBuyerEmail}
+        buyerPhone={buyerPhone}
+        setBuyerPhone={setBuyerPhone}
+        buyerMessage={buyerMessage}
+        setBuyerMessage={setBuyerMessage}
+        customAmount={customAmount}
+        setCustomAmount={setCustomAmount}
+        quotaQuantity={quotaQuantity}
+        setQuotaQuantity={setQuotaQuantity}
+        paymentMethod={paymentMethod}
+        setPaymentMethod={setPaymentMethod}
+        paymentLoading={paymentLoading}
+        paymentError={paymentError}
+        paymentPreviewAmount={paymentPreviewAmount}
+        handleCreatePublicPayment={handleCreatePublicPayment}
+        rsvpCode={rsvpCode}
+        setRsvpCode={setRsvpCode}
+        rsvpLoading={rsvpLoading}
+        rsvpError={rsvpError}
+        rsvpSuccess={rsvpSuccess}
+        guest={guest}
+        handleLookupGuest={handleLookupGuest}
+        handleRsvpAction={handleRsvpAction}
+        showBackToTop={showBackToTop}
+      />
+    );
+  }
 
   return (
     <main
