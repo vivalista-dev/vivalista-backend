@@ -105,6 +105,26 @@ type Contribution = {
   } | null;
 };
 
+
+type PublicGalleryImage = {
+  id?: string;
+  imageUrl?: string | null;
+  title?: string | null;
+  description?: string | null;
+  displayOrder?: number;
+  isCover?: boolean;
+};
+
+type PublicGalleryResponse = {
+  event?: {
+    id?: string;
+    name?: string;
+    slug?: string;
+  };
+  gallery?: PublicGalleryImage[];
+  images?: PublicGalleryImage[];
+};
+
 type FinancialSummary = {
   totalRaised: number;
   paidContributionsCount: number;
@@ -1100,6 +1120,7 @@ export default function EventPage() {
 
   const [event, setEvent] = useState<PublicEvent | null>(null);
   const [gifts, setGifts] = useState<Gift[]>([]);
+  const [galleryImagesFromEvent, setGalleryImagesFromEvent] = useState<string[]>([]);
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [financialSummary, setFinancialSummary] = useState<FinancialSummary>({
     totalRaised: 0,
@@ -1141,11 +1162,12 @@ export default function EventPage() {
     setErrorMessage("");
 
     try {
-      const [eventRes, giftsRes, contributionsRes, financialRes] = await Promise.all([
+      const [eventRes, giftsRes, contributionsRes, financialRes, galleryRes] = await Promise.all([
         fetch(`${API}/events/public/${slug}`, { cache: "no-store" }),
         fetch(`${API}/events/public/${slug}/gifts`, { cache: "no-store" }),
         fetch(`${API}/events/public/${slug}/contributions`, { cache: "no-store" }),
         fetch(`${API}/events/public/${slug}/financial-summary`, { cache: "no-store" }),
+        fetch(`${API}/events/public/${slug}/gallery`, { cache: "no-store" }),
       ]);
 
       if (!eventRes.ok) {
@@ -1191,8 +1213,34 @@ export default function EventPage() {
         averageContribution: 0,
       };
 
+      const galleryJson: PublicGalleryResponse = galleryRes.ok
+        ? await galleryRes.json()
+        : { gallery: [] };
+
+      const rawGalleryImages = Array.isArray(galleryJson.gallery)
+        ? galleryJson.gallery
+        : Array.isArray(galleryJson.images)
+          ? galleryJson.images
+          : [];
+
+      const normalizedGalleryImages = rawGalleryImages
+        .sort((a, b) => {
+          const orderA = Number(a.displayOrder ?? 0);
+          const orderB = Number(b.displayOrder ?? 0);
+
+          if (orderA !== orderB) return orderA - orderB;
+
+          if (a.isCover && !b.isCover) return -1;
+          if (!a.isCover && b.isCover) return 1;
+
+          return String(a.id ?? "").localeCompare(String(b.id ?? ""));
+        })
+        .map((image) => buildPublicAssetUrl(image.imageUrl ?? null))
+        .filter((image): image is string => Boolean(image));
+
       setEvent(normalizedEvent);
       setGifts((rawGifts as GiftApiItem[]).map(normalizeGift));
+      setGalleryImagesFromEvent(normalizedGalleryImages);
       setContributions(rawContributions as Contribution[]);
       setFinancialSummary(financial);
     } catch (error) {
@@ -1302,16 +1350,22 @@ export default function EventPage() {
   }, [gifts, giftSearch, giftCategory, giftSort]);
 
   const galleryImages = useMemo(() => {
-    const images: string[] = [];
-    if (event?.heroImage) images.push(event.heroImage);
-    if (event?.coverImage && event.coverImage !== event.heroImage) images.push(event.coverImage);
+    const images: string[] =
+      galleryImagesFromEvent.length > 0 ? [...galleryImagesFromEvent] : [];
 
-    const giftImages = gifts
-      .map((gift) => gift.imageUrl)
-      .filter((item): item is string => Boolean(item))
-      .slice(0, 5);
+    if (images.length === 0) {
+      if (event?.heroImage) images.push(event.heroImage);
+      if (event?.coverImage && event.coverImage !== event.heroImage) {
+        images.push(event.coverImage);
+      }
 
-    images.push(...giftImages);
+      const giftImages = gifts
+        .map((gift) => gift.imageUrl)
+        .filter((item): item is string => Boolean(item))
+        .slice(0, 5);
+
+      images.push(...giftImages);
+    }
 
     if (images.length === 0) {
       return [GIFT_PLACEHOLDER, GIFT_PLACEHOLDER, GIFT_PLACEHOLDER, GIFT_PLACEHOLDER];
@@ -1321,8 +1375,8 @@ export default function EventPage() {
       images.push(images[images.length % images.length]);
     }
 
-    return images.slice(0, 4);
-  }, [event?.heroImage, event?.coverImage, gifts]);
+    return images;
+  }, [event?.heroImage, event?.coverImage, gifts, galleryImagesFromEvent]);
 
   const paymentPreviewAmount = useMemo(() => {
     if (!selectedGift) return null;
