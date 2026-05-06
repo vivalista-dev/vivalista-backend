@@ -53,6 +53,16 @@ function ensureGiftImageUploadDir() {
   return uploadPath;
 }
 
+function ensureEventGalleryUploadDir() {
+  const uploadPath = join(process.cwd(), 'uploads', 'events', 'gallery');
+
+  if (!existsSync(uploadPath)) {
+    mkdirSync(uploadPath, { recursive: true });
+  }
+
+  return uploadPath;
+}
+
 function buildSafeFileName(originalName: string) {
   const extension = extname(originalName || '').toLowerCase();
   const baseName = (originalName || 'imagem')
@@ -219,6 +229,108 @@ export class EventController {
     );
   }
 
+
+  // =========================
+  // ROTAS PROTEGIDAS - GALERIA
+  // =========================
+
+  @Get(':id/gallery')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.OWNER, Role.ADMIN, Role.STAFF)
+  findGalleryImages(
+    @Param('id') id: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.eventService.findGalleryImages(
+      id,
+      this.getOrganizationId(req),
+    );
+  }
+
+  @Post(':id/gallery')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.OWNER, Role.ADMIN)
+  createGalleryImage(
+    @Param('id') id: string,
+    @Body() body: unknown,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.eventService.createGalleryImage(
+      id,
+      body,
+      this.getOrganizationId(req),
+    );
+  }
+
+  @Post(':id/gallery/upload')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.OWNER, Role.ADMIN)
+  @UseInterceptors(buildImageUploadInterceptor(ensureEventGalleryUploadDir))
+  uploadGalleryImage(
+    @Param('id') id: string,
+    @UploadedFile() file: any,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    if (!file) {
+      throw new BadRequestException('Nenhum arquivo foi enviado.');
+    }
+
+    const imageUrl = `/uploads/events/gallery/${file.filename}`;
+
+    return this.eventService.uploadGalleryImage(
+      id,
+      imageUrl,
+      this.getOrganizationId(req),
+    );
+  }
+
+  @Patch(':id/gallery/reorder')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.OWNER, Role.ADMIN)
+  reorderGalleryImages(
+    @Param('id') id: string,
+    @Body() body: unknown,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.eventService.reorderGalleryImages(
+      id,
+      body,
+      this.getOrganizationId(req),
+    );
+  }
+
+  @Patch(':id/gallery/:imageId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.OWNER, Role.ADMIN)
+  updateGalleryImage(
+    @Param('id') id: string,
+    @Param('imageId') imageId: string,
+    @Body() body: unknown,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.eventService.updateGalleryImage(
+      id,
+      imageId,
+      body,
+      this.getOrganizationId(req),
+    );
+  }
+
+  @Delete(':id/gallery/:imageId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.OWNER, Role.ADMIN)
+  removeGalleryImage(
+    @Param('id') id: string,
+    @Param('imageId') imageId: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.eventService.removeGalleryImage(
+      id,
+      imageId,
+      this.getOrganizationId(req),
+    );
+  }
+
   // =========================
   // ROTAS PROTEGIDAS - PRESENTES
   // =========================
@@ -371,6 +483,13 @@ export class EventController {
   @Get('public/:slug/financial-summary')
   findPublicFinancialSummaryBySlug(@Param('slug') slug: string) {
     return this.eventService.findPublicFinancialSummaryBySlug(slug);
+  }
+
+
+  @Public()
+  @Get('public/:slug/gallery')
+  findPublicGalleryBySlug(@Param('slug') slug: string) {
+    return this.eventService.findPublicGalleryBySlug(slug);
   }
 
   // =========================

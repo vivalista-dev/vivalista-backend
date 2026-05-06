@@ -367,6 +367,21 @@ export class EventService {
     };
   }
 
+
+  private mapGalleryImage(image: any) {
+    return {
+      id: image.id,
+      eventId: image.eventId,
+      imageUrl: image.imageUrl,
+      title: image.title,
+      description: image.description,
+      displayOrder: image.displayOrder,
+      isCover: image.isCover,
+      createdAt: image.createdAt,
+      updatedAt: image.updatedAt,
+    };
+  }
+
   private mapGiftResponse(gift: any) {
     return {
       id: gift.id,
@@ -393,6 +408,21 @@ export class EventService {
       status: guest.status,
       rsvpCode: guest.rsvpCode,
     };
+  }
+
+
+  private async buildPublicGallery(eventId: string) {
+    const images = await this.prisma.eventGalleryImage.findMany({
+      where: {
+        eventId,
+      },
+      orderBy: [
+        { displayOrder: 'asc' },
+        { createdAt: 'asc' },
+      ],
+    });
+
+    return images.map((image) => this.mapGalleryImage(image));
   }
 
   private async buildPublicStats(eventId: string) {
@@ -804,6 +834,305 @@ export class EventService {
     };
   }
 
+
+  async findGalleryImages(eventId: string, organizationId: string) {
+    await this.findEventByIdAndOrg(eventId, organizationId);
+
+    const images = await this.prisma.eventGalleryImage.findMany({
+      where: {
+        eventId,
+        organizationId,
+      },
+      orderBy: [
+        { displayOrder: 'asc' },
+        { createdAt: 'asc' },
+      ],
+    });
+
+    return {
+      eventId,
+      images: images.map((image) => this.mapGalleryImage(image)),
+    };
+  }
+
+  async createGalleryImage(eventId: string, body: any, organizationId: string) {
+    const event = await this.findEventByIdAndOrg(eventId, organizationId);
+    const imageUrl = this.normalizeRequiredString(body?.imageUrl, 'URL da imagem');
+
+    const normalizedTitle = this.normalizeOptionalString(body?.title);
+    const normalizedDescription = this.normalizeOptionalString(body?.description);
+    const rawDisplayOrder = this.normalizeOptionalNumber(body?.displayOrder);
+    const shouldBeCover = Boolean(body?.isCover);
+
+    const imagesCount = await this.prisma.eventGalleryImage.count({
+      where: {
+        eventId,
+        organizationId,
+      },
+    });
+
+    const displayOrder =
+      rawDisplayOrder === undefined || rawDisplayOrder === null
+        ? imagesCount + 1
+        : Math.trunc(rawDisplayOrder);
+
+    const shouldSetAsCover = shouldBeCover || imagesCount === 0 || !event.coverImage;
+
+    if (shouldSetAsCover) {
+      await this.prisma.eventGalleryImage.updateMany({
+        where: {
+          eventId,
+          organizationId,
+        },
+        data: {
+          isCover: false,
+        },
+      });
+    }
+
+    const image = await this.prisma.eventGalleryImage.create({
+      data: {
+        eventId,
+        organizationId,
+        imageUrl,
+        title: normalizedTitle ?? null,
+        description: normalizedDescription ?? null,
+        displayOrder,
+        isCover: shouldSetAsCover,
+      },
+    });
+
+    if (shouldSetAsCover) {
+      await this.prisma.event.update({
+        where: { id: eventId },
+        data: {
+          coverImage: imageUrl,
+          heroImageUrl: imageUrl,
+        },
+      });
+    }
+
+    return {
+      message: 'Imagem adicionada à galeria com sucesso.',
+      eventId,
+      image: this.mapGalleryImage(image),
+    };
+  }
+
+  async uploadGalleryImage(
+    eventId: string,
+    imageUrl: string,
+    organizationId: string,
+  ) {
+    return this.createGalleryImage(
+      eventId,
+      {
+        imageUrl,
+      },
+      organizationId,
+    );
+  }
+
+  async updateGalleryImage(
+    eventId: string,
+    imageId: string,
+    body: any,
+    organizationId: string,
+  ) {
+    await this.findEventByIdAndOrg(eventId, organizationId);
+
+    const existingImage = await this.prisma.eventGalleryImage.findFirst({
+      where: {
+        id: imageId,
+        eventId,
+        organizationId,
+      },
+    });
+
+    if (!existingImage) {
+      throw new NotFoundException('Imagem da galeria não encontrada.');
+    }
+
+    const data: any = {};
+
+    if (body?.imageUrl !== undefined) {
+      data.imageUrl = this.normalizeRequiredString(body.imageUrl, 'URL da imagem');
+    }
+
+    if (body?.title !== undefined) {
+      data.title = this.normalizeOptionalString(body.title);
+    }
+
+    if (body?.description !== undefined) {
+      data.description = this.normalizeOptionalString(body.description);
+    }
+
+    if (body?.displayOrder !== undefined) {
+      const normalizedDisplayOrder = this.normalizeOptionalNumber(body.displayOrder);
+      data.displayOrder =
+        normalizedDisplayOrder === null || normalizedDisplayOrder === undefined
+          ? 0
+          : Math.trunc(normalizedDisplayOrder);
+    }
+
+    const shouldSetAsCover = body?.isCover === true;
+
+    if (shouldSetAsCover) {
+      await this.prisma.eventGalleryImage.updateMany({
+        where: {
+          eventId,
+          organizationId,
+          id: {
+            not: imageId,
+          },
+        },
+        data: {
+          isCover: false,
+        },
+      });
+
+      data.isCover = true;
+    } else if (body?.isCover === false) {
+      data.isCover = false;
+    }
+
+    const updatedImage = await this.prisma.eventGalleryImage.update({
+      where: { id: imageId },
+      data,
+    });
+
+    if (shouldSetAsCover) {
+      await this.prisma.event.update({
+        where: { id: eventId },
+        data: {
+          coverImage: updatedImage.imageUrl,
+          heroImageUrl: updatedImage.imageUrl,
+        },
+      });
+    }
+
+    return {
+      message: 'Imagem da galeria atualizada com sucesso.',
+      eventId,
+      image: this.mapGalleryImage(updatedImage),
+    };
+  }
+
+  async reorderGalleryImages(
+    eventId: string,
+    body: any,
+    organizationId: string,
+  ) {
+    await this.findEventByIdAndOrg(eventId, organizationId);
+
+    const items = Array.isArray(body?.items) ? body.items : [];
+
+    if (items.length === 0) {
+      throw new BadRequestException('Informe a lista de imagens para reordenar.');
+    }
+
+    const existingImages = await this.prisma.eventGalleryImage.findMany({
+      where: {
+        eventId,
+        organizationId,
+        id: {
+          in: items.map((item: any) => String(item?.id ?? '')),
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    const validIds = new Set(existingImages.map((image) => image.id));
+
+    for (const item of items) {
+      const imageId = String(item?.id ?? '');
+      const displayOrder = Number(item?.displayOrder);
+
+      if (!imageId || !validIds.has(imageId)) {
+        throw new BadRequestException('Imagem inválida na reordenação.');
+      }
+
+      if (Number.isNaN(displayOrder)) {
+        throw new BadRequestException('Ordem inválida na reordenação.');
+      }
+    }
+
+    await this.prisma.$transaction(
+      items.map((item: any) =>
+        this.prisma.eventGalleryImage.update({
+          where: { id: String(item.id) },
+          data: {
+            displayOrder: Math.trunc(Number(item.displayOrder)),
+          },
+        }),
+      ),
+    );
+
+    return this.findGalleryImages(eventId, organizationId);
+  }
+
+  async removeGalleryImage(
+    eventId: string,
+    imageId: string,
+    organizationId: string,
+  ) {
+    await this.findEventByIdAndOrg(eventId, organizationId);
+
+    const image = await this.prisma.eventGalleryImage.findFirst({
+      where: {
+        id: imageId,
+        eventId,
+        organizationId,
+      },
+    });
+
+    if (!image) {
+      throw new NotFoundException('Imagem da galeria não encontrada.');
+    }
+
+    await this.prisma.eventGalleryImage.delete({
+      where: { id: image.id },
+    });
+
+    if (image.isCover) {
+      const nextCover = await this.prisma.eventGalleryImage.findFirst({
+        where: {
+          eventId,
+          organizationId,
+        },
+        orderBy: [
+          { displayOrder: 'asc' },
+          { createdAt: 'asc' },
+        ],
+      });
+
+      if (nextCover) {
+        await this.prisma.eventGalleryImage.update({
+          where: { id: nextCover.id },
+          data: {
+            isCover: true,
+          },
+        });
+
+        await this.prisma.event.update({
+          where: { id: eventId },
+          data: {
+            coverImage: nextCover.imageUrl,
+            heroImageUrl: nextCover.imageUrl,
+          },
+        });
+      }
+    }
+
+    return {
+      message: 'Imagem removida da galeria com sucesso.',
+      eventId,
+      removedImageId: image.id,
+    };
+  }
+
   async remove(id: string, organizationId: string) {
     await this.findEventByIdAndOrg(id, organizationId);
 
@@ -1200,10 +1529,12 @@ export class EventService {
 
   async findPublicBySlug(slug: string) {
     const event = await this.findPublicEventEntityBySlug(slug);
+    const gallery = await this.buildPublicGallery(event.id);
 
     return {
       event: this.mapPublicEvent(event),
       rsvp: this.buildPublicRsvpConfig(),
+      gallery,
     };
   }
 
@@ -1237,6 +1568,7 @@ export class EventService {
     const gifts = await this.buildPublicGifts(event.id);
     const contributions = await this.buildPublicContributions(event.id);
     const financial = await this.buildPublicFinancialSummary(event.id);
+    const gallery = await this.buildPublicGallery(event.id);
 
     return {
       event: this.mapPublicEvent(event),
@@ -1245,6 +1577,17 @@ export class EventService {
       gifts,
       contributions,
       financial,
+      gallery,
+    };
+  }
+
+  async findPublicGalleryBySlug(slug: string) {
+    const event = await this.findPublicEventEntityBySlug(slug);
+    const gallery = await this.buildPublicGallery(event.id);
+
+    return {
+      event: this.mapPublicEventBase(event),
+      gallery,
     };
   }
 
