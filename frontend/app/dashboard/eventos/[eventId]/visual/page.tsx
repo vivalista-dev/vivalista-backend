@@ -1,10 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, CSSProperties, useEffect, useMemo, useRef, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { VisualBuilderStyles } from "./components/VisualBuilderStyles";
+import { VisualStepContent } from "./components/VisualStepContent";
+import { VivaListaLogo } from "./components/VivaListaLogo";
+import { FullSitePreview } from "./components/preview/FullSitePreview";
 
-type EventStatus = "DRAFT" | "PUBLISHED" | "CANCELLED" | string;
+/* VERSAO_VISUAL_BUILDER_PREMIUM_V5_ETAPA4_5K_AJUSTES_CAPA_FOTO_COR */
 
 type EventData = {
   id: string;
@@ -14,9 +18,9 @@ type EventData = {
   location?: string | null;
   date?: string | null;
   capacity?: number | null;
-  status?: EventStatus | null;
-  createdAt?: string | null;
-  updatedAt?: string | null;
+  status?: string | null;
+  coverImage?: string | null;
+  heroImageUrl?: string | null;
 };
 
 type VisualSettings = {
@@ -28,23 +32,17 @@ type VisualSettings = {
   secondaryColor?: string | null;
   fontStyle?: string | null;
   heroLayout?: string | null;
-  showCountdown?: boolean;
-  showStory?: boolean;
-  showGallery?: boolean;
-  showLocation?: boolean;
-  showGifts?: boolean;
-  showRsvp?: boolean;
+  showCountdown?: boolean | null;
+  showStory?: boolean | null;
+  showGallery?: boolean | null;
+  showLocation?: boolean | null;
+  showGifts?: boolean | null;
+  showRsvp?: boolean | null;
 };
 
 type VisualResponse = {
-  eventId: string;
-  visual: VisualSettings;
-};
-
-type ApiError = {
-  message?: string | string[];
-  error?: string;
-  statusCode?: number;
+  visual?: VisualSettings | null;
+  message?: string;
 };
 
 type VisualFormData = {
@@ -55,6 +53,12 @@ type VisualFormData = {
   primaryColor: string;
   secondaryColor: string;
   fontStyle: string;
+  titleSize: string;
+  titleScale: number;
+  detailScale: number;
+  textDensity: string;
+  textFrameStyle: string;
+  siteAtmosphere: string;
   heroLayout: string;
   showCountdown: boolean;
   showStory: boolean;
@@ -64,17 +68,560 @@ type VisualFormData = {
   showRsvp: boolean;
 };
 
+type PhotoSettings = {
+  fit: "cover" | "contain";
+  zoom: number;
+  x: number;
+  y: number;
+};
+
+type TextSettings = {
+  align: "left" | "center" | "right";
+  placement: "top" | "middle" | "bottom";
+};
+
+type ApiError = {
+  message?: string | string[];
+  error?: string;
+  statusCode?: number;
+};
+
+type ToggleKey =
+  | "showCountdown"
+  | "showStory"
+  | "showGallery"
+  | "showLocation"
+  | "showGifts"
+  | "showRsvp";
+
+type StepKey =
+  | "imagem"
+  | "capa"
+  | "estilo"
+  | "cores"
+  | "tipografia"
+  | "secoes"
+  | "revisao";
+
+type StepConfig = {
+  key: StepKey;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  image: string;
+};
+
+type StyleIconType = "classic" | "romantic" | "minimal" | "rustic" | "modern" | "boho";
+
+type VisualStyleOption = {
+  value: string;
+  label: string;
+  description: string;
+  icon: StyleIconType;
+  primaryColor: string;
+  secondaryColor: string;
+  suggestedLayout: string;
+  suggestedFont: string;
+};
+
+type TypographyOption = {
+  value: string;
+  label: string;
+  category: "sugeridas" | "classicas" | "modernas" | "elegantes" | "manuscritas" | "divertidas";
+  sample: string;
+  description: string;
+};
+
+
+const steps: StepConfig[] = [
+  {
+    key: "estilo",
+    eyebrow: "Atmosfera do site",
+    title: "Escolha a atmosfera do site",
+    subtitle:
+      "Primeiro defina o clima geral: branco clean, luxo, jardim, infantil, festa, corporativo ou outro estilo do site inteiro.",
+    image:
+      "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=1800&q=90",
+  },
+  {
+    key: "capa",
+    eyebrow: "Modelo de capa",
+    title: "Escolha o modelo de capa",
+    subtitle:
+      "Agora escolha a estrutura da primeira tela: foto grande, meio a meio, editorial, convite luxo, black tie, neon ou minimal.",
+    image:
+      "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1800&q=90",
+  },
+  {
+    key: "tipografia",
+    eyebrow: "Letras e posição",
+    title: "Escolha as letras e a posição do texto",
+    subtitle:
+      "Defina fonte, tamanho, alinhamento e posição inicial do texto. A caixa de leitura fica junto das cores no último ajuste visual.",
+    image:
+      "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=1800&q=90",
+  },
+  {
+    key: "imagem",
+    eyebrow: "Foto da capa",
+    title: "Escolha e ajuste a foto",
+    subtitle: "Adicione a foto principal e ajuste zoom, corte e posição olhando a prévia da esquerda.",
+    image:
+      "https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=1800&q=90",
+  },
+  {
+    key: "cores",
+    eyebrow: "Cores e leitura",
+    title: "Defina as cores e a caixa de leitura",
+    subtitle:
+      "A paleta colore o site inteiro. Aqui você também pode inverter as cores e escolher se o texto precisa de caixa de leitura.",
+    image:
+      "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1800&q=90",
+  },
+  {
+    key: "secoes",
+    eyebrow: "Seções do site",
+    title: "Escolha as áreas que vão aparecer",
+    subtitle:
+      "Ative somente o que faz sentido. A prévia da esquerda mostra a estrutura do site quase pronto.",
+    image:
+      "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1800&q=90",
+  },
+  {
+    key: "revisao",
+    eyebrow: "Revisão final",
+    title: "Revise seu site antes de avançar",
+    subtitle:
+      "Confira atmosfera, capa, letras, foto, cores, caixa de leitura e seções. Depois você segue para montar o site com mais detalhes.",
+    image:
+      "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1800&q=90",
+  },
+];
+
+const visualStyleOptions: VisualStyleOption[] = [
+  {
+    value: "cristal-prata-pro",
+    label: "Prata cristal pro",
+    description: "Protótipo 1: cristal, prata, brilho, moldura nobre e cards tipo vidro lapidado.",
+    icon: "classic",
+    primaryColor: "#3f4650",
+    secondaryColor: "#dfe4ec",
+    suggestedLayout: "convite-luxo",
+    suggestedFont: "empire-serif",
+  },
+  {
+    value: "papel-rasgado-pro",
+    label: "Papel rasgado pro",
+    description: "Protótipo 2: papel claro rasgado, faixa escura premium e números protegidos.",
+    icon: "modern",
+    primaryColor: "#161514",
+    secondaryColor: "#d8c8a4",
+    suggestedLayout: "minimal-luxo",
+    suggestedFont: "editorial-classic",
+  },
+  {
+    value: "neon-futurista-pro",
+    label: "Neon futurista pro",
+    description: "Protótipo 3: painel tecnológico com neon azul e roxo, forte para corporativo/festa.",
+    icon: "modern",
+    primaryColor: "#070d20",
+    secondaryColor: "#18d9ff",
+    suggestedLayout: "corporativo-neon",
+    suggestedFont: "studio-modern",
+  },
+  {
+    value: "roxo-luxo",
+    label: "Roxo luxo",
+    description: "Fundo roxo profundo, textura fina e proteção automática para leitura.",
+    icon: "classic",
+    primaryColor: "#2a1234",
+    secondaryColor: "#d3af67",
+    suggestedLayout: "esquerda-esfumada",
+    suggestedFont: "editorial-classic",
+  },
+  {
+    value: "clean-luxo",
+    label: "Champagne clean",
+    description: "Base clara, sofisticada, com brilho champagne e cards elegantes.",
+    icon: "minimal",
+    primaryColor: "#43263f",
+    secondaryColor: "#c4a262",
+    suggestedLayout: "centralizado",
+    suggestedFont: "editorial-classic",
+  },
+  {
+    value: "offwhite-3d",
+    label: "Off-white 3D",
+    description: "Parede clara com volumes discretos, adulta e premium.",
+    icon: "minimal",
+    primaryColor: "#34303a",
+    secondaryColor: "#c8b07b",
+    suggestedLayout: "minimal-luxo",
+    suggestedFont: "poise-serif",
+  },
+  {
+    value: "art-deco-dourado",
+    label: "Art déco dourado",
+    description: "Linhas geométricas finas, cara de salão nobre e convite premium.",
+    icon: "classic",
+    primaryColor: "#3b2538",
+    secondaryColor: "#caa45d",
+    suggestedLayout: "convite-luxo",
+    suggestedFont: "empire-serif",
+  },
+  {
+    value: "seda-champagne",
+    label: "Seda champagne",
+    description: "Textura suave de tecido, clássica, limpa e confortável.",
+    icon: "classic",
+    primaryColor: "#5a4039",
+    secondaryColor: "#d8c1a5",
+    suggestedLayout: "editorial-cartao",
+    suggestedFont: "chandelier",
+  },
+  {
+    value: "marmore-noite",
+    label: "Mármore noite",
+    description: "Mármore escuro com veios dourados, forte e elegante.",
+    icon: "classic",
+    primaryColor: "#101018",
+    secondaryColor: "#d4af37",
+    suggestedLayout: "black-tie",
+    suggestedFont: "empire-serif",
+  },
+  {
+    value: "preto-ouro",
+    label: "Preto ouro premium",
+    description: "Fundo escuro acetinado, brilho dourado e leitura protegida.",
+    icon: "modern",
+    primaryColor: "#211826",
+    secondaryColor: "#c7a15d",
+    suggestedLayout: "cinematografica",
+    suggestedFont: "studio-modern",
+  },
+  {
+    value: "folhagem-fina",
+    label: "Jardim orgânico",
+    description: "Papel de parede botânico fino, com folhas elegantes e fundo respirando.",
+    icon: "rustic",
+    primaryColor: "#3f4f45",
+    secondaryColor: "#c8ad75",
+    suggestedLayout: "foto-moldura",
+    suggestedFont: "poise-serif",
+  },
+  {
+    value: "floral-noturno",
+    label: "Jardim editorial",
+    description: "Floral adulto, escuro e sofisticado, sem faixa rasgada infantil.",
+    icon: "romantic",
+    primaryColor: "#2a1428",
+    secondaryColor: "#d493a3",
+    suggestedLayout: "oval",
+    suggestedFont: "serenata-script",
+  },
+  {
+    value: "azul-corporativo",
+    label: "Azul corporativo",
+    description: "Grid escuro, brilho azul e estrutura profissional moderna.",
+    icon: "modern",
+    primaryColor: "#071424",
+    secondaryColor: "#12d7ff",
+    suggestedLayout: "corporativo-neon",
+    suggestedFont: "studio-modern",
+  },
+  {
+    value: "festa-glow-premium",
+    label: "Festa glow premium",
+    description: "Energia de festa com brilho controlado, sem cara infantil.",
+    icon: "modern",
+    primaryColor: "#351a4f",
+    secondaryColor: "#ffb347",
+    suggestedLayout: "festa-palco",
+    suggestedFont: "studio-modern",
+  },
+  {
+    value: "pattern-fino",
+    label: "Geométrico fino",
+    description: "Padrão geométrico adulto, bom para eventos elegantes e modernos.",
+    icon: "boho",
+    primaryColor: "#43263f",
+    secondaryColor: "#c4a262",
+    suggestedLayout: "minimal-luxo",
+    suggestedFont: "serenata-script",
+  },
+  {
+    value: "casamento-damasco",
+    label: "Casamento damasco",
+    description: "Papel de parede clássico de casamento, com desenho fino e fundo claro.",
+    icon: "classic",
+    primaryColor: "#4f3343",
+    secondaryColor: "#c9a46c",
+    suggestedLayout: "convite-luxo",
+    suggestedFont: "editorial-classic",
+  },
+  {
+    value: "debutante-cristal",
+    label: "Debutante cristal",
+    description: "Brilho lilás e rosa sofisticado para 15 anos, sem parecer infantil.",
+    icon: "modern",
+    primaryColor: "#3a194f",
+    secondaryColor: "#e0a7c8",
+    suggestedLayout: "circular",
+    suggestedFont: "chandelier",
+  },
+  {
+    value: "infantil-aquarela-premium",
+    label: "Infantil aquarela",
+    description: "Fundo infantil delicado, limpo e premium para bebê e aniversário infantil.",
+    icon: "romantic",
+    primaryColor: "#36556b",
+    secondaryColor: "#f2b6a0",
+    suggestedLayout: "oval",
+    suggestedFont: "honey",
+  },
+  {
+    value: "prata-cerimonial",
+    label: "Prata cerimonial",
+    description: "Prateado elegante, brilho de salão e efeito metal fosco para casamento sofisticado.",
+    icon: "classic",
+    primaryColor: "#3f4650",
+    secondaryColor: "#cfd4dc",
+    suggestedLayout: "convite-luxo",
+    suggestedFont: "empire-serif",
+  },
+  {
+    value: "cinza-perola",
+    label: "Cinza pérola",
+    description: "Cinza claro premium, discreto e adulto, com textura pérola e leitura limpa.",
+    icon: "minimal",
+    primaryColor: "#4b4f55",
+    secondaryColor: "#d8d3c8",
+    suggestedLayout: "minimal-luxo",
+    suggestedFont: "poise-serif",
+  },
+  {
+    value: "amarelo-dourado",
+    label: "Amarelo dourado",
+    description: "Amarelo elegante com dourado suave, alegre sem perder o visual premium.",
+    icon: "modern",
+    primaryColor: "#5b4521",
+    secondaryColor: "#f4c84a",
+    suggestedLayout: "faixa-convite",
+    suggestedFont: "chandelier",
+  },
+  {
+    value: "verde-bambu-casamento",
+    label: "Verde bambu casamento",
+    description: "Verde natural, bambu fino e clima de casamento ao ar livre com sofisticação.",
+    icon: "rustic",
+    primaryColor: "#314f3d",
+    secondaryColor: "#c7b06a",
+    suggestedLayout: "foto-moldura",
+    suggestedFont: "editorial-classic",
+  },
+  {
+    value: "doodle-whatsapp-premium",
+    label: "Doodle premium",
+    description: "Papel com vários desenhos pequenos no estilo conversa, divertido e ainda adulto.",
+    icon: "boho",
+    primaryColor: "#394458",
+    secondaryColor: "#d8b66a",
+    suggestedLayout: "meio-a-meio",
+    suggestedFont: "viva-sans",
+  },
+];
+
+const typographyCategories: Array<{ key: TypographyOption["category"]; label: string }> = [
+  { key: "sugeridas", label: "Sugeridas" },
+  { key: "classicas", label: "Clássicas" },
+  { key: "modernas", label: "Modernas" },
+  { key: "elegantes", label: "Elegantes" },
+  { key: "manuscritas", label: "Handwritten" },
+  { key: "divertidas", label: "Fun" },
+];
+
+const typographyOptions: TypographyOption[] = [
+  { value: "serenata-script", label: "Serenata", category: "sugeridas", sample: "André & Andressa", description: "Assinatura romântica e premium." },
+  { value: "editorial-classic", label: "Editorial Classic", category: "sugeridas", sample: "Editorial Classic", description: "Serif elegante para casamento e eventos premium." },
+  { value: "viva-sans", label: "Viva Sans", category: "sugeridas", sample: "Viva Sans", description: "Limpa, moderna e fácil de ler." },
+  { value: "poise-serif", label: "Poise", category: "sugeridas", sample: "Poise", description: "Sofisticada, com ar de convite impresso." },
+  { value: "empire-serif", label: "Empire", category: "classicas", sample: "Empire", description: "Clássica, forte e refinada." },
+  { value: "roman-elegance", label: "Roman Elegance", category: "classicas", sample: "Roman Elegance", description: "Tradicional e cerimonial." },
+  { value: "classical", label: "Classical", category: "classicas", sample: "Classical", description: "Leitura nobre e atemporal." },
+  { value: "beaumont", label: "Beaumont", category: "classicas", sample: "Beaumont", description: "Serif delicada para títulos." },
+  { value: "studio-modern", label: "Studio Modern", category: "modernas", sample: "Studio Modern", description: "Editorial, limpa e urbana." },
+  { value: "urban-clean", label: "Urban Clean", category: "modernas", sample: "Urban Clean", description: "Minimalista e objetiva." },
+  { value: "contour", label: "Contour", category: "modernas", sample: "Contour", description: "Alta presença visual." },
+  { value: "typewriter", label: "Typewriter", category: "modernas", sample: "Typewriter", description: "Charmosa, editorial e diferente." },
+  { value: "champagne-script", label: "Champagne", category: "elegantes", sample: "Champagne", description: "Cursiva fina para eventos sofisticados." },
+  { value: "chandelier", label: "Chandelier", category: "elegantes", sample: "Chandelier", description: "Elegante, leve e memorável." },
+  { value: "wellington", label: "Wellington", category: "elegantes", sample: "Wellington", description: "Assinatura luxuosa e delicada." },
+  { value: "sacramento", label: "Sacramento", category: "elegantes", sample: "Sacramento", description: "Romântica e refinada." },
+  { value: "love-note", label: "Love Note", category: "manuscritas", sample: "Love Note", description: "Parece escrita à mão, com toque pessoal." },
+  { value: "soft-signature", label: "Soft Signature", category: "manuscritas", sample: "Soft Signature", description: "Assinatura moderna e suave." },
+  { value: "sunkissed", label: "Sunkissed", category: "manuscritas", sample: "Sunkissed", description: "Leve, solar e espontânea." },
+  { value: "beautiful-script", label: "Beautiful", category: "manuscritas", sample: "Beautiful", description: "Romântica sem pesar." },
+  { value: "honey", label: "Honey", category: "divertidas", sample: "Honey", description: "Doce, jovem e alegre." },
+  { value: "bubble", label: "Bubble", category: "divertidas", sample: "Bubble", description: "Boa para aniversário e infantil." },
+  { value: "peace-love", label: "Peace & Love", category: "divertidas", sample: "Peace & Love", description: "Boho, livre e descontraída." },
+  { value: "papercute", label: "Papercute", category: "divertidas", sample: "Papercute", description: "Criativa para festas temáticas." },
+];
+
+const titleSizeOptions = [
+  { value: "delicado", label: "Delicado" },
+  { value: "medio", label: "Médio" },
+  { value: "grande", label: "Grande" },
+  { value: "impactante", label: "Impactante" },
+];
+
+const textDensityOptions = [
+  { value: "compacto", label: "Compacto" },
+  { value: "padrao", label: "Padrão" },
+  { value: "confortavel", label: "Confortável" },
+];
+
+const colorOptions = [
+  { name: "VivaLista", primary: "#43263f", secondary: "#c4a262" },
+  { name: "Champagne", primary: "#5a4039", secondary: "#d8c1a5" },
+  { name: "Oliva", primary: "#3f4f45", secondary: "#c8ad75" },
+  { name: "Rosé", primary: "#7f4f5d", secondary: "#d9a6a9" },
+  { name: "Rosa e dourado", primary: "#d88fa3", secondary: "#e6c76b" },
+  { name: "Noite", primary: "#211826", secondary: "#c7a15d" },
+  { name: "Areia", primary: "#7a6656", secondary: "#d6c4ae" },
+  { name: "Azul noite", primary: "#132238", secondary: "#8cb7d5" },
+  { name: "Terracota", primary: "#6f3f32", secondary: "#d89c72" },
+  { name: "Prata luxo", primary: "#3f4650", secondary: "#cfd4dc" },
+  { name: "Cinza pérola", primary: "#4b4f55", secondary: "#d8d3c8" },
+  { name: "Amarelo solar", primary: "#5b4521", secondary: "#f4c84a" },
+  { name: "Verde bambu", primary: "#314f3d", secondary: "#c7b06a" },
+];
+
+const heroLayoutOptions = [
+  {
+    value: "centralizado",
+    title: "Editorial central",
+    description: "Imagem grande com cartão elegante sobre a foto.",
+  },
+  {
+    value: "tela-cheia",
+    title: "Tela cheia",
+    description: "Capa dominante, com impacto visual forte.",
+  },
+  {
+    value: "esquerda-esfumada",
+    title: "Foto esfumaçada",
+    description: "Texto à esquerda, foto à direita e gradiente que mistura fundo e imagem.",
+  },
+  {
+    value: "meio-a-meio",
+    title: "Meio a meio clean",
+    description: "Imagem de um lado e texto do outro, estilo premium moderno.",
+  },
+  {
+    value: "split-curvo",
+    title: "Divisão curva",
+    description: "Foto lateral com recorte arredondado e texto em área limpa.",
+  },
+  {
+    value: "minimal-luxo",
+    title: "Minimal luxo",
+    description: "Muito respiro, foto grande e texto editorial sem caixa pesada.",
+  },
+  {
+    value: "black-tie",
+    title: "Black tie",
+    description: "Escuro, elegante, com foto dramática e letras de alto impacto.",
+  },
+  {
+    value: "corporativo-neon",
+    title: "Corporativo neon",
+    description: "Foto lateral, fundo escuro e brilho azul para eventos profissionais.",
+  },
+  {
+    value: "festa-palco",
+    title: "Festa palco",
+    description: "Capa vibrante com luz, cor e sensação de celebração.",
+  },
+  {
+    value: "cinematografica",
+    title: "Cinematográfica",
+    description: "Foto escura, texto delicado e sensação de filme.",
+  },
+  {
+    value: "circular",
+    title: "Foto circular",
+    description: "Foto em círculo separada do texto, boa para casal, bebê ou aniversariante.",
+  },
+  {
+    value: "oval",
+    title: "Foto oval",
+    description: "Delicado e sofisticado, estilo convite premium.",
+  },
+  {
+    value: "foto-moldura",
+    title: "Moldura editorial",
+    description: "Foto em destaque com moldura e respiro elegante.",
+  },
+  {
+    value: "poster-editorial",
+    title: "Poster editorial",
+    description: "Foto vertical com texto como capa de revista premium.",
+  },
+  {
+    value: "editorial-cartao",
+    title: "Cartão sobreposto",
+    description: "Um cartão refinado sobre a imagem principal.",
+  },
+  {
+    value: "faixa-convite",
+    title: "Faixa convite",
+    description: "Foto em faixa superior e texto abaixo, como convite impresso moderno.",
+  },
+  {
+    value: "monograma-clean",
+    title: "Monograma clean",
+    description: "Modelo tipográfico: a foto vira detalhe suave e o nome ganha protagonismo.",
+  },
+  {
+    value: "convite-luxo",
+    title: "Convite luxuoso",
+    description: "Abertura com cara de convite impresso premium.",
+  },
+];
+
+const visualSections: Array<{
+  key: ToggleKey;
+  title: string;
+}> = [
+  { key: "showCountdown", title: "Contagem regressiva" },
+  { key: "showStory", title: "História / mensagem" },
+  { key: "showGallery", title: "Galeria de fotos" },
+  { key: "showLocation", title: "Localização" },
+  { key: "showGifts", title: "Lista de presentes" },
+  { key: "showRsvp", title: "Confirmação de presença" },
+];
+
 function getBackendUrl(): string {
   const value =
     process.env.NEXT_PUBLIC_API_URL ||
     process.env.NEXT_PUBLIC_BACKEND_URL ||
-    "http://localhost:3000";
+    "http://localhost:3001";
 
   return value.replace(/\/+$/, "");
 }
 
+let cachedAuthToken: string | null | undefined = undefined;
+
+function invalidateAuthCache() {
+  cachedAuthToken = undefined;
+}
+
 function getAuthToken(): string | null {
   if (typeof window === "undefined") return null;
+
+  if (cachedAuthToken !== undefined) {
+    return cachedAuthToken;
+  }
 
   const possibleKeys = [
     "token",
@@ -87,79 +634,276 @@ function getAuthToken(): string | null {
 
   for (const key of possibleKeys) {
     const value = window.localStorage.getItem(key);
-    if (value && value.trim()) return value;
+    if (value && value.trim()) {
+      cachedAuthToken = value;
+      return value;
+    }
   }
 
+  cachedAuthToken = null;
   return null;
+}
+
+async function apiRequest<T>(
+  backendUrl: string,
+  path: string,
+  options?: RequestInit,
+): Promise<T> {
+  const token = getAuthToken();
+
+  const response = await fetch(`${backendUrl}${path}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options?.headers || {}),
+    },
+    cache: "no-store",
+  });
+
+  let data: unknown = null;
+
+  try {
+    data = await response.json();
+  } catch {
+    data = null;
+  }
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      invalidateAuthCache();
+    }
+
+    throw data || new Error(`Erro ${response.status}`);
+  }
+
+  return data as T;
 }
 
 function getErrorMessage(error: unknown): string {
   if (typeof error === "string") return error;
+  if (error instanceof Error) return error.message;
 
   if (error && typeof error === "object") {
-    const maybeApiError = error as ApiError;
+    const apiError = error as ApiError;
 
-    if (Array.isArray(maybeApiError.message)) {
-      return maybeApiError.message.join(", ");
+    if (Array.isArray(apiError.message)) {
+      return apiError.message.join(", ");
     }
 
-    if (typeof maybeApiError.message === "string") {
-      return maybeApiError.message;
+    if (typeof apiError.message === "string") {
+      return apiError.message;
     }
 
-    if (typeof maybeApiError.error === "string") {
-      return maybeApiError.error;
+    if (typeof apiError.error === "string") {
+      return apiError.error;
     }
   }
 
-  return "Não foi possível carregar os dados do evento.";
+  return "Não foi possível carregar ou salvar o visual do evento.";
 }
 
 function normalizeEventResponse(
-  data: EventData | { data?: EventData }
+  data: EventData | { data?: EventData },
 ): EventData {
-  if ("data" in data && data.data) {
-    return data.data;
-  }
-
+  if ("data" in data && data.data) return data.data;
   return data as EventData;
 }
 
-function statusLabel(status?: string | null): string {
-  if (!status) return "Sem status";
-  if (status === "DRAFT") return "Rascunho";
-  if (status === "PUBLISHED") return "Publicado";
-  if (status === "CANCELLED") return "Cancelado";
-  return status;
+function formatEventDate(date?: string | null): string {
+  if (!date) return "Data do evento";
+
+  const parsed = new Date(date);
+  if (Number.isNaN(parsed.getTime())) return "Data do evento";
+
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }).format(parsed);
 }
 
-function statusPillClasses(status?: string | null): string {
-  if (status === "PUBLISHED") {
-    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+function buildAssetUrl(value?: string | null): string | null {
+  const raw = value?.trim();
+  if (!raw) return null;
+
+  if (
+    raw.startsWith("http://") ||
+    raw.startsWith("https://") ||
+    raw.startsWith("data:") ||
+    raw.startsWith("blob:") ||
+    raw.startsWith("//")
+  ) {
+    return raw;
   }
 
-  if (status === "CANCELLED") {
-    return "border-red-200 bg-red-50 text-red-700";
+  const backendUrl = getBackendUrl();
+
+  if (raw.startsWith("/")) return `${backendUrl}${raw}`;
+
+  return `${backendUrl}/${raw}`;
+}
+
+function parseFontPayload(value?: string | null): {
+  fontStyle: string;
+  titleSize: string;
+  titleScale: number;
+  detailScale: number;
+  textDensity: string;
+  textFrameStyle: string;
+  siteAtmosphere: string;
+  photoSettings: PhotoSettings;
+  textSettings: TextSettings;
+} {
+  const raw = value?.trim();
+
+  if (!raw) {
+    return {
+      fontStyle: "serenata-script",
+      titleSize: "grande",
+      titleScale: 92,
+      detailScale: 100,
+      textDensity: "padrao",
+      textFrameStyle: "auto",
+      siteAtmosphere: "clean-luxo",
+      photoSettings: { fit: "cover", zoom: 112, x: 50, y: 50 },
+      textSettings: { align: "center", placement: "middle" },
+    };
   }
 
-  return "border-amber-200 bg-amber-50 text-amber-700";
+  if (["elegante", "romantico", "minimalista", "rustico", "moderno", "boho"].includes(raw)) {
+    const legacyMap: Record<string, string> = {
+      elegante: "editorial-classic",
+      romantico: "serenata-script",
+      minimalista: "viva-sans",
+      rustico: "poise-serif",
+      moderno: "studio-modern",
+      boho: "love-note",
+    };
+
+    return {
+      fontStyle: legacyMap[raw] ?? "serenata-script",
+      titleSize: "grande",
+      titleScale: 92,
+      detailScale: 100,
+      textDensity: "padrao",
+      textFrameStyle: "auto",
+      siteAtmosphere: "clean-luxo",
+      photoSettings: { fit: "cover", zoom: 112, x: 50, y: 50 },
+      textSettings: { align: "center", placement: "middle" },
+    };
+  }
+
+  const parts = raw.split("|");
+  const fontStyle = parts[0] || "serenata-script";
+  const titleSize =
+    parts.find((part) => part.startsWith("size:"))?.replace("size:", "") ||
+    "grande";
+  const textDensity =
+    parts.find((part) => part.startsWith("text:"))?.replace("text:", "") ||
+    "padrao";
+  const parsedScale = Number(
+    parts.find((part) => part.startsWith("scale:"))?.replace("scale:", "") || 92,
+  );
+  const titleScale = Number.isFinite(parsedScale)
+    ? Math.min(115, Math.max(62, parsedScale))
+    : 92;
+  const parsedDetailScale = Number(
+    parts.find((part) => part.startsWith("detail:"))?.replace("detail:", "") || 100,
+  );
+  const detailScale = Number.isFinite(parsedDetailScale)
+    ? Math.min(125, Math.max(80, parsedDetailScale))
+    : 100;
+  const textFrameStyle =
+    parts.find((part) => part.startsWith("frame:"))?.replace("frame:", "") ||
+    "auto";
+  const siteAtmosphere =
+    parts.find((part) => part.startsWith("atmosphere:"))?.replace("atmosphere:", "") ||
+    "clean-luxo";
+  const parsedPhotoZoom = Number(
+    parts.find((part) => part.startsWith("photozoom:"))?.replace("photozoom:", "") || 112,
+  );
+  const parsedPhotoX = Number(
+    parts.find((part) => part.startsWith("photox:"))?.replace("photox:", "") || 50,
+  );
+  const parsedPhotoY = Number(
+    parts.find((part) => part.startsWith("photoy:"))?.replace("photoy:", "") || 50,
+  );
+  const parsedPhotoFit =
+    parts.find((part) => part.startsWith("photofit:"))?.replace("photofit:", "") ||
+    "contain";
+  const parsedTextAlign =
+    parts.find((part) => part.startsWith("align:"))?.replace("align:", "") ||
+    "center";
+  const parsedTextPlacement =
+    parts.find((part) => part.startsWith("place:"))?.replace("place:", "") ||
+    "middle";
+
+  return {
+    fontStyle,
+    titleSize,
+    titleScale,
+    detailScale,
+    textDensity,
+    textFrameStyle,
+    siteAtmosphere,
+    photoSettings: {
+      fit: parsedPhotoFit === "cover" ? "cover" : "contain",
+      zoom: Number.isFinite(parsedPhotoZoom) ? Math.min(170, Math.max(80, parsedPhotoZoom)) : 112,
+      x: Number.isFinite(parsedPhotoX) ? Math.min(100, Math.max(0, parsedPhotoX)) : 50,
+      y: Number.isFinite(parsedPhotoY) ? Math.min(100, Math.max(0, parsedPhotoY)) : 50,
+    },
+    textSettings: {
+      align: parsedTextAlign === "left" || parsedTextAlign === "right" ? parsedTextAlign : "center",
+      placement:
+        parsedTextPlacement === "top" || parsedTextPlacement === "bottom"
+          ? parsedTextPlacement
+          : "middle",
+    },
+  };
+}
+
+function buildFontPayload(
+  form: Pick<VisualFormData, "fontStyle" | "titleSize" | "titleScale" | "detailScale" | "textDensity" | "textFrameStyle" | "siteAtmosphere">,
+  photoSettings: PhotoSettings,
+  textSettings: TextSettings,
+): string {
+  return `${form.fontStyle}|size:${form.titleSize}|scale:${form.titleScale}|detail:${form.detailScale}|text:${form.textDensity}|frame:${form.textFrameStyle}|atmosphere:${form.siteAtmosphere}|photofit:${photoSettings.fit}|photozoom:${photoSettings.zoom}|photox:${photoSettings.x}|photoy:${photoSettings.y}|align:${textSettings.align}|place:${textSettings.placement}`;
 }
 
 function buildInitialVisualForm(
   event: EventData | null,
-  visual?: VisualSettings | null
+  visual?: VisualSettings | null,
 ): VisualFormData {
+  const parsedTypography = parseFontPayload(visual?.fontStyle);
+
   return {
     publicTitle: visual?.publicTitle ?? event?.name ?? "",
-    publicSubtitle: visual?.publicSubtitle ?? event?.location ?? "",
-    heroImageUrl: visual?.heroImageUrl ?? "",
+    publicSubtitle:
+      visual?.publicSubtitle ??
+      (event?.date
+        ? `${formatEventDate(event.date)} • ${
+            event?.location || "Local do evento"
+          }`
+        : event?.location ?? ""),
+    heroImageUrl:
+      visual?.heroImageUrl ??
+      event?.heroImageUrl ??
+      event?.coverImage ??
+      "",
     welcomeMessage:
       visual?.welcomeMessage ??
       event?.description ??
       "Estamos muito felizes em compartilhar este momento especial com vocês.",
-    primaryColor: visual?.primaryColor ?? "#8f6a16",
-    secondaryColor: visual?.secondaryColor ?? "#f8f3ec",
-    fontStyle: visual?.fontStyle ?? "elegante",
+    primaryColor: visual?.primaryColor ?? "#43263f",
+    secondaryColor: visual?.secondaryColor ?? "#c4a262",
+    fontStyle: parsedTypography.fontStyle,
+    titleSize: parsedTypography.titleSize,
+    titleScale: parsedTypography.titleScale,
+    detailScale: parsedTypography.detailScale,
+    textDensity: parsedTypography.textDensity,
+    textFrameStyle: parsedTypography.textFrameStyle,
+    siteAtmosphere: parsedTypography.siteAtmosphere,
     heroLayout: visual?.heroLayout ?? "centralizado",
     showCountdown: visual?.showCountdown ?? true,
     showStory: visual?.showStory ?? true,
@@ -170,356 +914,369 @@ function buildInitialVisualForm(
   };
 }
 
-function ToggleRow({
-  label,
-  description,
-  checked,
-  onChange,
-}: {
-  label: string;
-  description: string;
-  checked: boolean;
-  onChange: (value: boolean) => void;
-}) {
-  return (
-    <div className="flex items-start justify-between gap-4 rounded-[22px] border border-[#e8dfd2] bg-[#f8f3ec] p-4">
-      <div className="min-w-0">
-        <p className="text-sm font-semibold text-neutral-900">{label}</p>
-        <p className="mt-1 text-sm leading-6 text-neutral-600">{description}</p>
-      </div>
-
-      <button
-        type="button"
-        onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition ${
-          checked ? "bg-[#8f6a16]" : "bg-[#d6c8b8]"
-        }`}
-        aria-pressed={checked}
-      >
-        <span
-          className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
-            checked ? "translate-x-6" : "translate-x-1"
-          }`}
-        />
-      </button>
-    </div>
-  );
-}
-
-function FieldHint({ children }: { children: React.ReactNode }) {
-  return <p className="mt-2 text-xs leading-5 text-[#8a7d74]">{children}</p>;
-}
-
-function SectionShell({
-  eyebrow,
-  title,
-  description,
-  children,
-}: {
-  eyebrow: string;
-  title: string;
-  description?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="rounded-[28px] border border-[#e8dfd2] bg-white p-6 shadow-sm">
-      <div className="mb-6">
-        <p className="text-sm font-medium uppercase tracking-[0.18em] text-[#8a7d74]">
-          {eyebrow}
-        </p>
-        <h2 className="mt-2 text-2xl font-semibold tracking-tight text-neutral-900">
-          {title}
-        </h2>
-        {description ? (
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-neutral-600">
-            {description}
-          </p>
-        ) : null}
-      </div>
-      {children}
-    </section>
-  );
-}
-
-function HeroPreview({
-  formData,
-}: {
-  formData: VisualFormData;
-}) {
-  const title = formData.publicTitle || "Título público do evento";
-  const subtitle = formData.publicSubtitle || "Subtítulo do evento";
-  const message =
-    formData.welcomeMessage || "Mensagem inicial da página pública.";
-  const hasImage = Boolean(formData.heroImageUrl.trim());
-  const heroLayout = formData.heroLayout || "centralizado";
-
-  const imageBlock = (
-    <div className="relative min-h-[260px] overflow-hidden rounded-[28px] border border-white/15 bg-white/10 shadow-[0_24px_80px_rgba(0,0,0,0.22)]">
-      {hasImage ? (
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${formData.heroImageUrl})` }}
-        />
-      ) : (
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `linear-gradient(135deg, ${formData.primaryColor}, ${formData.secondaryColor})`,
-          }}
-        />
-      )}
-
-      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent" />
-      <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/75">
-          imagem de destaque
-        </p>
-        <p className="mt-2 text-xl font-semibold">{title}</p>
-      </div>
-    </div>
-  );
-
-  const textBlock = (
-    <div className="max-w-3xl">
-      <div
-        className="inline-flex rounded-full px-3 py-1 text-xs font-semibold"
-        style={{
-          backgroundColor: formData.primaryColor,
-          color: "#ffffff",
-        }}
-      >
-        Preview público
-      </div>
-
-      <h3
-        className="mt-4 text-3xl font-semibold tracking-tight md:text-5xl"
-        style={{ color: "#ffffff" }}
-      >
-        {title}
-      </h3>
-
-      <p className="mt-4 text-base font-medium text-white/85 md:text-lg">
-        {subtitle}
-      </p>
-
-      <p className="mt-5 max-w-2xl text-sm leading-7 text-white/80 md:text-base">
-        {message}
-      </p>
-
-      <div className="mt-6 flex flex-wrap gap-2 text-xs">
-        {formData.showCountdown ? (
-          <span className="rounded-full bg-white/12 px-3 py-1 text-white">
-            Countdown
-          </span>
-        ) : null}
-        {formData.showGallery ? (
-          <span className="rounded-full bg-white/12 px-3 py-1 text-white">
-            Galeria
-          </span>
-        ) : null}
-        {formData.showLocation ? (
-          <span className="rounded-full bg-white/12 px-3 py-1 text-white">
-            Localização
-          </span>
-        ) : null}
-        {formData.showGifts ? (
-          <span className="rounded-full bg-white/12 px-3 py-1 text-white">
-            Presentes
-          </span>
-        ) : null}
-        {formData.showRsvp ? (
-          <span className="rounded-full bg-white/12 px-3 py-1 text-white">
-            RSVP
-          </span>
-        ) : null}
-      </div>
-    </div>
-  );
-
-  const countdownBlock = formData.showCountdown ? (
-    <div className="mt-8 grid max-w-2xl grid-cols-4 gap-3">
-      {["dias", "horas", "min", "seg"].map((label) => (
-        <div
-          key={label}
-          className="rounded-2xl border border-white/10 bg-white/10 px-3 py-4 text-center text-white backdrop-blur"
-        >
-          <div className="text-2xl font-semibold">00</div>
-          <div className="mt-1 text-[11px] uppercase tracking-[0.18em] text-white/70">
-            {label}
-          </div>
-        </div>
-      ))}
-    </div>
-  ) : null;
-
-  if (heroLayout === "minimalista") {
-    return (
-      <div
-        className="rounded-[32px] border border-[#e8dfd2] px-6 py-10 md:px-10"
-        style={{
-          background: `linear-gradient(135deg, ${formData.primaryColor}, #27272a)`,
-        }}
-      >
-        <div className="mx-auto max-w-4xl text-center">
-          {textBlock}
-          <div className="mx-auto mt-8 max-w-md">{countdownBlock}</div>
-        </div>
-      </div>
-    );
+function getFontClass(fontStyle: string): string {
+  if (["serenata-script", "champagne-script", "chandelier", "wellington", "sacramento"].includes(fontStyle)) {
+    return `font-script font-${fontStyle}`;
   }
 
-  if (heroLayout === "imagem-esquerda") {
-    return (
-      <div
-        className="rounded-[32px] border border-[#e8dfd2] p-5 md:p-6"
-        style={{
-          background: `linear-gradient(135deg, ${formData.primaryColor}, #27272a)`,
-        }}
-      >
-        <div className="grid items-center gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-          {imageBlock}
-          <div>
-            {textBlock}
-            {countdownBlock}
-          </div>
-        </div>
-      </div>
-    );
+  if (["love-note", "soft-signature", "sunkissed", "beautiful-script"].includes(fontStyle)) {
+    return `font-handmade font-${fontStyle}`;
   }
 
-  if (heroLayout === "imagem-direita") {
-    return (
-      <div
-        className="rounded-[32px] border border-[#e8dfd2] p-5 md:p-6"
-        style={{
-          background: `linear-gradient(135deg, ${formData.primaryColor}, #27272a)`,
-        }}
-      >
-        <div className="grid items-center gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div>
-            {textBlock}
-            {countdownBlock}
-          </div>
-          {imageBlock}
-        </div>
-      </div>
-    );
+  if (["honey", "bubble", "peace-love", "papercute"].includes(fontStyle)) {
+    return `font-fun font-${fontStyle}`;
   }
 
-  return (
-    <div
-      className="rounded-[32px] border border-[#e8dfd2] p-5 md:p-6"
-      style={{
-        background: `linear-gradient(135deg, ${formData.primaryColor}, #27272a)`,
-      }}
-    >
-      <div className="grid items-center gap-6 lg:grid-cols-[1.18fr_0.82fr]">
-        <div>{textBlock}</div>
+  if (["studio-modern", "urban-clean", "contour", "typewriter", "viva-sans"].includes(fontStyle)) {
+    return `font-modern-set font-${fontStyle}`;
+  }
 
-        <div className="overflow-hidden rounded-[28px] border border-white/15 bg-white p-5 shadow-[0_18px_40px_rgba(15,23,42,0.12)]">
-          <p
-            className="text-[10px] font-semibold uppercase tracking-[0.3em]"
-            style={{ color: formData.primaryColor }}
-          >
-            painel do hero
-          </p>
+  if (["editorial-classic", "empire-serif", "roman-elegance", "classical", "beaumont", "poise-serif"].includes(fontStyle)) {
+    return `font-serif-set font-${fontStyle}`;
+  }
 
-          <div className="mt-5 grid grid-cols-2 gap-4">
-            <div
-              className="rounded-[20px] p-4"
-              style={{ backgroundColor: formData.secondaryColor }}
-            >
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
-                Data
-              </p>
-              <p className="mt-2 text-base font-semibold text-neutral-900">
-                22/08/2026
-              </p>
-            </div>
-
-            <div
-              className="rounded-[20px] p-4"
-              style={{ backgroundColor: formData.secondaryColor }}
-            >
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
-                Local
-              </p>
-              <p className="mt-2 text-base font-semibold text-neutral-900">
-                Evento
-              </p>
-            </div>
-          </div>
-
-          {countdownBlock ? (
-            <div
-              className="mt-4 rounded-[24px] p-4"
-              style={{
-                background: "linear-gradient(135deg,#111827,#27272a)",
-              }}
-            >
-              <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/70">
-                Countdown
-              </p>
-              <div className="mt-4 grid grid-cols-4 gap-2">
-                {["00", "00", "00", "00"].map((value, index) => (
-                  <div
-                    key={`${value}-${index}`}
-                    className="rounded-xl border border-white/10 bg-white/10 px-2 py-3 text-center text-white"
-                  >
-                    <div className="text-lg font-semibold">{value}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : null}
-        </div>
-      </div>
-    </div>
-  );
+  if (fontStyle === "moderno") return "font-studio-modern";
+  if (fontStyle === "romantico") return "font-serenata-script";
+  if (fontStyle === "minimalista") return "font-viva-sans";
+  if (fontStyle === "rustico") return "font-poise-serif";
+  if (fontStyle === "boho") return "font-love-note";
+  return "font-editorial-classic";
 }
 
-function VisualSummaryCard({
-  label,
-  value,
-  description,
+function getTypographyLabel(value: string): string {
+  return typographyOptions.find((option) => option.value === value)?.label ?? "Serenata";
+}
+
+
+function splitTitle(title: string): { first: string; second: string } {
+  const clean = title.trim();
+
+  if (!clean) {
+    return { first: "", second: "" };
+  }
+
+  if (clean.includes("&")) {
+    const parts = clean.split("&");
+    return {
+      first: parts[0]?.trim() ?? "",
+      second: parts.slice(1).join("&").trim(),
+    };
+  }
+
+  if (clean.includes(" e ")) {
+    const parts = clean.split(" e ");
+    return {
+      first: parts[0]?.trim() ?? "",
+      second: parts.slice(1).join(" e ").trim(),
+    };
+  }
+
+  return { first: clean, second: "" };
+}
+
+function getPreviewTitle(publicTitle: string, eventName: string): { first: string; second: string } {
+  const source = publicTitle.trim() || eventName.trim();
+
+  if (!source) {
+    return { first: "Seu evento", second: "" };
+  }
+
+  return splitTitle(source);
+}
+
+function getHeroLeadText(
+  publicSubtitle: string,
+  welcomeMessage: string,
+  dateLabel: string,
+  locationLabel: string,
+): string {
+  const subtitle = publicSubtitle.trim();
+  const message = welcomeMessage.trim();
+  const normalizedSubtitle = subtitle.toLowerCase();
+  const normalizedDate = dateLabel.toLowerCase();
+  const normalizedLocation = locationLabel.toLowerCase();
+
+  const looksLikeSystemText = (value: string) => {
+    const normalized = value.toLowerCase();
+    return (
+      normalized.includes("[evento:") ||
+      normalized.includes("[modelo:") ||
+      normalized.includes("local do evento") ||
+      normalized.includes("data do evento")
+    );
+  };
+
+  const subtitleLooksLikeMeta =
+    Boolean(subtitle) &&
+    (normalizedSubtitle.includes(normalizedDate) ||
+      normalizedSubtitle.includes(normalizedLocation) ||
+      looksLikeSystemText(subtitle));
+
+  if (subtitle && !subtitleLooksLikeMeta) {
+    return subtitle.length > 90 ? `${subtitle.slice(0, 87).trim()}...` : subtitle;
+  }
+
+  if (message && !looksLikeSystemText(message) && message.length <= 90) {
+    return message;
+  }
+
+  return "";
+}
+
+
+function getEffectiveTextFrame(heroLayout: string, textFrameStyle: string): "solto" | "retangular" | "quadrado" {
+  if (["solto", "retangular", "quadrado"].includes(textFrameStyle)) {
+    return textFrameStyle as "solto" | "retangular" | "quadrado";
+  }
+
+  if (["meio-a-meio", "esquerda-esfumada", "split-curvo", "minimal-luxo", "black-tie", "corporativo-neon", "festa-palco", "circular", "oval", "monograma-clean", "poster-editorial", "faixa-convite"].includes(heroLayout)) {
+    return "solto";
+  }
+
+  if (["tela-cheia", "cinematografica", "foto-moldura"].includes(heroLayout)) {
+    return "retangular";
+  }
+
+  return "quadrado";
+}
+
+function clampNumber(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function getDefaultPhotoSettingsForLayout(layout: string): {
+  fit: "cover" | "contain";
+  zoom: number;
+  x: number;
+  y: number;
+} {
+  if (["circular", "oval"].includes(layout)) {
+    return { fit: "cover", zoom: 124, x: 50, y: 42 };
+  }
+
+  if (["meio-a-meio", "foto-moldura", "esquerda-esfumada", "split-curvo", "minimal-luxo", "black-tie", "corporativo-neon", "festa-palco"].includes(layout)) {
+    return { fit: "cover", zoom: 108, x: 50, y: 48 };
+  }
+
+  if (["poster-editorial", "faixa-convite"].includes(layout)) {
+    return { fit: "cover", zoom: 112, x: 50, y: 46 };
+  }
+
+  if (["monograma-clean"].includes(layout)) {
+    return { fit: "contain", zoom: 96, x: 50, y: 50 };
+  }
+
+  if (["editorial-cartao", "convite-luxo"].includes(layout)) {
+    return { fit: "cover", zoom: 112, x: 50, y: 48 };
+  }
+
+  return { fit: "cover", zoom: 110, x: 50, y: 50 };
+}
+
+function getAtmosphereLabel(value: string): string {
+  const option = visualStyleOptions.find((item) => item.value === value);
+  return option?.label ?? "Clássico";
+}
+
+function getLiveTitleSize({
+  heroLayout,
+  titleSize,
+  titleScale,
+  textFrameStyle,
 }: {
-  label: string;
-  value: string;
-  description: string;
-}) {
-  return (
-    <div className="rounded-[24px] border border-[#e8dfd2] bg-[linear-gradient(180deg,#ffffff_0%,#fcfaf7_100%)] p-5 shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
-        {label}
-      </p>
-      <p className="mt-3 text-lg font-semibold text-neutral-900">{value}</p>
-      <p className="mt-2 text-sm leading-6 text-neutral-600">{description}</p>
-    </div>
-  );
+  heroLayout: string;
+  titleSize: string;
+  titleScale: number;
+  textFrameStyle: string;
+}): number {
+  const baseBySize: Record<string, number> = {
+    delicado: 36,
+    medio: 44,
+    grande: 52,
+    impactante: 60,
+  };
+
+  const compactLayouts = [
+    "meio-a-meio",
+    "esquerda-esfumada",
+    "split-curvo",
+    "minimal-luxo",
+    "black-tie",
+    "corporativo-neon",
+    "festa-palco",
+    "foto-moldura",
+    "poster-editorial",
+    "faixa-convite",
+    "editorial-cartao",
+    "convite-luxo",
+  ];
+
+  const portraitLayouts = ["circular", "oval", "monograma-clean"];
+  const fullLayouts = ["centralizado", "tela-cheia", "cinematografica"];
+
+  let base = baseBySize[titleSize] ?? 46;
+
+  if (compactLayouts.includes(heroLayout)) {
+    const compactBase: Record<string, number> = {
+      delicado: 32,
+      medio: 38,
+      grande: 44,
+      impactante: 50,
+    };
+    base = compactBase[titleSize] ?? 42;
+  }
+
+  if (portraitLayouts.includes(heroLayout)) {
+    const portraitBase: Record<string, number> = {
+      delicado: 34,
+      medio: 42,
+      grande: 50,
+      impactante: 56,
+    };
+    base = portraitBase[titleSize] ?? 44;
+  }
+
+  if (fullLayouts.includes(heroLayout)) {
+    const fullBase: Record<string, number> = {
+      delicado: 38,
+      medio: 46,
+      grande: 54,
+      impactante: 62,
+    };
+    base = fullBase[titleSize] ?? 46;
+  }
+
+  if (textFrameStyle === "quadrado") {
+    base = Math.min(base, 42);
+  }
+
+  return Math.round(clampNumber(base * (titleScale / 100), 22, 74));
 }
 
-export default function DashboardEventVisualPage() {
-  const params = useParams<{ eventId: string }>();
+export default function EventVisualPage() {
+  const params = useParams();
+  const router = useRouter();
+  const eventIdParam = params?.eventId;
+  const eventId = Array.isArray(eventIdParam) ? eventIdParam[0] : eventIdParam;
 
-  const eventId = useMemo(() => {
-    const raw = params?.eventId;
-    return Array.isArray(raw) ? raw[0] : raw;
-  }, [params]);
+  const backendUrl = getBackendUrl();
 
+  const [event, setEvent] = useState<EventData | null>(null);
+  const [form, setForm] = useState<VisualFormData>(() =>
+    buildInitialVisualForm(null, null),
+  );
+  const [localHeroPreview, setLocalHeroPreview] = useState<string | null>(null);
+  const [photoSettings, setPhotoSettings] = useState<PhotoSettings>(() => ({
+    fit: "cover",
+    zoom: 112,
+    x: 50,
+    y: 50,
+  }));
+  const [textSettings, setTextSettings] = useState<TextSettings>(() => ({
+    align: "center",
+    placement: "middle",
+  }));
+
+  const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [savedMessage, setSavedMessage] = useState<string | null>(null);
-  const [event, setEvent] = useState<EventData | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [skippedSteps, setSkippedSteps] = useState<Set<number>>(() => new Set());
+  const navigatingRef = useRef(false);
 
-  const [formData, setFormData] = useState<VisualFormData>(
-    buildInitialVisualForm(null)
+  const photoFit = photoSettings.fit;
+  const photoZoom = photoSettings.zoom;
+  const photoPositionX = photoSettings.x;
+  const photoPositionY = photoSettings.y;
+  const textAlign = textSettings.align;
+  const textPlacement = textSettings.placement;
+
+  function updatePhotoSettings(patch: Partial<PhotoSettings>) {
+    setPhotoSettings((current) => ({ ...current, ...patch }));
+  }
+
+  function setPhotoFit(fit: PhotoSettings["fit"]) {
+    updatePhotoSettings({ fit });
+  }
+
+  function setPhotoZoom(zoom: number) {
+    updatePhotoSettings({ zoom });
+  }
+
+  function setPhotoPositionX(x: number) {
+    updatePhotoSettings({ x });
+  }
+
+  function setPhotoPositionY(y: number) {
+    updatePhotoSettings({ y });
+  }
+
+  function setTextAlign(align: TextSettings["align"]) {
+    setTextSettings((current) => ({ ...current, align }));
+  }
+
+  function setTextPlacement(placement: TextSettings["placement"]) {
+    setTextSettings((current) => ({ ...current, placement }));
+  }
+
+  const step = steps[currentStep];
+  const isAtmosphereStep = step.key === "estilo";
+  const progressPercent = ((currentStep + 1) / steps.length) * 100;
+
+  const leftImage = useMemo(() => {
+    return localHeroPreview || buildAssetUrl(form.heroImageUrl) || step.image;
+  }, [form.heroImageUrl, localHeroPreview, step.image]);
+
+  const activeSectionsCount = useMemo(() => {
+    return visualSections.filter((section) => form[section.key]).length;
+  }, [form]);
+
+  const publicPath = event?.slug ? `/e/${event.slug}` : null;
+  const publicUrlLabel = event?.slug
+    ? `vivalista.com/e/${event.slug}`
+    : "vivalista.com/e/seu-evento";
+  const eventDateLabel = formatEventDate(event?.date);
+  const eventLocationLabel = event?.location || "Local ainda não informado";
+
+  const titleParts = useMemo(
+    () => getPreviewTitle(form.publicTitle, event?.name ?? ""),
+    [event?.name, form.publicTitle],
+  );
+
+  const heroLeadText = useMemo(
+    () =>
+      getHeroLeadText(
+        form.publicSubtitle,
+        form.welcomeMessage,
+        eventDateLabel,
+        eventLocationLabel,
+      ),
+    [eventDateLabel, eventLocationLabel, form.publicSubtitle, form.welcomeMessage],
+  );
+
+  const effectiveTextFrame = useMemo(
+    () => getEffectiveTextFrame(form.heroLayout, form.textFrameStyle),
+    [form.heroLayout, form.textFrameStyle],
+  );
+
+  const liveTitleSize = useMemo(
+    () =>
+      getLiveTitleSize({
+        heroLayout: form.heroLayout,
+        titleSize: form.titleSize,
+        titleScale: form.titleScale,
+        textFrameStyle: effectiveTextFrame,
+      }),
+    [effectiveTextFrame, form.heroLayout, form.titleScale, form.titleSize],
   );
 
   useEffect(() => {
-    async function loadData() {
+    let active = true;
+
+    async function loadVisualData() {
       if (!eventId) {
-        setErrorMessage("ID do evento não encontrado na rota.");
+        setErrorMessage("Evento não encontrado.");
         setLoading(false);
         return;
       }
@@ -527,713 +1284,464 @@ export default function DashboardEventVisualPage() {
       try {
         setLoading(true);
         setErrorMessage(null);
+        setSuccessMessage(null);
 
-        const token = getAuthToken();
-        const backendUrl = getBackendUrl();
-
-        const [eventResponse, visualResponse] = await Promise.all([
-          fetch(`${backendUrl}/events/${eventId}`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-            cache: "no-store",
-          }),
-          fetch(`${backendUrl}/events/${eventId}/visual`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-            cache: "no-store",
-          }),
+        const [eventResponse, visualResponse] = await Promise.allSettled([
+          apiRequest<EventData | { data?: EventData }>(backendUrl, `/events/${eventId}`),
+          apiRequest<VisualResponse>(backendUrl, `/events/${eventId}/visual`),
         ]);
 
-        if (!eventResponse.ok) {
-          let apiError: ApiError | null = null;
+        if (!active) return;
 
-          try {
-            apiError = (await eventResponse.json()) as ApiError;
-          } catch {
-            apiError = null;
-          }
-
-          throw new Error(
-            getErrorMessage(apiError) ||
-              `Erro ao buscar evento. Status ${eventResponse.status}.`
-          );
+        if (eventResponse.status !== "fulfilled") {
+          throw eventResponse.reason;
         }
 
-        if (!visualResponse.ok) {
-          let apiError: ApiError | null = null;
+        const loadedEvent = normalizeEventResponse(eventResponse.value);
 
-          try {
-            apiError = (await visualResponse.json()) as ApiError;
-          } catch {
-            apiError = null;
-          }
+        const loadedVisual =
+          visualResponse.status === "fulfilled"
+            ? visualResponse.value.visual
+            : null;
 
-          throw new Error(
-            getErrorMessage(apiError) ||
-              `Erro ao buscar configurações visuais. Status ${visualResponse.status}.`
-          );
-        }
+        const parsedTypography = parseFontPayload(loadedVisual?.fontStyle);
 
-        const eventRaw = (await eventResponse.json()) as EventData | { data?: EventData };
-        const eventData = normalizeEventResponse(eventRaw);
-
-        const visualRaw = (await visualResponse.json()) as VisualResponse;
-        const visualData = visualRaw?.visual ?? {};
-
-        setEvent(eventData);
-        setFormData(buildInitialVisualForm(eventData, visualData));
+        setEvent(loadedEvent);
+        setForm(buildInitialVisualForm(loadedEvent, loadedVisual));
+        setPhotoSettings(parsedTypography.photoSettings);
+        setTextSettings(parsedTypography.textSettings);
       } catch (error) {
+        if (!active) return;
         setErrorMessage(getErrorMessage(error));
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     }
 
-    loadData();
-  }, [eventId]);
+    loadVisualData();
 
-  function handleInputChange(
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    return () => {
+      active = false;
+      navigatingRef.current = false;
+    };
+  }, [backendUrl, eventId]);
+
+  function handleTextChange(
+    eventChange: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) {
-    const { name, value } = e.target;
+    const { name, value } = eventChange.target;
 
-    setFormData((current) => ({
+    if (name === "heroImageUrl") {
+      setLocalHeroPreview(null);
+    }
+
+    setForm((current) => ({
       ...current,
       [name]: value,
     }));
   }
 
-  function handleToggle<K extends keyof VisualFormData>(key: K, value: boolean) {
-    setFormData((current) => ({
+  function handleHeroFileChange(eventChange: ChangeEvent<HTMLInputElement>) {
+    const file = eventChange.target.files?.[0];
+
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+    const maxSizeInBytes = 10 * 1024 * 1024;
+
+    if (!allowedTypes.includes(file.type)) {
+      setErrorMessage("Escolha uma imagem nos formatos .jpg, .gif ou .png.");
+      eventChange.target.value = "";
+      return;
+    }
+
+    if (file.size > maxSizeInBytes) {
+      setErrorMessage("A imagem precisa ter no máximo 10MB.");
+      eventChange.target.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        const imageDataUrl = reader.result;
+        setLocalHeroPreview(imageDataUrl);
+        setForm((current) => ({
+          ...current,
+          heroImageUrl: imageDataUrl,
+        }));
+        setPhotoFit("cover");
+        setPhotoZoom(112);
+        setPhotoPositionX(50);
+        setPhotoPositionY(50);
+        setErrorMessage(null);
+      }
+    };
+
+    reader.onerror = () => {
+      setErrorMessage("Não foi possível carregar a imagem escolhida.");
+    };
+
+    reader.readAsDataURL(file);
+  }
+
+  function updateChoice(
+    key: keyof Pick<VisualFormData, "fontStyle" | "heroLayout" | "titleSize" | "textDensity" | "textFrameStyle" | "siteAtmosphere">,
+    value: string,
+  ) {
+    setForm((current) => ({
       ...current,
       [key]: value,
     }));
   }
 
+  function updateHeroLayout(layout: string) {
+    const nextPhoto = getDefaultPhotoSettingsForLayout(layout);
+
+    setForm((current) => ({
+      ...current,
+      heroLayout: layout,
+    }));
+
+    setPhotoSettings(nextPhoto);
+  }
+
+  function updateVisualStyle(option: VisualStyleOption) {
+    setForm((current) => ({
+      ...current,
+      siteAtmosphere: option.value,
+    }));
+  }
+
+  function updateColor(primaryColor: string, secondaryColor: string) {
+    setForm((current) => ({
+      ...current,
+      primaryColor,
+      secondaryColor,
+    }));
+  }
+
+  function updateToggle(key: ToggleKey, value: boolean) {
+    setForm((current) => ({
+      ...current,
+      [key]: value,
+    }));
+  }
+
+  function goBack() {
+    setCurrentStep((current) => Math.max(current - 1, 0));
+  }
+
+  function goNext() {
+    setCurrentStep((current) => Math.min(current + 1, steps.length - 1));
+  }
+
+  function skipStep() {
+    setSkippedSteps((current) => {
+      const next = new Set(current);
+      next.add(currentStep);
+      return next;
+    });
+    goNext();
+  }
+
   async function handleSave() {
-    if (!eventId) return;
+    if (!eventId) {
+      setErrorMessage("Evento não encontrado.");
+      return;
+    }
+
+    if (!form.heroImageUrl.trim()) {
+      setErrorMessage("Adicione uma imagem de capa antes de salvar.");
+      setCurrentStep(3);
+      return;
+    }
+
+    if (saving || navigatingRef.current) {
+      return;
+    }
 
     try {
       setSaving(true);
-      setSavedMessage(null);
       setErrorMessage(null);
+      setSuccessMessage(null);
 
-      const token = getAuthToken();
-      const backendUrl = getBackendUrl();
-
-      const payload = {
-        publicTitle: formData.publicTitle.trim() || null,
-        publicSubtitle: formData.publicSubtitle.trim() || null,
-        heroImageUrl: formData.heroImageUrl.trim() || null,
-        welcomeMessage: formData.welcomeMessage.trim() || null,
-        primaryColor: formData.primaryColor.trim() || null,
-        secondaryColor: formData.secondaryColor.trim() || null,
-        fontStyle: formData.fontStyle.trim() || null,
-        heroLayout: formData.heroLayout.trim() || null,
-        showCountdown: formData.showCountdown,
-        showStory: formData.showStory,
-        showGallery: formData.showGallery,
-        showLocation: formData.showLocation,
-        showGifts: formData.showGifts,
-        showRsvp: formData.showRsvp,
-      };
-
-      const response = await fetch(`${backendUrl}/events/${eventId}/visual`, {
+      await apiRequest<VisualResponse>(backendUrl, `/events/${eventId}/visual`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          publicTitle: form.publicTitle.trim(),
+          publicSubtitle: form.publicSubtitle.trim(),
+          heroImageUrl: form.heroImageUrl.trim(),
+          welcomeMessage: form.welcomeMessage.trim(),
+          primaryColor: form.primaryColor.trim(),
+          secondaryColor: form.secondaryColor.trim(),
+          fontStyle: buildFontPayload(form, photoSettings, textSettings),
+          heroLayout: form.heroLayout,
+          showCountdown: form.showCountdown,
+          showStory: form.showStory,
+          showGallery: form.showGallery,
+          showLocation: form.showLocation,
+          showGifts: form.showGifts,
+          showRsvp: form.showRsvp,
+        }),
       });
 
-      if (!response.ok) {
-        let apiError: ApiError | null = null;
+      setSuccessMessage("Visual salvo com sucesso. Abrindo seu site quase pronto...");
+      setCurrentStep(steps.length - 1);
+      navigatingRef.current = true;
 
-        try {
-          apiError = (await response.json()) as ApiError;
-        } catch {
-          apiError = null;
-        }
-
-        throw new Error(
-          getErrorMessage(apiError) ||
-            `Erro ao salvar configurações visuais. Status ${response.status}.`
-        );
-      }
-
-      const saved = (await response.json()) as VisualResponse & { message?: string };
-
-      setFormData((current) => buildInitialVisualForm(event, saved.visual ?? current));
-      setSavedMessage(saved.message || "Configurações visuais salvas com sucesso.");
-      setTimeout(() => setSavedMessage(null), 3000);
+      window.setTimeout(() => {
+        router.push(`/dashboard/eventos/${eventId}/montar-site`);
+      }, 700);
     } catch (error) {
+      navigatingRef.current = false;
       setErrorMessage(getErrorMessage(error));
     } finally {
-      setSaving(false);
+      if (!navigatingRef.current) {
+        setSaving(false);
+      }
     }
   }
 
-  const publicPath = event?.slug ? `/e/${event.slug}` : null;
+
+
+  if (loading) {
+    return (
+      <main className="clean-loading">
+        <div>
+          <VivaListaLogo />
+          <h1>Carregando visual do site...</h1>
+        </div>
+      </main>
+    );
+  }
+
+  if (errorMessage && !event) {
+    return (
+      <main className="clean-loading">
+        <div>
+          <VivaListaLogo />
+          <h1>Não conseguimos abrir este evento.</h1>
+          <span>{errorMessage}</span>
+          <Link href="/dashboard/eventos">Voltar para eventos</Link>
+        </div>
+      </main>
+    );
+  }
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#fbfaf8_0%,#f8f3ec_100%)]">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {loading ? (
-          <section className="space-y-6">
-            <div className="rounded-[28px] border border-[#e8dfd2] bg-white p-6 shadow-sm">
-              <div className="h-4 w-36 animate-pulse rounded bg-neutral-200" />
-              <div className="mt-4 h-10 w-1/2 animate-pulse rounded bg-neutral-200" />
-              <div className="mt-3 h-4 w-2/3 animate-pulse rounded bg-neutral-200" />
-            </div>
+    <main
+      className={`vivalista-wizard ${isAtmosphereStep ? "preview-atmosphere-only" : ""}`}
+      style={
+        {
+          "--brand-primary": form.primaryColor,
+          "--brand-secondary": form.secondaryColor,
+          "--progress-percent": `${progressPercent}%`,
+          "--photo-size": photoFit === "contain" ? "contain" : `${photoZoom}%`,
+          "--photo-position": `${photoPositionX}% ${photoPositionY}%`,
+          "--title-scale": String(form.titleScale / 100),
+          "--detail-scale": String(form.detailScale / 100),
+          "--copy-scale": String(Math.min(1.16, Math.max(0.88, form.detailScale / 100))),
+        } as CSSProperties
+      }
+    >
+            <VisualBuilderStyles liveTitleSize={liveTitleSize} />
+      <style jsx global>{`
+        /*
+          PASSO 1 — ATMOSFERA DO SITE
+          Neste passo a prévia não deve mostrar capa, letras, cartão de texto
+          nem moldura central. A pessoa escolhe apenas o clima visual do site.
+        */
+        .preview-atmosphere-only .mini-hero-copy,
+        .preview-atmosphere-only .preview-card,
+        .preview-atmosphere-only .site-preview-content,
+        .preview-atmosphere-only .visual-photo-shape,
+        .preview-atmosphere-only .preview-photo-large,
+        .preview-atmosphere-only .preview-photo {
+          display: none !important;
+          opacity: 0 !important;
+          visibility: hidden !important;
+          pointer-events: none !important;
+        }
 
-            <div className="grid gap-6 lg:grid-cols-3">
-              <div className="lg:col-span-2 rounded-[28px] border border-[#e8dfd2] bg-white p-6 shadow-sm">
-                <div className="space-y-4">
-                  <div className="h-12 w-full animate-pulse rounded-2xl bg-neutral-200" />
-                  <div className="h-12 w-full animate-pulse rounded-2xl bg-neutral-200" />
-                  <div className="h-28 w-full animate-pulse rounded-2xl bg-neutral-200" />
-                  <div className="h-12 w-full animate-pulse rounded-2xl bg-neutral-200" />
-                </div>
+        .preview-atmosphere-only .mini-hero-preview {
+          min-height: 66%;
+        }
+
+        .preview-atmosphere-only .visual-photo-layer {
+          opacity: 1;
+        }
+      `}</style>
+
+      <section className="image-side">
+        <FullSitePreview
+          form={form}
+          leftImage={leftImage}
+          titleParts={titleParts}
+          heroLeadText={heroLeadText}
+          eventDateLabel={eventDateLabel}
+          eventLocationLabel={eventLocationLabel}
+          textAlign={textAlign}
+          textPlacement={textPlacement}
+          effectiveTextFrame={effectiveTextFrame}
+          fontClass={getFontClass(form.fontStyle)}
+          liveTitleSize={liveTitleSize}
+        />
+      </section>
+
+
+      <section className="form-side">
+        <div className="compact-fixed-head">
+          <div className="compact-progress-row">
+            <VivaListaLogo />
+
+            <div className="progress-mini">
+              <div className="progress-summary">
+                <span>
+                  Passo {currentStep + 1} de {steps.length}
+                </span>
+                <strong>{Math.round(progressPercent)}%</strong>
               </div>
 
-              <div className="rounded-[28px] border border-[#e8dfd2] bg-white p-6 shadow-sm">
-                <div className="h-4 w-32 animate-pulse rounded bg-neutral-200" />
-                <div className="mt-4 space-y-3">
-                  <div className="h-24 w-full animate-pulse rounded-2xl bg-neutral-200" />
-                  <div className="h-24 w-full animate-pulse rounded-2xl bg-neutral-200" />
-                </div>
-              </div>
-            </div>
-          </section>
-        ) : errorMessage ? (
-          <section className="rounded-[28px] border border-red-200 bg-red-50 p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-red-800">
-              Erro ao abrir configurações visuais
-            </h2>
-            <p className="mt-2 text-sm text-red-700">{errorMessage}</p>
+              <ol className="progress-dots" role="list" aria-label="Progresso da etapa visual">
+                {steps.map((item, index) => {
+                  const isDone = index < currentStep;
+                  const isCurrent = index === currentStep;
+                  const isSkipped = skippedSteps.has(index);
 
-            <div className="mt-4 flex flex-wrap gap-3">
-              <Link
-                href="/dashboard/eventos"
-                className="inline-flex items-center justify-center rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100"
-              >
-                Voltar para eventos
+                  return (
+                    <li className="progress-item" key={item.key}>
+                      <span
+                        className={`progress-dot ${isDone ? "done" : ""} ${
+                          isCurrent ? "current" : ""
+                        } ${isSkipped ? "skipped" : ""}`}
+                        role="img"
+                        aria-label={
+                          isSkipped
+                            ? `Etapa ${index + 1} pulada`
+                            : isDone
+                              ? `Etapa ${index + 1} concluída`
+                              : isCurrent
+                                ? `Etapa ${index + 1} atual`
+                                : `Etapa ${index + 1}`
+                        }
+                      />
+
+                      {index < steps.length - 1 ? (
+                        <span
+                          className={`progress-line ${
+                            index < currentStep ? "done" : ""
+                          }`}
+                        />
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+          </div>
+
+          <h1 className="question-title">{step.title}</h1>
+          <p className="question-subtitle">{step.subtitle}</p>
+        </div>
+
+        <div className="wizard-content">
+          <div className="question-box">
+            <div className="step-content"><VisualStepContent
+              step={step}
+              handleHeroFileChange={handleHeroFileChange}
+              heroLayoutOptions={heroLayoutOptions}
+              updateHeroLayout={updateHeroLayout}
+              form={form}
+              photoFit={photoFit}
+              setPhotoFit={setPhotoFit}
+              photoZoom={photoZoom}
+              setPhotoZoom={setPhotoZoom}
+              photoPositionX={photoPositionX}
+              setPhotoPositionX={setPhotoPositionX}
+              photoPositionY={photoPositionY}
+              setPhotoPositionY={setPhotoPositionY}
+              visualStyleOptions={visualStyleOptions}
+              updateVisualStyle={updateVisualStyle}
+              colorOptions={colorOptions}
+              updateColor={updateColor}
+              handleTextChange={handleTextChange}
+              typographyCategories={typographyCategories}
+              typographyOptions={typographyOptions}
+              getFontClass={getFontClass}
+              updateChoice={updateChoice}
+              titleSizeOptions={titleSizeOptions}
+              setForm={setForm}
+              textDensityOptions={textDensityOptions}
+              textAlign={textAlign}
+              setTextAlign={setTextAlign}
+              textPlacement={textPlacement}
+              setTextPlacement={setTextPlacement}
+              effectiveTextFrame={effectiveTextFrame}
+              visualSections={visualSections}
+              updateToggle={updateToggle}
+              event={event}
+              publicUrlLabel={publicUrlLabel}
+              getTypographyLabel={getTypographyLabel}
+              getAtmosphereLabel={getAtmosphereLabel}
+              activeSectionsCount={activeSectionsCount}
+            /></div>
+
+            {errorMessage ? (
+              <div className="message error">{errorMessage}</div>
+            ) : null}
+
+            {successMessage ? (
+              <div className="message success">{successMessage}</div>
+            ) : null}
+          </div>
+        </div>
+
+        <footer className="bottom-bar bottom-actions-bar">
+          <button
+            type="button"
+            onClick={goBack}
+            disabled={currentStep === 0 || saving || navigatingRef.current}
+            className="secondary-button"
+          >
+            Voltar
+          </button>
+
+          <div className="bottom-center-actions">
+            {currentStep < steps.length - 1 ? (
+              <button type="button" onClick={skipStep} className="skip-button compact-skip-button">
+                Pular por enquanto
+              </button>
+            ) : publicPath ? (
+              <Link href={publicPath} className="compact-site-link">
+                Ver site público
               </Link>
-            </div>
-          </section>
-        ) : (
-          <section className="space-y-6">
-            <div className="relative overflow-hidden rounded-[32px] border border-[#e8dfd2] bg-[linear-gradient(180deg,#fffdfa_0%,#f8f3ec_100%)] p-6 shadow-sm">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(201,162,39,0.14),transparent_24%),radial-gradient(circle_at_bottom_left,rgba(111,74,166,0.05),transparent_26%)]" />
-              <div className="relative flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-                <div className="min-w-0">
-                  <div className="inline-flex rounded-full border border-[#ead79a] bg-[#fbf3d8] px-4 py-2 shadow-[0_10px_24px_rgba(201,162,39,0.10)]">
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#8f6a16]">
-                      dashboard visual do evento
-                    </p>
-                  </div>
+            ) : (
+              <Link href={`/dashboard/eventos/${eventId}`} className="compact-site-link">
+                Voltar ao evento
+              </Link>
+            )}
+          </div>
 
-                  <div className="mt-4 flex flex-wrap items-center gap-3">
-                    <h1 className="text-3xl font-semibold tracking-tight text-neutral-900 sm:text-4xl">
-                      Configurações visuais
-                    </h1>
-
-                    <span
-                      className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${statusPillClasses(
-                        event?.status
-                      )}`}
-                    >
-                      {statusLabel(event?.status)}
-                    </span>
-                  </div>
-
-                  <p className="mt-3 max-w-3xl text-sm leading-6 text-neutral-600">
-                    Ajuste a apresentação pública do evento, simule o hero principal e salve no backend real.
-                  </p>
-
-                  <div className="mt-5 flex flex-wrap gap-3">
-                    {eventId ? (
-                      <Link
-                        href={`/dashboard/eventos/${eventId}`}
-                        className="inline-flex items-center justify-center rounded-xl border border-[#ddd1f2] bg-[#efe7fb] px-4 py-2 text-sm font-medium text-[#5f3d95] transition hover:bg-[#e7ddf7]"
-                      >
-                        Voltar ao painel
-                      </Link>
-                    ) : null}
-
-                    {eventId ? (
-                      <Link
-                        href={`/dashboard/eventos/${eventId}/editar`}
-                        className="inline-flex items-center justify-center rounded-xl border border-[#e8dfd2] bg-white px-4 py-2 text-sm font-medium text-[#8f6a16] transition hover:bg-[#fcfaf7]"
-                      >
-                        Editar dados do evento
-                      </Link>
-                    ) : null}
-
-                    {publicPath ? (
-                      <Link
-                        href={publicPath}
-                        target="_blank"
-                        className="inline-flex items-center justify-center rounded-xl bg-[#8f6a16] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#7a5911]"
-                      >
-                        Ver página pública
-                      </Link>
-                    ) : null}
-
-                    <button
-                      type="button"
-                      onClick={handleSave}
-                      disabled={saving}
-                      className="inline-flex items-center justify-center rounded-xl border border-[#e8dfd2] bg-white px-4 py-2 text-sm font-medium text-[#8f6a16] transition hover:bg-[#fcfaf7] disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      {saving ? "Salvando..." : "Salvar configurações visuais"}
-                    </button>
-                  </div>
-
-                  {savedMessage ? (
-                    <p className="mt-3 text-sm font-medium text-[#8f6a16]">
-                      {savedMessage}
-                    </p>
-                  ) : null}
-                </div>
-
-                <div className="grid min-w-full gap-3 sm:grid-cols-2 xl:min-w-[380px] xl:max-w-[440px]">
-                  <div className="rounded-[22px] border border-[#e8dfd2] bg-white p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
-                      Evento
-                    </p>
-                    <p className="mt-2 text-sm font-medium text-neutral-900">
-                      {event?.name || "Não informado"}
-                    </p>
-                  </div>
-
-                  <div className="rounded-[22px] border border-[#e8dfd2] bg-white p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
-                      Rota pública
-                    </p>
-                    <p className="mt-2 break-all text-sm font-medium text-neutral-900">
-                      {publicPath || "Sem slug público"}
-                    </p>
-                  </div>
-
-                  <div className="rounded-[22px] border border-[#e8dfd2] bg-white p-4 sm:col-span-2">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
-                      Leitura rápida
-                    </p>
-                    <p className="mt-2 text-lg font-semibold text-neutral-900">
-                      {formData.publicTitle || "Título público do evento"}
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-neutral-600">
-                      Hero em {formData.heroLayout} com fonte {formData.fontStyle} e foco em personalização pública do evento.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <SectionShell
-              eyebrow="preview principal"
-              title="Prévia do hero público"
-              description="Este bloco simula o topo da página pública usando o layout, as cores, a imagem e os textos atuais."
+          {currentStep < steps.length - 1 ? (
+            <button type="button" onClick={goNext} className="primary-button compact-primary-button">
+              Continuar
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving || navigatingRef.current}
+              className="primary-button compact-primary-button"
             >
-              <HeroPreview formData={formData} />
-            </SectionShell>
-
-            <SectionShell
-              eyebrow="resumo visual"
-              title="Leitura rápida da configuração"
-              description="Visão executiva do que está sendo personalizado nesta tela."
-            >
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <VisualSummaryCard
-                  label="Título público"
-                  value={formData.publicTitle || "Não definido"}
-                  description="Texto principal do hero e do topo da experiência pública."
-                />
-                <VisualSummaryCard
-                  label="Layout do hero"
-                  value={formData.heroLayout}
-                  description="Estrutura visual escolhida para o topo da página."
-                />
-                <VisualSummaryCard
-                  label="Estilo de fonte"
-                  value={formData.fontStyle}
-                  description="Tom visual e sensação de tipografia do evento."
-                />
-                <VisualSummaryCard
-                  label="Imagem principal"
-                  value={formData.heroImageUrl.trim() ? "Configurada" : "Não configurada"}
-                  description="Imagem de destaque usada no hero público."
-                />
-              </div>
-            </SectionShell>
-
-            <div className="grid gap-6 lg:grid-cols-3">
-              <div className="lg:col-span-2 space-y-6">
-                <SectionShell
-                  eyebrow="conteúdo visual"
-                  title="Hero e mensagem inicial"
-                  description="Esses campos controlam os elementos mais visíveis da página pública."
-                >
-                  <div className="grid gap-5 sm:grid-cols-2">
-                    <div className="sm:col-span-2">
-                      <label
-                        htmlFor="publicTitle"
-                        className="mb-2 block text-sm font-medium text-neutral-800"
-                      >
-                        Título público
-                      </label>
-                      <input
-                        id="publicTitle"
-                        name="publicTitle"
-                        type="text"
-                        value={formData.publicTitle}
-                        onChange={handleInputChange}
-                        placeholder="Ex: Renan & Laislla"
-                        className="w-full rounded-2xl border border-[#d9cec2] px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-[#8f6a16]"
-                      />
-                      <FieldHint>
-                        É o texto principal que aparece no hero da página pública.
-                      </FieldHint>
-                    </div>
-
-                    <div className="sm:col-span-2">
-                      <label
-                        htmlFor="publicSubtitle"
-                        className="mb-2 block text-sm font-medium text-neutral-800"
-                      >
-                        Subtítulo público
-                      </label>
-                      <input
-                        id="publicSubtitle"
-                        name="publicSubtitle"
-                        type="text"
-                        value={formData.publicSubtitle}
-                        onChange={handleInputChange}
-                        placeholder="Ex: Nosso grande dia está chegando"
-                        className="w-full rounded-2xl border border-[#d9cec2] px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-[#8f6a16]"
-                      />
-                      <FieldHint>
-                        Aparece logo abaixo do título principal no topo do site.
-                      </FieldHint>
-                    </div>
-
-                    <div className="sm:col-span-2">
-                      <label
-                        htmlFor="heroImageUrl"
-                        className="mb-2 block text-sm font-medium text-neutral-800"
-                      >
-                        URL da imagem de capa
-                      </label>
-                      <input
-                        id="heroImageUrl"
-                        name="heroImageUrl"
-                        type="text"
-                        value={formData.heroImageUrl}
-                        onChange={handleInputChange}
-                        placeholder="https://..."
-                        className="w-full rounded-2xl border border-[#d9cec2] px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-[#8f6a16]"
-                      />
-                      <FieldHint>
-                        Hoje funciona por URL. Depois podemos evoluir para upload real de imagem.
-                      </FieldHint>
-                    </div>
-
-                    <div className="sm:col-span-2">
-                      <label
-                        htmlFor="welcomeMessage"
-                        className="mb-2 block text-sm font-medium text-neutral-800"
-                      >
-                        Mensagem de boas-vindas
-                      </label>
-                      <textarea
-                        id="welcomeMessage"
-                        name="welcomeMessage"
-                        value={formData.welcomeMessage}
-                        onChange={handleInputChange}
-                        rows={7}
-                        placeholder="Escreva a mensagem inicial da página pública"
-                        className="w-full rounded-2xl border border-[#d9cec2] px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-[#8f6a16]"
-                      />
-                      <FieldHint>
-                        Texto principal usado nos blocos emocionais e de apresentação.
-                      </FieldHint>
-                    </div>
-                  </div>
-                </SectionShell>
-
-                <SectionShell
-                  eyebrow="identidade visual"
-                  title="Cores, fonte e composição"
-                  description="Esses campos definem a sensação visual da página do evento."
-                >
-                  <div className="grid gap-5 sm:grid-cols-2">
-                    <div>
-                      <label
-                        htmlFor="primaryColor"
-                        className="mb-2 block text-sm font-medium text-neutral-800"
-                      >
-                        Cor principal
-                      </label>
-                      <div className="flex items-center gap-3">
-                        <input
-                          id="primaryColor"
-                          name="primaryColor"
-                          type="color"
-                          value={formData.primaryColor}
-                          onChange={handleInputChange}
-                          className="h-12 w-16 rounded-xl border border-[#d9cec2] bg-white p-1"
-                        />
-                        <input
-                          name="primaryColor"
-                          type="text"
-                          value={formData.primaryColor}
-                          onChange={handleInputChange}
-                          className="w-full rounded-2xl border border-[#d9cec2] px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-[#8f6a16]"
-                        />
-                      </div>
-                      <FieldHint>
-                        Cor de destaque usada em botões, títulos e detalhes do hero.
-                      </FieldHint>
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="secondaryColor"
-                        className="mb-2 block text-sm font-medium text-neutral-800"
-                      >
-                        Cor secundária
-                      </label>
-                      <div className="flex items-center gap-3">
-                        <input
-                          id="secondaryColor"
-                          name="secondaryColor"
-                          type="color"
-                          value={formData.secondaryColor}
-                          onChange={handleInputChange}
-                          className="h-12 w-16 rounded-xl border border-[#d9cec2] bg-white p-1"
-                        />
-                        <input
-                          name="secondaryColor"
-                          type="text"
-                          value={formData.secondaryColor}
-                          onChange={handleInputChange}
-                          className="w-full rounded-2xl border border-[#d9cec2] px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-[#8f6a16]"
-                        />
-                      </div>
-                      <FieldHint>
-                        Cor de apoio usada em fundos, cartões e contraste do layout.
-                      </FieldHint>
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="fontStyle"
-                        className="mb-2 block text-sm font-medium text-neutral-800"
-                      >
-                        Estilo de fonte
-                      </label>
-                      <select
-                        id="fontStyle"
-                        name="fontStyle"
-                        value={formData.fontStyle}
-                        onChange={handleInputChange}
-                        className="w-full rounded-2xl border border-[#d9cec2] px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-[#8f6a16]"
-                      >
-                        <option value="elegante">Elegante</option>
-                        <option value="moderno">Moderno</option>
-                        <option value="classico">Clássico</option>
-                        <option value="clean">Clean</option>
-                      </select>
-                      <FieldHint>
-                        Ajuda a definir a sensação geral da identidade visual.
-                      </FieldHint>
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="heroLayout"
-                        className="mb-2 block text-sm font-medium text-neutral-800"
-                      >
-                        Layout do hero
-                      </label>
-                      <select
-                        id="heroLayout"
-                        name="heroLayout"
-                        value={formData.heroLayout}
-                        onChange={handleInputChange}
-                        className="w-full rounded-2xl border border-[#d9cec2] px-4 py-3 text-sm text-neutral-900 outline-none transition focus:border-[#8f6a16]"
-                      >
-                        <option value="centralizado">Centralizado</option>
-                        <option value="imagem-esquerda">Imagem à esquerda</option>
-                        <option value="imagem-direita">Imagem à direita</option>
-                        <option value="minimalista">Minimalista</option>
-                      </select>
-                      <FieldHint>
-                        Define como o texto e a imagem se organizam no topo da página.
-                      </FieldHint>
-                    </div>
-                  </div>
-                </SectionShell>
-
-                <SectionShell
-                  eyebrow="exibição pública"
-                  title="Exibir ou ocultar seções"
-                  description="Defina quais blocos realmente aparecem para os convidados."
-                >
-                  <div className="space-y-4">
-                    <ToggleRow
-                      label="Contagem regressiva"
-                      description="Mostra o contador automático até a data do evento."
-                      checked={formData.showCountdown}
-                      onChange={(value) => handleToggle("showCountdown", value)}
-                    />
-
-                    <ToggleRow
-                      label="História / mensagem especial"
-                      description="Exibe o bloco emocional com texto principal do evento."
-                      checked={formData.showStory}
-                      onChange={(value) => handleToggle("showStory", value)}
-                    />
-
-                    <ToggleRow
-                      label="Galeria"
-                      description="Mostra a seção de fotos e imagens do evento."
-                      checked={formData.showGallery}
-                      onChange={(value) => handleToggle("showGallery", value)}
-                    />
-
-                    <ToggleRow
-                      label="Localização"
-                      description="Exibe o bloco com mapa, endereço e informações do local."
-                      checked={formData.showLocation}
-                      onChange={(value) => handleToggle("showLocation", value)}
-                    />
-
-                    <ToggleRow
-                      label="Presentes"
-                      description="Mantém a seção pública da lista de presentes visível."
-                      checked={formData.showGifts}
-                      onChange={(value) => handleToggle("showGifts", value)}
-                    />
-
-                    <ToggleRow
-                      label="RSVP"
-                      description="Mantém o bloco de confirmação de presença visível."
-                      checked={formData.showRsvp}
-                      onChange={(value) => handleToggle("showRsvp", value)}
-                    />
-                  </div>
-                </SectionShell>
-              </div>
-
-              <aside className="space-y-6">
-                <SectionShell
-                  eyebrow="resumo"
-                  title="Estrutura atual"
-                >
-                  <div className="space-y-4 text-sm text-neutral-700">
-                    <div>
-                      <p className="font-semibold text-neutral-900">Título público</p>
-                      <p>{formData.publicTitle || "Não preenchido"}</p>
-                    </div>
-
-                    <div>
-                      <p className="font-semibold text-neutral-900">Slug atual</p>
-                      <p className="break-all">{event?.slug || "Não informado"}</p>
-                    </div>
-
-                    <div>
-                      <p className="font-semibold text-neutral-900">Layout do hero</p>
-                      <p>{formData.heroLayout}</p>
-                    </div>
-
-                    <div>
-                      <p className="font-semibold text-neutral-900">Fonte</p>
-                      <p>{formData.fontStyle}</p>
-                    </div>
-
-                    <div>
-                      <p className="font-semibold text-neutral-900">Cor principal</p>
-                      <div className="mt-2 flex items-center gap-2">
-                        <span
-                          className="inline-block h-5 w-5 rounded-full border border-[#d9cec2]"
-                          style={{ backgroundColor: formData.primaryColor }}
-                        />
-                        <span>{formData.primaryColor}</span>
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="font-semibold text-neutral-900">Cor secundária</p>
-                      <div className="mt-2 flex items-center gap-2">
-                        <span
-                          className="inline-block h-5 w-5 rounded-full border border-[#d9cec2]"
-                          style={{ backgroundColor: formData.secondaryColor }}
-                        />
-                        <span>{formData.secondaryColor}</span>
-                      </div>
-                    </div>
-                  </div>
-                </SectionShell>
-
-                <SectionShell
-                  eyebrow="mapeamento"
-                  title="Seções ativas"
-                >
-                  <div className="space-y-3 text-sm text-neutral-700">
-                    <div className="rounded-[20px] border border-[#e8dfd2] bg-[#f8f3ec] p-4">
-                      Hero principal: <strong>{formData.publicTitle || "Título"}</strong>
-                    </div>
-                    <div className="rounded-[20px] border border-[#e8dfd2] bg-[#f8f3ec] p-4">
-                      Countdown: <strong>{formData.showCountdown ? "ativo" : "oculto"}</strong>
-                    </div>
-                    <div className="rounded-[20px] border border-[#e8dfd2] bg-[#f8f3ec] p-4">
-                      Galeria: <strong>{formData.showGallery ? "ativa" : "oculta"}</strong>
-                    </div>
-                    <div className="rounded-[20px] border border-[#e8dfd2] bg-[#f8f3ec] p-4">
-                      Localização: <strong>{formData.showLocation ? "ativa" : "oculta"}</strong>
-                    </div>
-                    <div className="rounded-[20px] border border-[#e8dfd2] bg-[#f8f3ec] p-4">
-                      Presentes: <strong>{formData.showGifts ? "ativo" : "oculto"}</strong>
-                    </div>
-                    <div className="rounded-[20px] border border-[#e8dfd2] bg-[#f8f3ec] p-4">
-                      RSVP: <strong>{formData.showRsvp ? "ativo" : "oculto"}</strong>
-                    </div>
-                  </div>
-                </SectionShell>
-
-                <SectionShell
-                  eyebrow="próximas evoluções"
-                  title="Base pronta para crescer"
-                >
-                  <div className="space-y-3 text-sm text-neutral-700">
-                    <div className="rounded-[20px] border border-[#e8dfd2] bg-[#f8f3ec] p-4">
-                      Upload real de imagem de capa
-                    </div>
-                    <div className="rounded-[20px] border border-[#e8dfd2] bg-[#f8f3ec] p-4">
-                      Galeria real com múltiplas fotos
-                    </div>
-                    <div className="rounded-[20px] border border-[#e8dfd2] bg-[#f8f3ec] p-4">
-                      Sistema de templates visuais
-                    </div>
-                    <div className="rounded-[20px] border border-[#e8dfd2] bg-[#f8f3ec] p-4">
-                      Mais blocos públicos configuráveis
-                    </div>
-                  </div>
-                </SectionShell>
-              </aside>
-            </div>
-          </section>
-        )}
-      </div>
+              {saving || navigatingRef.current
+                ? "Salvando..."
+                : "Salvar visual e ver meu site quase pronto"}
+            </button>
+          )}
+        </footer>
+      </section>
     </main>
   );
 }

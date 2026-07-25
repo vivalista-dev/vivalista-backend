@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+// HOME_MODELOS_VER_MODELO_LOCAL_VIVALISTA
+
 type EventModel = {
   slug: string;
   eventType: string;
@@ -91,7 +93,7 @@ const eventModels: EventModel[] = [
       "Modelo nobre para casamentos elegantes, com capa impactante, programação, dress code, lista de presentes e RSVP.",
     icon: "🥂",
     tag: "Luxo",
-    previewUrl: "#galeria-modelos",
+    previewUrl: "/modelos/casamento-luxo",
     useUrl: "/register?tipo=casamento&modelo=casamento-luxo",
     image:
       "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1200&q=90",
@@ -107,7 +109,7 @@ const eventModels: EventModel[] = [
       "Visual leve para cerimônias ao ar livre, com mapa, hospedagem, presentes, galeria e mensagens aos convidados.",
     icon: "🌿",
     tag: "Campo",
-    previewUrl: "#galeria-modelos",
+    previewUrl: "/modelos/casamento-rustico",
     useUrl: "/register?tipo=casamento&modelo=casamento-rustico",
     image:
       "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=1200&q=90",
@@ -123,7 +125,7 @@ const eventModels: EventModel[] = [
       "Página charmosa para convite de noivado, fotos do casal, local, confirmação e mensagem para família e amigos.",
     icon: "💌",
     tag: "Novo",
-    previewUrl: "#galeria-modelos",
+    previewUrl: "/modelos/noivado-elegante",
     useUrl: "/register?tipo=noivado&modelo=noivado-elegante",
     image:
       "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=90",
@@ -139,7 +141,7 @@ const eventModels: EventModel[] = [
       "Linha do tempo, galeria, votos, localização, presentes, RSVP e uma experiência emocional para família e amigos.",
     icon: "🥂",
     tag: "História",
-    previewUrl: "#galeria-modelos",
+    previewUrl: "/modelos/bodas-elegante",
     useUrl: "/register?tipo=bodas&modelo=bodas-elegante",
     image:
       "https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=1200&q=90",
@@ -172,7 +174,7 @@ const eventModels: EventModel[] = [
       "Modelo encantador para festa de 15 anos, com fotos, contagem regressiva, homenagem, dress code e confirmação.",
     icon: "✨",
     tag: "Encantado",
-    previewUrl: "#galeria-modelos",
+    previewUrl: "/modelos/debutante-princesa",
     useUrl: "/register?tipo=aniversario-15-anos&modelo=debutante-princesa",
     image:
       "https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?auto=format&fit=crop&w=1200&q=90",
@@ -188,7 +190,7 @@ const eventModels: EventModel[] = [
       "Tema da festa, fotos, endereço, confirmação de presença, presentes e informações importantes para os convidados.",
     icon: "🎈",
     tag: "Divertido",
-    previewUrl: "#galeria-modelos",
+    previewUrl: "/modelos/aniversario-infantil-divertido",
     useUrl: "/register?tipo=aniversario-infantil&modelo=infantil-divertido",
     image:
       "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1200&q=90",
@@ -204,7 +206,7 @@ const eventModels: EventModel[] = [
       "Modelo para festas adultas, com capa marcante, lista de convidados, local, dress code e detalhes da celebração.",
     icon: "🎉",
     tag: "Moderno",
-    previewUrl: "#galeria-modelos",
+    previewUrl: "/modelos/aniversario-adulto-premium",
     useUrl: "/register?tipo=aniversario-adulto&modelo=aniversario-premium",
     image:
       "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=90",
@@ -236,7 +238,7 @@ const eventModels: EventModel[] = [
       "Modelo para reunir família e amigos, com convite, local, lista de presentes, enquete, fotos e confirmação.",
     icon: "🩵",
     tag: "Novo",
-    previewUrl: "#galeria-modelos",
+    previewUrl: "/modelos/cha-revelacao-suave",
     useUrl: "/register?tipo=cha-revelacao&modelo=cha-revelacao-suave",
     image:
       "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=1200&q=90",
@@ -301,7 +303,7 @@ const eventModels: EventModel[] = [
       "Convite para cerimônia, recepção, localização, padrinhos, mensagem da família, fotos e confirmação de presença.",
     icon: "🕊️",
     tag: "Família",
-    previewUrl: "#galeria-modelos",
+    previewUrl: "/modelos/batizado-sagrado",
     useUrl: "/register?tipo=batizado&modelo=batizado-sagrado",
     image:
       "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=90",

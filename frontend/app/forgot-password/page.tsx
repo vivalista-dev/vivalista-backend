@@ -2,26 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, Suspense, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { FormEvent, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
-/* VERSAO_LOGIN_V17_FORMULARIO_ACIMA_SEM_ROLAGEM */
+/* VERSAO_FORGOT_PASSWORD_V3_ILUSTRACAO_CSS_MAIOR_PREMIUM */
 
-type LoginResponse = {
-  accessToken?: string;
-  access_token?: string;
-  token?: string;
-  authToken?: string;
-  jwt?: string;
-  user?: unknown;
-  data?: {
-    accessToken?: string;
-    access_token?: string;
-    token?: string;
-    authToken?: string;
-    jwt?: string;
-    user?: unknown;
-  };
+type ForgotPasswordResponse = {
   message?: string | string[];
   error?: string;
 };
@@ -34,169 +20,25 @@ function getApiBaseUrl() {
   ).replace(/\/+$/, "");
 }
 
-function getLoginToken(data: LoginResponse | null): string | null {
+function formatApiMessage(data: ForgotPasswordResponse | null) {
   if (!data) return null;
 
-  return (
-    data.accessToken ||
-    data.access_token ||
-    data.token ||
-    data.authToken ||
-    data.jwt ||
-    data.data?.accessToken ||
-    data.data?.access_token ||
-    data.data?.token ||
-    data.data?.authToken ||
-    data.data?.jwt ||
-    null
-  );
+  if (Array.isArray(data.message)) return data.message.join(", ");
+  if (data.message) return data.message;
+  if (data.error) return data.error;
+
+  return null;
 }
 
-function saveAuthSession(data: LoginResponse | null, token: string) {
-  if (typeof window === "undefined") return;
-
-  window.localStorage.setItem("token", token);
-  window.localStorage.setItem("accessToken", token);
-  window.localStorage.setItem("vivalista_token", token);
-
-  const user = data?.user || data?.data?.user;
-
-  if (user) {
-    window.localStorage.setItem("user", JSON.stringify(user));
-  }
-}
-
-function normalizeRedirect(value: string | null): string | null {
-  if (!value) return null;
-
-  const trimmed = value.trim();
-
-  if (!trimmed) return null;
-  if (trimmed.startsWith("//")) return null;
-  if (trimmed.startsWith("/login")) return null;
-
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-    if (typeof window === "undefined") return null;
-
-    try {
-      const redirectUrl = new URL(trimmed);
-
-      if (redirectUrl.origin !== window.location.origin) return null;
-      if (redirectUrl.pathname.startsWith("/login")) return null;
-
-      return `${redirectUrl.pathname}${redirectUrl.search}${redirectUrl.hash}`;
-    } catch {
-      return null;
-    }
-  }
-
-  if (!trimmed.startsWith("/")) return null;
-
-  return trimmed;
-}
-
-function buildEventCreationRedirect(tipo: string | null, modelo: string | null) {
-  const params = new URLSearchParams();
-
-  if (tipo?.trim()) params.set("tipo", tipo.trim());
-  if (modelo?.trim()) params.set("modelo", modelo.trim());
-
-  const query = params.toString();
-
-  return query ? `/dashboard/eventos/novo?${query}` : null;
-}
-
-function buildRegisterHref({
-  redirectPath,
-  tipo,
-  modelo,
-}: {
-  redirectPath: string;
-  tipo: string | null;
-  modelo: string | null;
-}) {
-  const params = new URLSearchParams();
-
-  if (tipo?.trim()) params.set("tipo", tipo.trim());
-  if (modelo?.trim()) params.set("modelo", modelo.trim());
-
-  if (redirectPath && redirectPath !== "/dashboard") {
-    params.set("redirect", redirectPath);
-  }
-
-  const query = params.toString();
-
-  return query ? `/register?${query}` : "/register";
-}
-
-function EyeIcon({ open }: { open: boolean }) {
-  if (open) {
-    return (
-      <svg aria-hidden="true" viewBox="0 0 24 24" className="vl-eye-icon">
-        <path d="M2.6 12s3.3-6.1 9.4-6.1S21.4 12 21.4 12s-3.3 6.1-9.4 6.1S2.6 12 2.6 12Z" />
-        <circle cx="12" cy="12" r="2.8" />
-      </svg>
-    );
-  }
-
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="vl-eye-icon">
-      <path d="M3 3l18 18" />
-      <path d="M10.6 5.9A10.4 10.4 0 0 1 12 5.8c6.1 0 9.4 6.2 9.4 6.2a16.7 16.7 0 0 1-3.1 3.8" />
-      <path d="M6.6 6.9C4 8.5 2.6 12 2.6 12s3.3 6.2 9.4 6.2c1.4 0 2.7-.3 3.8-.9" />
-      <path d="M9.9 9.9a2.8 2.8 0 0 0 4.2 4.2" />
-    </svg>
-  );
-}
-
-function LoginPageContent() {
+export default function ForgotPasswordPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-
   const apiBaseUrl = useMemo(() => getApiBaseUrl(), []);
 
-  const tipoParam =
-    searchParams.get("tipo") ||
-    searchParams.get("type") ||
-    searchParams.get("eventType") ||
-    "";
-
-  const modeloParam =
-    searchParams.get("modelo") ||
-    searchParams.get("model") ||
-    searchParams.get("template") ||
-    searchParams.get("templateSlug") ||
-    searchParams.get("slug") ||
-    "";
-
-  const resetSuccess = searchParams.get("reset") === "success";
-
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const [showPassword, setShowPassword] = useState(false);
   const [emailTouched, setEmailTouched] = useState(false);
-  const [passwordTouched, setPasswordTouched] = useState(false);
-
   const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const redirectPath = useMemo(() => {
-    const redirectFromUrl = normalizeRedirect(searchParams.get("redirect"));
-    const redirectFromModel = buildEventCreationRedirect(tipoParam, modeloParam);
-
-    return redirectFromUrl || redirectFromModel || "/dashboard/eventos/novo";
-  }, [modeloParam, searchParams, tipoParam]);
-
-  const registerHref = useMemo(
-    () =>
-      buildRegisterHref({
-        redirectPath,
-        tipo: tipoParam,
-        modelo: modeloParam,
-      }),
-    [modeloParam, redirectPath, tipoParam],
-  );
 
   const emailError =
     emailTouched && !email.trim()
@@ -205,12 +47,9 @@ function LoginPageContent() {
         ? "Digite um e-mail válido."
         : null;
 
-  const passwordError =
-    passwordTouched && !password.trim() ? "Informe sua senha." : null;
-
   function handleBack() {
     if (typeof window === "undefined") {
-      router.push("/");
+      router.push("/login");
       return;
     }
 
@@ -227,17 +66,18 @@ function LoginPageContent() {
         }
       }
     } catch {
-      // Se o navegador não permitir ler o referrer, usa fallback seguro.
+      // Fallback seguro quando o navegador não permite ler o referrer.
     }
 
-    router.push("/");
+    router.push("/login");
   }
 
-  async function handleLogin(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     setEmailTouched(true);
-    setPasswordTouched(true);
+    setSuccessMessage(null);
+    setErrorMessage(null);
 
     if (!email.trim()) {
       setErrorMessage("Informe seu e-mail.");
@@ -249,64 +89,55 @@ function LoginPageContent() {
       return;
     }
 
-    if (!password.trim()) {
-      setErrorMessage("Informe sua senha.");
-      return;
-    }
-
     try {
       setLoading(true);
-      setErrorMessage(null);
 
-      const response = await fetch(`${apiBaseUrl}/auth/login`, {
+      const response = await fetch(`${apiBaseUrl}/auth/forgot-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           email: email.trim(),
-          password,
         }),
       });
 
-      let data: LoginResponse | null = null;
+      let data: ForgotPasswordResponse | null = null;
 
       try {
-        data = (await response.json()) as LoginResponse;
+        data = (await response.json()) as ForgotPasswordResponse;
       } catch {
         data = null;
       }
 
       if (!response.ok) {
-        const message =
-          data?.message && Array.isArray(data.message)
-            ? data.message.join(", ")
-            : data?.message || data?.error || "Login inválido. Verifique seu e-mail e senha.";
+        const apiMessage = formatApiMessage(data);
 
-        setErrorMessage(message);
+        setErrorMessage(
+          apiMessage ||
+            "A recuperação de senha ainda não está configurada no servidor. A tela visual já está pronta.",
+        );
         return;
       }
 
-      const token = getLoginToken(data);
-
-      if (!token) {
-        setErrorMessage("Token não encontrado na resposta do servidor.");
-        return;
-      }
-
-      saveAuthSession(data, token);
-
-      router.push(redirectPath);
+      setSuccessMessage(
+        "Se esse e-mail estiver cadastrado, enviaremos as instruções de recuperação.",
+      );
     } catch (error) {
       console.error(error);
-      setErrorMessage("Erro ao fazer login. Tente novamente.");
+      setErrorMessage(
+        "A recuperação de senha ainda não está configurada no servidor. A tela visual já está pronta.",
+      );
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <main className="vl-login-page" data-version="VERSAO_LOGIN_V17_FORMULARIO_ACIMA_SEM_ROLAGEM">
+    <main
+      className="vl-forgot-page"
+      data-version="VERSAO_FORGOT_PASSWORD_V3_ILUSTRACAO_CSS_MAIOR_PREMIUM"
+    >
       <style jsx global>{`
         :root {
           --vl-purple: #56269b;
@@ -335,7 +166,7 @@ function LoginPageContent() {
           background: #fffaf3;
         }
 
-        .vl-login-page {
+        .vl-forgot-page {
           min-height: 100dvh;
           overflow-x: hidden;
           color: var(--vl-ink);
@@ -446,64 +277,350 @@ function LoginPageContent() {
           opacity: 0.7;
         }
 
-        .vl-event-moon {
+        .vl-recovery-visual {
           position: absolute;
-          top: clamp(94px, 13vh, 136px);
-          right: clamp(34px, 5vw, 72px);
+          top: clamp(74px, 10.5vh, 118px);
+          right: clamp(22px, 4.3vw, 62px);
           z-index: 4;
-          width: 204px;
-          height: 278px;
+          width: clamp(286px, 30vw, 410px);
+          aspect-ratio: 1;
           pointer-events: none;
+          filter: drop-shadow(0 34px 64px rgba(23, 8, 42, 0.22));
         }
 
-        .vl-event-photo {
+        .vl-recovery-glow {
           position: absolute;
-          width: 112px;
-          height: 112px;
-          overflow: hidden;
-          border-radius: 34px;
-          border: 1px solid rgba(255, 247, 218, 0.38);
-          background: rgba(255, 255, 255, 0.14);
-          box-shadow:
-            0 22px 46px rgba(23, 8, 42, 0.26),
-            inset 0 1px 0 rgba(255, 255, 255, 0.18);
-          backdrop-filter: blur(12px);
+          inset: 2%;
+          border-radius: 999px;
+          background:
+            radial-gradient(circle at 34% 24%, rgba(255, 250, 231, 0.54), transparent 22%),
+            radial-gradient(circle at 72% 68%, rgba(248, 216, 141, 0.38), transparent 32%),
+            radial-gradient(circle at 48% 52%, rgba(148, 98, 231, 0.44), transparent 57%),
+            radial-gradient(circle at 52% 50%, rgba(53, 20, 95, 0.18), transparent 68%);
+          filter: blur(1.5px);
+          opacity: 1;
         }
 
-        .vl-event-photo img {
-          width: 100%;
-          height: 100%;
-          display: block;
-          object-fit: cover;
-          filter: saturate(1.04) contrast(1.02) brightness(1.02);
-        }
-
-        .vl-event-photo-one {
-          top: 0;
-          right: 8px;
-          transform: rotate(7deg);
-        }
-
-        .vl-event-photo-two {
-          top: 82px;
-          left: 0;
-          transform: rotate(-8deg);
-        }
-
-        .vl-event-photo-three {
-          right: 18px;
-          bottom: 0;
-          transform: rotate(5deg);
-        }
-
-        .vl-event-photo::after {
+        .vl-recovery-glow::after {
           content: "";
           position: absolute;
-          inset: 0;
-          background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 44%),
-            radial-gradient(circle at 18% 18%, rgba(248, 216, 141, 0.18), transparent 34%);
+          inset: 18%;
+          border-radius: 999px;
+          background: radial-gradient(circle, rgba(255, 255, 255, 0.12), transparent 62%);
+          box-shadow:
+            0 0 80px rgba(248, 216, 141, 0.18),
+            0 0 110px rgba(148, 98, 231, 0.18);
+        }
+
+        .vl-recovery-orbit {
+          position: absolute;
+          inset: 5%;
+          border-radius: 999px;
+          border: 1px solid rgba(255, 247, 218, 0.24);
+          transform: rotate(-18deg);
+          box-shadow:
+            inset 0 0 44px rgba(255, 255, 255, 0.05),
+            0 0 42px rgba(248, 216, 141, 0.08);
+        }
+
+        .vl-recovery-orbit::before,
+        .vl-recovery-orbit::after {
+          content: "";
+          position: absolute;
+          border-radius: 999px;
           pointer-events: none;
+        }
+
+        .vl-recovery-orbit::before {
+          inset: 14%;
+          border: 1px solid rgba(248, 216, 141, 0.22);
+          transform: rotate(36deg);
+        }
+
+        .vl-recovery-orbit::after {
+          width: 11px;
+          height: 11px;
+          right: 11%;
+          top: 25%;
+          background: #f8d88d;
+          box-shadow: 0 0 0 10px rgba(248, 216, 141, 0.10);
+        }
+
+        .vl-recovery-card {
+          position: absolute;
+          left: 50%;
+          top: 52%;
+          width: 70%;
+          height: 61%;
+          border-radius: 44px;
+          transform: translate(-50%, -50%);
+          background:
+            linear-gradient(145deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.07)),
+            radial-gradient(circle at 30% 18%, rgba(255, 247, 218, 0.34), transparent 34%),
+            linear-gradient(180deg, rgba(86, 38, 155, 0.12), rgba(36, 16, 47, 0.06));
+          border: 1px solid rgba(255, 247, 218, 0.34);
+          box-shadow:
+            0 32px 78px rgba(23, 8, 42, 0.30),
+            inset 0 1px 0 rgba(255, 255, 255, 0.25),
+            inset 0 -1px 0 rgba(248, 216, 141, 0.10);
+          backdrop-filter: blur(18px);
+        }
+
+        .vl-recovery-card::before {
+          content: "";
+          position: absolute;
+          inset: 12px;
+          border-radius: 34px;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .vl-lock-shackle {
+          position: absolute;
+          left: 50%;
+          top: 22%;
+          width: 33%;
+          height: 34%;
+          border: clamp(12px, 1.35vw, 18px) solid rgba(248, 216, 141, 0.98);
+          border-bottom: 0;
+          border-radius: 999px 999px 0 0;
+          transform: translateX(-50%);
+          box-shadow:
+            0 18px 38px rgba(200, 140, 22, 0.28),
+            inset 0 1px 0 rgba(255, 255, 255, 0.42);
+          z-index: 6;
+        }
+
+        .vl-lock-body {
+          position: absolute;
+          left: 50%;
+          top: 48%;
+          width: 50%;
+          height: 42%;
+          border-radius: 34px;
+          transform: translateX(-50%);
+          background:
+            linear-gradient(145deg, #fffdf8 0%, #f1e9ff 40%, #d8c4ff 100%);
+          border: 1px solid rgba(255, 255, 255, 0.82);
+          box-shadow:
+            0 28px 62px rgba(23, 8, 42, 0.28),
+            0 0 48px rgba(248, 216, 141, 0.22),
+            inset 0 1px 0 rgba(255, 255, 255, 0.88),
+            inset 0 -10px 24px rgba(53, 20, 95, 0.08);
+          z-index: 7;
+        }
+
+        .vl-lock-body::before {
+          content: "";
+          position: absolute;
+          left: 50%;
+          top: 35%;
+          width: 16%;
+          aspect-ratio: 1;
+          border-radius: 999px;
+          transform: translateX(-50%);
+          background:
+            radial-gradient(circle at 35% 28%, #5b35a4, #35145f 70%);
+          box-shadow:
+            0 0 0 8px rgba(53, 20, 95, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.22);
+        }
+
+        .vl-lock-body::after {
+          content: "";
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          width: 6%;
+          height: 30%;
+          border-radius: 999px;
+          transform: translateX(-50%);
+          background: #35145f;
+        }
+
+        .vl-lock-shine {
+          position: absolute;
+          left: 20%;
+          top: 18%;
+          width: 38%;
+          height: 9%;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.78);
+          transform: rotate(-18deg);
+          z-index: 8;
+        }
+
+        .vl-recovery-key {
+          position: absolute;
+          right: 0;
+          bottom: 16%;
+          width: 48%;
+          height: 15%;
+          transform: rotate(-28deg);
+          z-index: 10;
+          filter: drop-shadow(0 16px 26px rgba(200, 140, 22, 0.24));
+        }
+
+        .vl-key-head {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 33%;
+          aspect-ratio: 1;
+          border-radius: 999px;
+          border: clamp(8px, 0.95vw, 12px) solid rgba(248, 216, 141, 1);
+          box-shadow:
+            0 16px 34px rgba(200, 140, 22, 0.28),
+            inset 0 1px 0 rgba(255, 255, 255, 0.34);
+        }
+
+        .vl-key-head::after {
+          content: "";
+          position: absolute;
+          inset: 26%;
+          border-radius: 999px;
+          border: 1px solid rgba(53, 20, 95, 0.20);
+        }
+
+        .vl-key-line {
+          position: absolute;
+          left: 28%;
+          top: 39%;
+          width: 68%;
+          height: 24%;
+          border-radius: 999px;
+          background:
+            linear-gradient(90deg, #fff2bd 0%, #f8d88d 22%, #c88c16 100%);
+          box-shadow: 0 16px 32px rgba(200, 140, 22, 0.25);
+        }
+
+        .vl-key-tooth-one,
+        .vl-key-tooth-two {
+          position: absolute;
+          right: 7%;
+          width: 9%;
+          border-radius: 0 0 999px 999px;
+          background: #c88c16;
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24);
+        }
+
+        .vl-key-tooth-one {
+          top: 56%;
+          height: 38%;
+        }
+
+        .vl-key-tooth-two {
+          right: 18%;
+          top: 56%;
+          height: 27%;
+        }
+
+        .vl-question-badge {
+          position: absolute;
+          right: 10%;
+          top: 11%;
+          z-index: 11;
+          width: clamp(52px, 5.4vw, 76px);
+          aspect-ratio: 1;
+          display: grid;
+          place-items: center;
+          border-radius: 999px;
+          background:
+            radial-gradient(circle at 30% 22%, #fffdf0 0%, #fff0b8 26%, #f8d88d 52%, #c88c16 100%);
+          color: #35145f;
+          font-family: Georgia, "Times New Roman", serif;
+          font-size: clamp(34px, 3.8vw, 52px);
+          font-weight: 900;
+          line-height: 1;
+          box-shadow:
+            0 18px 38px rgba(200, 140, 22, 0.32),
+            0 0 0 10px rgba(248, 216, 141, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.68);
+        }
+
+        .vl-question-badge::after {
+          content: "";
+          position: absolute;
+          inset: 7px;
+          border-radius: 999px;
+          border: 1px solid rgba(53, 20, 95, 0.10);
+        }
+
+        .vl-spark {
+          position: absolute;
+          z-index: 12;
+          width: 10px;
+          height: 10px;
+          border-radius: 999px;
+          background: #f8d88d;
+          box-shadow:
+            0 0 0 8px rgba(248, 216, 141, 0.10),
+            0 0 24px rgba(248, 216, 141, 0.55);
+        }
+
+        .vl-spark::after {
+          content: "";
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          width: 24px;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(248, 216, 141, 0.78), transparent);
+          transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        .vl-spark-one {
+          left: 13%;
+          top: 22%;
+        }
+
+        .vl-spark-two {
+          left: 16%;
+          bottom: 22%;
+          width: 8px;
+          height: 8px;
+        }
+
+        .vl-spark-three {
+          right: 19%;
+          bottom: 32%;
+          width: 7px;
+          height: 7px;
+        }
+
+        .vl-memory-pill {
+          position: absolute;
+          left: 0;
+          bottom: 3%;
+          z-index: 13;
+          display: inline-flex;
+          align-items: center;
+          gap: 9px;
+          min-height: 42px;
+          border-radius: 999px;
+          border: 1px solid rgba(255, 247, 218, 0.32);
+          background:
+            linear-gradient(135deg, rgba(255, 253, 248, 0.18), rgba(255, 253, 248, 0.08));
+          color: rgba(255, 253, 248, 0.88);
+          padding: 0 16px;
+          font-size: 11px;
+          font-weight: 900;
+          letter-spacing: 0.13em;
+          text-transform: uppercase;
+          box-shadow:
+            0 18px 36px rgba(23, 8, 42, 0.18),
+            inset 0 1px 0 rgba(255, 255, 255, 0.16);
+          backdrop-filter: blur(16px);
+        }
+
+        .vl-memory-pill::before {
+          content: "";
+          width: 9px;
+          height: 9px;
+          border-radius: 999px;
+          background: #f8d88d;
+          box-shadow:
+            0 0 0 6px rgba(248, 216, 141, 0.12),
+            0 0 20px rgba(248, 216, 141, 0.55);
         }
 
         .vl-back {
@@ -616,9 +733,9 @@ function LoginPageContent() {
         .vl-visual-copy {
           max-width: 560px;
           margin: 18px 0 0;
-          color: rgba(255, 250, 243, 0.82);
-          font-size: clamp(14px, 1.18vw, 17px);
-          line-height: 1.68;
+          color: rgba(255, 250, 243, 0.84);
+          font-size: clamp(15px, 1.28vw, 18px);
+          line-height: 1.7;
         }
 
         .vl-mini-seal {
@@ -709,7 +826,7 @@ function LoginPageContent() {
           line-height: 1.55;
         }
 
-        .vl-login-form {
+        .vl-forgot-form {
           display: grid;
           gap: 13px;
         }
@@ -732,36 +849,6 @@ function LoginPageContent() {
           font-weight: 900;
           letter-spacing: 0.10em;
           text-transform: uppercase;
-        }
-
-        .vl-field-note {
-          color: rgba(53, 20, 95, 0.46);
-          font-size: 12px;
-          font-weight: 750;
-        }
-
-        .vl-forgot-link {
-          color: var(--vl-gold);
-          font-size: 12px;
-          font-weight: 900;
-          text-decoration: none;
-          transition: color 0.16s ease, opacity 0.16s ease;
-        }
-
-        .vl-forgot-link:hover {
-          color: var(--vl-purple);
-          text-decoration: underline;
-        }
-
-        .vl-forgot-row {
-          display: flex;
-          justify-content: flex-end;
-          margin-top: 10px;
-          min-height: 18px;
-        }
-
-        .vl-input-wrap {
-          position: relative;
         }
 
         .vl-input {
@@ -789,49 +876,6 @@ function LoginPageContent() {
           box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.08);
         }
 
-        .vl-input-password {
-          padding-right: 54px;
-        }
-
-        .vl-password-toggle {
-          position: absolute;
-          right: 9px;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 38px;
-          height: 38px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border: 1px solid rgba(86, 38, 155, 0.10);
-          border-radius: 14px;
-          background: rgba(246, 240, 255, 0.78);
-          color: var(--vl-purple);
-          cursor: pointer;
-          transition: background 0.15s ease, border-color 0.15s ease;
-        }
-
-        .vl-password-toggle:hover,
-        .vl-password-toggle:focus-visible {
-          background: rgba(235, 224, 255, 0.95);
-          border-color: rgba(86, 38, 155, 0.22);
-        }
-
-        .vl-eye-icon {
-          width: 19px;
-          height: 19px;
-          fill: none;
-          stroke: currentColor;
-          stroke-width: 1.9;
-          stroke-linecap: round;
-          stroke-linejoin: round;
-        }
-
-        .vl-eye-icon circle {
-          fill: currentColor;
-          stroke: none;
-        }
-
         .vl-field-error {
           min-height: 15px;
           color: #b42318;
@@ -854,7 +898,7 @@ function LoginPageContent() {
         .vl-success {
           border-radius: 18px;
           border: 1px solid rgba(22, 163, 74, 0.22);
-          background: rgba(240, 253, 244, 0.92);
+          background: rgba(240, 253, 244, 0.90);
           color: #166534;
           padding: 12px 14px;
           font-size: 13px;
@@ -901,10 +945,12 @@ function LoginPageContent() {
         }
 
         @keyframes vlSpin {
-          to { transform: rotate(360deg); }
+          to {
+            transform: rotate(360deg);
+          }
         }
 
-        .vl-register-line {
+        .vl-login-line {
           margin-top: 18px;
           border: 1px solid rgba(86, 38, 155, 0.10);
           border-radius: 22px;
@@ -916,13 +962,13 @@ function LoginPageContent() {
           text-align: center;
         }
 
-        .vl-register-line a {
+        .vl-login-line a {
           color: var(--vl-purple);
           font-weight: 900;
           text-decoration: none;
         }
 
-        .vl-register-line a:hover {
+        .vl-login-line a:hover {
           text-decoration: underline;
         }
 
@@ -936,7 +982,6 @@ function LoginPageContent() {
 
         @media (prefers-reduced-motion: reduce) {
           .vl-submit,
-          .vl-password-toggle,
           .vl-form-card {
             transition: none !important;
             animation: none !important;
@@ -1005,7 +1050,6 @@ function LoginPageContent() {
 
           .vl-logo-link {
             margin-top: 58px;
-            margin-left: 0;
           }
 
           .vl-headline-block h1 {
@@ -1029,6 +1073,17 @@ function LoginPageContent() {
             font-size: 11px;
             padding: 9px 12px;
           }
+
+          .vl-recovery-visual {
+            top: 78px;
+            right: 12px;
+            width: 198px;
+            opacity: 0.90;
+          }
+
+          .vl-memory-pill {
+            display: none;
+          }
         }
 
         @media (max-height: 730px) and (min-width: 981px) {
@@ -1043,7 +1098,16 @@ function LoginPageContent() {
 
           .vl-logo-link {
             margin-top: 42px;
-            margin-left: 38px;
+          }
+
+          .vl-recovery-visual {
+            top: 58px;
+            right: 24px;
+            width: 230px;
+          }
+
+          .vl-memory-pill {
+            display: none;
           }
 
           .vl-headline-block {
@@ -1051,8 +1115,9 @@ function LoginPageContent() {
           }
 
           .vl-headline-block h1 {
-            font-size: 62px;
-            line-height: 1;
+            font-size: 58px;
+            letter-spacing: -0.05em;
+            line-height: 0.94;
           }
 
           .vl-headline-block h1 span {
@@ -1099,22 +1164,31 @@ function LoginPageContent() {
       `}</style>
 
       <div className="vl-shell">
-        <section className="vl-visual" aria-label="Resumo visual do VivaLista">
+        <section className="vl-visual" aria-label="Recuperação de acesso do VivaLista">
           <span className="vl-orb vl-orb-one" aria-hidden="true" />
           <span className="vl-orb vl-orb-two" aria-hidden="true" />
           <span className="vl-gold-line vl-gold-line-one" aria-hidden="true" />
           <span className="vl-gold-line vl-gold-line-two" aria-hidden="true" />
 
-          <div className="vl-event-moon" aria-hidden="true">
-            <div className="vl-event-photo vl-event-photo-one">
-              <img src="/register-assets/vivalista-register-casamento.png" alt="" loading="lazy" />
-            </div>
-            <div className="vl-event-photo vl-event-photo-two">
-              <img src="/register-assets/vivalista-register-corporativo.png" alt="" loading="lazy" />
-            </div>
-            <div className="vl-event-photo vl-event-photo-three">
-              <img src="/register-assets/vivalista-register-aniversario.png" alt="" loading="lazy" />
-            </div>
+          <div className="vl-recovery-visual" aria-hidden="true">
+            <span className="vl-recovery-glow" />
+            <span className="vl-recovery-orbit" />
+            <span className="vl-recovery-card" />
+            <span className="vl-lock-shackle" />
+            <span className="vl-lock-body">
+              <span className="vl-lock-shine" />
+            </span>
+            <span className="vl-recovery-key">
+              <span className="vl-key-head" />
+              <span className="vl-key-line" />
+              <span className="vl-key-tooth-one" />
+              <span className="vl-key-tooth-two" />
+            </span>
+            <span className="vl-question-badge">?</span>
+            <span className="vl-spark vl-spark-one" />
+            <span className="vl-spark vl-spark-two" />
+            <span className="vl-spark vl-spark-three" />
+            <span className="vl-memory-pill">link seguro</span>
           </div>
 
           <button type="button" className="vl-back" onClick={handleBack}>
@@ -1134,36 +1208,36 @@ function LoginPageContent() {
             </div>
 
             <div className="vl-headline-block">
-              <p className="vl-kicker">Acesso ao VivaLista</p>
+              <p className="vl-kicker">Recuperar acesso</p>
               <h1>
-                Entre no seu
+                Volte para o seu
                 <span>painel</span>
               </h1>
               <p className="vl-visual-copy">
-                Gerencie seus eventos, listas de presentes e confirmações em um só lugar.
+                Um caminho seguro para recuperar o acesso e voltar ao seu painel.
               </p>
 
-              <div className="vl-mini-seal">seguro • simples • premium</div>
+              <div className="vl-mini-seal">senha • e-mail • acesso</div>
             </div>
-
           </div>
         </section>
 
-        <section className="vl-form-area" aria-label="Login no VivaLista">
+        <section className="vl-form-area" aria-label="Recuperar senha do VivaLista">
           <div className="vl-form-card">
             <div className="vl-form-head">
-              <small>login seguro</small>
-              <h2>Entrar</h2>
-              <p>Entre com seu e-mail e senha.</p>
+              <small>recuperar senha</small>
+              <h2>Recuperar acesso</h2>
+              <p>Digite o e-mail usado na sua conta.</p>
             </div>
 
-            <form onSubmit={handleLogin} className="vl-login-form">
+            <form onSubmit={handleSubmit} className="vl-forgot-form">
               <div className="vl-field">
                 <div className="vl-field-top">
                   <label htmlFor="email" className="vl-label">
                     E-mail
                   </label>
                 </div>
+
                 <input
                   id="email"
                   type="email"
@@ -1171,6 +1245,7 @@ function LoginPageContent() {
                   onChange={(event) => {
                     setEmail(event.target.value);
                     if (errorMessage) setErrorMessage(null);
+                    if (successMessage) setSuccessMessage(null);
                   }}
                   onBlur={() => setEmailTouched(true)}
                   placeholder="Digite seu e-mail"
@@ -1178,123 +1253,31 @@ function LoginPageContent() {
                   autoFocus
                   className={`vl-input ${emailError ? "has-error" : ""}`}
                 />
+
                 <span className="vl-field-error">{emailError || ""}</span>
               </div>
 
-              <div className="vl-field">
-                <div className="vl-field-top">
-                  <label htmlFor="password" className="vl-label">
-                    Senha
-                  </label>
-                </div>
-                <div className="vl-input-wrap">
-                  <input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(event) => {
-                      setPassword(event.target.value);
-                      if (errorMessage) setErrorMessage(null);
-                    }}
-                    onBlur={() => setPasswordTouched(true)}
-                    placeholder="Digite sua senha"
-                    autoComplete="current-password"
-                    className={`vl-input vl-input-password ${passwordError ? "has-error" : ""}`}
-                  />
-                  <button
-                    type="button"
-                    className="vl-password-toggle"
-                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                    onClick={() => setShowPassword((current) => !current)}
-                  >
-                    <EyeIcon open={showPassword} />
-                  </button>
-                </div>
-                <div className="vl-forgot-row">
-                  <Link href="/forgot-password" className="vl-forgot-link">
-                    Esqueci minha senha?
-                  </Link>
-                </div>
-                <span className="vl-field-error">{passwordError || ""}</span>
-              </div>
-
-              {resetSuccess ? (
-                <div className="vl-success">Senha redefinida com sucesso. Entre com sua nova senha.</div>
-              ) : null}
-
               {errorMessage ? <div className="vl-alert">{errorMessage}</div> : null}
+              {successMessage ? <div className="vl-success">{successMessage}</div> : null}
 
               <button type="submit" disabled={loading} className="vl-submit">
                 {loading ? (
                   <>
                     <span className="vl-spinner" />
-                    Entrando...
+                    Enviando...
                   </>
                 ) : (
-                  "Entrar no painel"
+                  "Enviar instruções"
                 )}
               </button>
             </form>
 
-            <div className="vl-register-line">
-              Não tem conta ainda? <Link href={registerHref}>Criar conta</Link>
+            <div className="vl-login-line">
+              Lembrou a senha? <Link href="/login">Entrar no painel</Link>
             </div>
           </div>
         </section>
       </div>
     </main>
-  );
-}
-
-function LoginLoading() {
-  return (
-    <main className="vl-login-page">
-      <style jsx global>{`
-        .vl-loading {
-          min-height: 100dvh;
-          display: grid;
-          place-items: center;
-          background: linear-gradient(135deg, #fffaf3, #f7efff);
-          color: #56269b;
-          font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-          text-align: center;
-          padding: 24px;
-        }
-
-        .vl-loading p {
-          margin: 0;
-          color: rgba(53, 20, 95, 0.66);
-          font-size: 14px;
-          font-weight: 800;
-        }
-      `}</style>
-
-      <div className="vl-loading">
-        <div>
-          <Image
-            src="/logo-vivalista.png"
-            alt="VivaLista"
-            width={240}
-            height={84}
-            priority
-            style={{
-              width: "220px",
-              height: "auto",
-              display: "block",
-              margin: "0 auto 18px",
-            }}
-          />
-          <p>Carregando login...</p>
-        </div>
-      </div>
-    </main>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<LoginLoading />}>
-      <LoginPageContent />
-    </Suspense>
   );
 }

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
+/* VERSAO_EVENT_DASHBOARD_LINK_MONTAR_SITE_VIVALISTA */
+
 type EventStatus = "DRAFT" | "PUBLISHED" | "CANCELLED" | string;
 
 type EventData = {
@@ -16,6 +18,7 @@ type EventData = {
   capacity?: number | null;
   status?: EventStatus | null;
   coverImage?: string | null;
+  heroImageUrl?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
 };
@@ -55,17 +58,51 @@ type FinancialSummaryResponse = {
   };
 };
 
+type SectionMediaResponse = {
+  media?: Array<{
+    id: string;
+    sectionKey: string;
+    isActive?: boolean;
+  }>;
+};
+
 type ApiError = {
   message?: string | string[];
   error?: string;
   statusCode?: number;
 };
 
+type SetupStatus = "done" | "warning" | "pending";
+
+type SetupStep = {
+  number: string;
+  title: string;
+  description: string;
+  status: SetupStatus;
+  href: string;
+  cta: string;
+};
+
+type ActionGroup = {
+  title: string;
+  description: string;
+  items: Array<{
+    label: string;
+    description: string;
+    href?: string | null;
+    button?: boolean;
+    onClick?: () => void;
+    disabled?: boolean;
+    external?: boolean;
+    highlight?: boolean;
+  }>;
+};
+
 function getBackendUrl(): string {
   const value =
     process.env.NEXT_PUBLIC_API_URL ||
     process.env.NEXT_PUBLIC_BACKEND_URL ||
-    "http://localhost:3000";
+    "http://localhost:3001";
 
   return value.replace(/\/+$/, "");
 }
@@ -98,7 +135,8 @@ function buildAssetUrl(value?: string | null): string | null {
     raw.startsWith("http://") ||
     raw.startsWith("https://") ||
     raw.startsWith("data:") ||
-    raw.startsWith("blob:")
+    raw.startsWith("blob:") ||
+    raw.startsWith("//")
   ) {
     return raw;
   }
@@ -113,7 +151,7 @@ function buildAssetUrl(value?: string | null): string | null {
 }
 
 function formatEventDate(date?: string | null): string {
-  if (!date) return "Não informada";
+  if (!date) return "Data não informada";
 
   const parsed = new Date(date);
 
@@ -154,6 +192,10 @@ function formatMoney(value?: number | null): string {
 function getErrorMessage(error: unknown): string {
   if (typeof error === "string") return error;
 
+  if (error instanceof Error) {
+    return error.message;
+  }
+
   if (error && typeof error === "object") {
     const maybeApiError = error as ApiError;
 
@@ -190,19 +232,30 @@ function statusPillClasses(status?: string | null): string {
     return "border-red-200 bg-red-50 text-red-700";
   }
 
-  return "border-amber-200 bg-amber-50 text-amber-700";
+  return "border-[#eadfbd] bg-[#fff8e6] text-[#8a6518]";
 }
 
-function statusCardClasses(status?: string | null): string {
-  if (status === "PUBLISHED") {
-    return "border-emerald-200 bg-emerald-50";
+function setupPillClasses(status: SetupStatus): string {
+  if (status === "done") {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
   }
 
-  if (status === "CANCELLED") {
-    return "border-red-200 bg-red-50";
+  if (status === "warning") {
+    return "border-[#eadfbd] bg-[#fff8e6] text-[#8a6518]";
   }
 
-  return "border-amber-200 bg-amber-50";
+  return "border-[#eee9e1] bg-[#fbfaf7] text-[#7f738c]";
+}
+
+function setupLabel(status: SetupStatus): string {
+  if (status === "done") return "Pronto";
+  if (status === "warning") return "Revisar";
+  return "Pendente";
+}
+
+function normalizeEventResponse(data: EventData | { data?: EventData }): EventData {
+  if ("data" in data && data.data) return data.data;
+  return data as EventData;
 }
 
 function OverviewCard({
@@ -215,140 +268,225 @@ function OverviewCard({
   description: string;
 }) {
   return (
-    <div className="rounded-[24px] border border-[#e8dfd2] bg-[linear-gradient(180deg,#ffffff_0%,#fcfaf7_100%)] p-5 shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
+    <div className="rounded-[26px] border border-[#eee9e1] bg-white p-6 shadow-[0_18px_46px_rgba(36,24,47,0.05)]">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a7926]">
         {label}
       </p>
-      <p className="mt-3 text-lg font-semibold text-neutral-900">{value}</p>
-      <p className="mt-2 text-sm leading-6 text-neutral-600">{description}</p>
+
+      <p className="mt-3 text-2xl font-light tracking-[-0.04em] text-[#24182f]">
+        {value}
+      </p>
+
+      <p className="mt-2 text-sm leading-6 text-[#7f738c]">{description}</p>
     </div>
   );
 }
 
-function SummaryCard({
-  eyebrow,
-  title,
-  primaryValue,
-  lines,
-}: {
-  eyebrow: string;
-  title: string;
-  primaryValue: string;
-  lines: string[];
-}) {
-  return (
-    <article className="rounded-[28px] border border-[#e8dfd2] bg-[linear-gradient(180deg,#ffffff_0%,#fcfaf7_100%)] p-6 shadow-sm">
-      <p className="text-sm font-medium uppercase tracking-[0.18em] text-[#8a7d74]">
-        {eyebrow}
-      </p>
-      <h3 className="mt-2 text-2xl font-semibold tracking-tight text-neutral-900">
-        {title}
-      </h3>
-      <p className="mt-4 text-4xl font-semibold tracking-tight text-neutral-900">
-        {primaryValue}
-      </p>
-      <div className="mt-4 space-y-2">
-        {lines.map((line) => (
-          <div
-            key={line}
-            className="rounded-[20px] border border-[#e8dfd2] bg-[#f8f3ec] px-4 py-3 text-sm text-neutral-700"
-          >
-            {line}
-          </div>
-        ))}
-      </div>
-    </article>
-  );
-}
-
-function ActionCard({
+function ActionItem({
   href,
-  eyebrow,
-  title,
+  label,
   description,
-  highlight = false,
-  targetBlank = false,
+  button,
+  onClick,
+  disabled,
+  external,
+  highlight,
 }: {
-  href: string;
-  eyebrow: string;
-  title: string;
+  href?: string | null;
+  label: string;
   description: string;
+  button?: boolean;
+  onClick?: () => void;
+  disabled?: boolean;
+  external?: boolean;
   highlight?: boolean;
-  targetBlank?: boolean;
 }) {
+  const className = `group block rounded-[24px] border p-5 text-left transition ${
+    highlight
+      ? "border-[#c79a2b] bg-[#fffaf0] shadow-[0_18px_46px_rgba(201,154,43,0.10)] hover:-translate-y-0.5 hover:bg-white"
+      : "border-[#eee9e1] bg-white hover:-translate-y-0.5 hover:border-[#d8caa9] hover:shadow-[0_18px_42px_rgba(36,24,47,0.07)]"
+  }`;
+
+  const content = (
+    <>
+      <p
+        className={`text-sm font-semibold ${
+          highlight ? "text-[#8a6518]" : "text-[#24182f]"
+        }`}
+      >
+        {label}
+      </p>
+
+      <p className="mt-2 text-sm leading-6 text-[#7f738c]">{description}</p>
+
+      <span
+        className={`mt-4 inline-flex text-[12px] font-semibold uppercase tracking-[0.18em] ${
+          highlight ? "text-[#8a6518]" : "text-[#5f35c6]"
+        }`}
+      >
+        Abrir
+      </span>
+    </>
+  );
+
+  if (button) {
+    return (
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={onClick}
+        className={`${className} w-full disabled:cursor-not-allowed disabled:opacity-50`}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  if (!href) {
+    return (
+      <div className="rounded-[24px] border border-[#eee9e1] bg-[#fbfaf7] p-5 opacity-70">
+        <p className="text-sm font-semibold text-[#7f738c]">{label}</p>
+        <p className="mt-2 text-sm leading-6 text-[#9a909e]">{description}</p>
+        <span className="mt-4 inline-flex text-[12px] font-semibold uppercase tracking-[0.18em] text-[#9a909e]">
+          Indisponível
+        </span>
+      </div>
+    );
+  }
+
   return (
     <Link
       href={href}
-      target={targetBlank ? "_blank" : undefined}
-      className={`group rounded-[22px] border p-5 transition hover:shadow-sm ${
-        highlight
-          ? "border-[#c9a227] bg-[linear-gradient(135deg,#c9a227_0%,#8f6a16_100%)] text-white hover:shadow-[0_18px_40px_rgba(201,162,39,0.22)]"
-          : "border-[#e8dfd2] bg-[#f8f3ec] text-neutral-900 hover:bg-[#fcfaf7]"
-      }`}
+      target={external ? "_blank" : undefined}
+      rel={external ? "noreferrer" : undefined}
+      className={className}
     >
-      <p
-        className={`text-xs font-semibold uppercase tracking-[0.18em] ${
-          highlight ? "text-[#fff3cf]" : "text-[#8a7d74]"
-        }`}
-      >
-        {eyebrow}
-      </p>
-      <h3 className="mt-2 text-xl font-semibold">{title}</h3>
-      <p
-        className={`mt-2 text-sm leading-6 ${
-          highlight ? "text-[#fff3cf]" : "text-neutral-600"
-        }`}
-      >
-        {description}
-      </p>
-      <span
-        className={`mt-4 inline-flex text-sm font-medium ${
-          highlight ? "text-white" : "text-[#8f6a16]"
-        }`}
-      >
-        Abrir →
-      </span>
+      {content}
     </Link>
   );
 }
 
-export default function DashboardEventPage() {
-  const params = useParams<{ eventId: string }>();
+function ActionGroupCard({ group }: { group: ActionGroup }) {
+  return (
+    <section className="rounded-[34px] border border-[#eee9e1] bg-[#fbfaf7] p-5 sm:p-6">
+      <div>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#9a7926]">
+          {group.title}
+        </p>
 
-  const eventId = useMemo(() => {
-    const raw = params?.eventId;
-    return Array.isArray(raw) ? raw[0] : raw;
-  }, [params]);
+        <p className="mt-2 text-sm leading-6 text-[#7f738c]">
+          {group.description}
+        </p>
+      </div>
+
+      <div className="mt-5 grid gap-3">
+        {group.items.map((item) => (
+          <ActionItem
+            key={`${group.title}-${item.label}`}
+            href={item.href}
+            label={item.label}
+            description={item.description}
+            button={item.button}
+            onClick={item.onClick}
+            disabled={item.disabled}
+            external={item.external}
+            highlight={item.highlight}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ProgressStepCard({ step }: { step: SetupStep }) {
+  return (
+    <Link
+      href={step.href}
+      className="rounded-[28px] border border-[#eee9e1] bg-white p-5 shadow-[0_18px_46px_rgba(36,24,47,0.05)] transition hover:-translate-y-1 hover:border-[#d8caa9] hover:shadow-[0_24px_58px_rgba(36,24,47,0.08)]"
+    >
+      <div className="flex items-center justify-between gap-3">
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#24182f] text-sm font-semibold text-white">
+          {step.number}
+        </span>
+
+        <span
+          className={`rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] ${setupPillClasses(
+            step.status
+          )}`}
+        >
+          {setupLabel(step.status)}
+        </span>
+      </div>
+
+      <h3 className="mt-5 text-xl font-light tracking-[-0.04em] text-[#24182f]">
+        {step.title}
+      </h3>
+
+      <p className="mt-2 text-sm leading-6 text-[#7f738c]">
+        {step.description}
+      </p>
+
+      <span className="mt-5 inline-flex rounded-full bg-[#fff4d8] px-4 py-2 text-sm font-semibold text-[#8a6518]">
+        {step.cta}
+      </span>
+    </Link>
+  );
+}
+export default function EventDashboardPage() {
+  const params = useParams();
+  const eventIdParam = params?.eventId;
+  const eventId = Array.isArray(eventIdParam) ? eventIdParam[0] : eventIdParam;
 
   const [event, setEvent] = useState<EventData | null>(null);
-  const [giftsDashboard, setGiftsDashboard] = useState<GiftDashboardResponse["dashboard"]>({
-    totalGifts: 0,
-    activeGifts: 0,
-    reservedGifts: 0,
-    purchasedGifts: 0,
-    availableGifts: 0,
-  });
-  const [guestsDashboard, setGuestsDashboard] = useState<GuestDashboardResponse["dashboard"]>({
-    totalGuests: 0,
-    confirmedGuests: 0,
-    invitedGuests: 0,
-    declinedGuests: 0,
-  });
-  const [financialSummary, setFinancialSummary] = useState<NonNullable<FinancialSummaryResponse["financial"]>>({
-    totalRaised: 0,
-    paidContributionsCount: 0,
-    pendingContributionsCount: 0,
-    averageContribution: 0,
-  });
+  const [giftDashboard, setGiftDashboard] =
+    useState<GiftDashboardResponse["dashboard"] | null>(null);
+  const [guestDashboard, setGuestDashboard] =
+    useState<GuestDashboardResponse["dashboard"] | null>(null);
+  const [financialSummary, setFinancialSummary] =
+    useState<FinancialSummaryResponse["financial"] | null>(null);
+  const [sectionMedia, setSectionMedia] = useState<
+    SectionMediaResponse["media"]
+  >([]);
 
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [copyMessage, setCopyMessage] = useState<string | null>(null);
 
+  const backendUrl = getBackendUrl();
+
+  async function apiRequest<T>(path: string): Promise<T> {
+    const token = getAuthToken();
+
+    const response = await fetch(`${backendUrl}${path}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      cache: "no-store",
+    });
+
+    let data: unknown = null;
+
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
+
+    if (!response.ok) {
+      throw data || new Error(`Erro ${response.status}`);
+    }
+
+    return data as T;
+  }
+
   useEffect(() => {
+    let active = true;
+
     async function loadEventDashboard() {
       if (!eventId) {
-        setErrorMessage("ID do evento não encontrado na rota.");
+        setErrorMessage("Evento não encontrado.");
         setLoading(false);
         return;
       }
@@ -357,687 +495,665 @@ export default function DashboardEventPage() {
         setLoading(true);
         setErrorMessage(null);
 
-        const token = getAuthToken();
-        const backendUrl = getBackendUrl();
-
-        const eventResponse = await fetch(`${backendUrl}/events/${eventId}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          cache: "no-store",
-        });
-
-        if (!eventResponse.ok) {
-          let apiError: ApiError | null = null;
-
-          try {
-            apiError = (await eventResponse.json()) as ApiError;
-          } catch {
-            apiError = null;
-          }
-
-          if (eventResponse.status === 401) {
-            throw new Error(
-              "Usuário não autenticado. Faça login novamente para acessar este evento."
-            );
-          }
-
-          if (eventResponse.status === 403) {
-            throw new Error("Você não tem permissão para acessar este evento.");
-          }
-
-          if (eventResponse.status === 404) {
-            throw new Error("Evento não encontrado no backend para este ID.");
-          }
-
-          throw new Error(
-            getErrorMessage(apiError) ||
-              `Erro ao buscar evento. Status ${eventResponse.status}.`
-          );
-        }
-
-        const eventData = (await eventResponse.json()) as EventData | { data?: EventData };
-        const normalizedEvent =
-          "data" in eventData && eventData.data ? eventData.data : (eventData as EventData);
-
-        setEvent(normalizedEvent);
-
-        const [giftsResponse, guestsResponse] = await Promise.all([
-          fetch(`${backendUrl}/events/${eventId}/gifts/dashboard`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-            cache: "no-store",
-          }),
-          fetch(`${backendUrl}/events/${eventId}/guests/dashboard`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-            cache: "no-store",
-          }),
+        const [
+          eventResponse,
+          giftsResult,
+          guestsResult,
+          financialResult,
+          mediaResult,
+        ] = await Promise.allSettled([
+          apiRequest<EventData | { data?: EventData }>(`/events/${eventId}`),
+          apiRequest<GiftDashboardResponse>(
+            `/events/${eventId}/gifts/dashboard`,
+          ),
+          apiRequest<GuestDashboardResponse>(
+            `/events/${eventId}/guests/dashboard`,
+          ),
+          apiRequest<FinancialSummaryResponse>(
+            `/events/${eventId}/financial-summary`,
+          ),
+          apiRequest<SectionMediaResponse>(
+            `/events/${eventId}/section-media`,
+          ),
         ]);
 
-        if (giftsResponse.ok) {
-          const giftsData = (await giftsResponse.json()) as GiftDashboardResponse;
-          setGiftsDashboard(giftsData.dashboard);
-        }
+        if (!active) return;
 
-        if (guestsResponse.ok) {
-          const guestsData = (await guestsResponse.json()) as GuestDashboardResponse;
-          setGuestsDashboard(guestsData.dashboard);
-        }
-
-        if (normalizedEvent.slug) {
-          const financialResponse = await fetch(
-            `${backendUrl}/events/public/${normalizedEvent.slug}/financial-summary`,
-            {
-              method: "GET",
-              cache: "no-store",
-            }
-          );
-
-          if (financialResponse.ok) {
-            const financialData = (await financialResponse.json()) as FinancialSummaryResponse;
-            setFinancialSummary(
-              financialData.financial ?? {
-                totalRaised: 0,
-                paidContributionsCount: 0,
-                pendingContributionsCount: 0,
-                averageContribution: 0,
-              }
-            );
-          } else {
-            setFinancialSummary({
-              totalRaised: 0,
-              paidContributionsCount: 0,
-              pendingContributionsCount: 0,
-              averageContribution: 0,
-            });
-          }
+        if (eventResponse.status === "fulfilled") {
+          setEvent(normalizeEventResponse(eventResponse.value));
         } else {
-          setFinancialSummary({
-            totalRaised: 0,
-            paidContributionsCount: 0,
-            pendingContributionsCount: 0,
-            averageContribution: 0,
-          });
+          throw eventResponse.reason;
+        }
+
+        if (giftsResult.status === "fulfilled") {
+          setGiftDashboard(giftsResult.value.dashboard);
+        }
+
+        if (guestsResult.status === "fulfilled") {
+          setGuestDashboard(guestsResult.value.dashboard);
+        }
+
+        if (financialResult.status === "fulfilled") {
+          setFinancialSummary(financialResult.value.financial ?? null);
+        }
+
+        if (mediaResult.status === "fulfilled") {
+          setSectionMedia(mediaResult.value.media ?? []);
         }
       } catch (error) {
+        if (!active) return;
         setErrorMessage(getErrorMessage(error));
       } finally {
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     }
 
     loadEventDashboard();
-  }, [eventId]);
 
-  const publicUrl = event?.slug ? `/e/${event.slug}` : null;
-  const editUrl = event?.id ? `/dashboard/eventos/${event.id}/editar` : null;
-  const visualUrl = event?.id ? `/dashboard/eventos/${event.id}/visual` : null;
-  const giftsUrl = event?.id ? `/dashboard/eventos/${event.id}/presentes` : null;
-  const guestsUrl = event?.id ? `/dashboard/eventos/${event.id}/convidados` : null;
-  const coverImageUrl = buildAssetUrl(event?.coverImage);
+    return () => {
+      active = false;
+    };
+  }, [backendUrl, eventId]);
+
+  const publicUrl = useMemo(() => {
+    if (!event?.slug) return null;
+
+    if (typeof window === "undefined") {
+      return `/e/${event.slug}`;
+    }
+
+    return `${window.location.origin}/e/${event.slug}`;
+  }, [event?.slug]);
+
+  const publicPath = event?.slug ? `/e/${event.slug}` : null;
+
+  const coverImage = useMemo(() => {
+    return (
+      buildAssetUrl(event?.coverImage) ||
+      buildAssetUrl(event?.heroImageUrl) ||
+      "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1600&q=90"
+    );
+  }, [event?.coverImage, event?.heroImageUrl]);
+
+  const activeMediaCount = useMemo(() => {
+    return sectionMedia.filter((item) => item.isActive !== false).length;
+  }, [sectionMedia]);
+
+  const progressSteps = useMemo<SetupStep[]>(() => {
+    if (!eventId) return [];
+
+    const hasBasicData = Boolean(event?.name && event?.date && event?.location);
+    const hasVisual = Boolean(event?.coverImage || event?.heroImageUrl);
+    const hasGifts = Boolean((giftDashboard?.totalGifts ?? 0) > 0);
+    const hasGuests = Boolean((guestDashboard?.totalGuests ?? 0) > 0);
+    const isPublished = event?.status === "PUBLISHED";
+
+    return [
+      {
+        number: "01",
+        title: "Dados do evento",
+        description:
+          "Nome, data, local e descrição precisam estar claros para os convidados.",
+        status: hasBasicData ? "done" : "warning",
+        href: `/dashboard/eventos/${eventId}/editar`,
+        cta: hasBasicData ? "Revisar dados" : "Completar dados",
+      },
+      {
+        number: "02",
+        title: "Visual do site",
+        description:
+          "Capa, fotos, cores e organização visual dão a primeira impressão do evento.",
+        status: hasVisual || activeMediaCount > 0 ? "done" : "pending",
+        href: `/dashboard/eventos/${eventId}/visual`,
+        cta: hasVisual || activeMediaCount > 0 ? "Ajustar visual" : "Montar visual",
+      },
+      {
+        number: "03",
+        title: "Lista de presentes",
+        description:
+          "Cadastre presentes, cotas ou contribuições para facilitar a vida dos convidados.",
+        status: hasGifts ? "done" : "pending",
+        href: `/dashboard/eventos/${eventId}/presentes`,
+        cta: hasGifts ? "Gerenciar lista" : "Criar lista",
+      },
+      {
+        number: "04",
+        title: "Convidados e RSVP",
+        description:
+          "Acompanhe convidados, confirmações e recusas em um só lugar.",
+        status: hasGuests ? "done" : "pending",
+        href: `/dashboard/eventos/${eventId}/convidados`,
+        cta: hasGuests ? "Ver convidados" : "Adicionar convidados",
+      },
+      {
+        number: "05",
+        title: "Publicação",
+        description:
+          "Quando tudo estiver pronto, compartilhe o link público do evento.",
+        status: isPublished ? "done" : event?.slug ? "warning" : "pending",
+        href: publicPath ?? `/dashboard/eventos/${eventId}/visual`,
+        cta: isPublished ? "Ver publicado" : "Ver prévia",
+      },
+    ];
+  }, [
+    activeMediaCount,
+    event?.coverImage,
+    event?.date,
+    event?.heroImageUrl,
+    event?.location,
+    event?.name,
+    event?.slug,
+    event?.status,
+    eventId,
+    giftDashboard?.totalGifts,
+    guestDashboard?.totalGuests,
+    publicPath,
+  ]);
 
   async function handleCopyPublicLink() {
-    if (!publicUrl || typeof window === "undefined") return;
+    if (!publicUrl) {
+      setCopyMessage("Este evento ainda não possui link público.");
+      return;
+    }
 
     try {
-      const fullUrl = `${window.location.origin}${publicUrl}`;
-      await navigator.clipboard.writeText(fullUrl);
-      setCopyMessage("Link público copiado com sucesso.");
-      setTimeout(() => setCopyMessage(null), 2500);
+      await navigator.clipboard.writeText(publicUrl);
+      setCopyMessage("Link copiado com sucesso.");
     } catch {
-      setCopyMessage("Não foi possível copiar o link público.");
-      setTimeout(() => setCopyMessage(null), 2500);
+      setCopyMessage("Não foi possível copiar. Abra o site público e copie pela barra do navegador.");
     }
+
+    window.setTimeout(() => {
+      setCopyMessage(null);
+    }, 3500);
+  }
+
+  const actionGroups = useMemo<ActionGroup[]>(() => {
+    if (!eventId) return [];
+
+    return [
+      {
+        title: "Editar site",
+        description:
+          "Tudo que muda a aparência e as informações principais do site.",
+        items: [
+          {
+            label: "Montar meu site",
+            description:
+              "Abra a central de montagem para organizar visual, fotos, presentes, convidados e publicação.",
+            href: `/dashboard/eventos/${eventId}/montar-site`,
+            highlight: true,
+          },
+          {
+            label: "Editar informações",
+            description:
+              "Altere nome, data, local, capacidade e descrição do evento.",
+            href: `/dashboard/eventos/${eventId}/editar`,
+          },
+          {
+            label: "Ver site público",
+            description:
+              "Abra a página que os convidados vão acessar.",
+            href: publicPath,
+            external: Boolean(publicPath),
+          },
+        ],
+      },
+      {
+        title: "Lista de presentes",
+        description:
+          "Gerencie presentes, contribuições, Pix, cotas e recebimentos.",
+        items: [
+          {
+            label: "Adicionar presente",
+            description:
+              "Cadastre um novo presente na lista do evento.",
+            href: `/dashboard/eventos/${eventId}/presentes`,
+            highlight: true,
+          },
+          {
+            label: "Presentes cadastrados",
+            description:
+              "Veja, edite e organize todos os presentes da lista.",
+            href: `/dashboard/eventos/${eventId}/presentes`,
+          },
+          {
+            label: "Presentes recebidos",
+            description:
+              "Acompanhe presentes reservados, comprados e contribuições pagas.",
+            href: `/dashboard/eventos/${eventId}/presentes`,
+          },
+          {
+            label: "Configurar Pix e pagamentos",
+            description:
+              "Revise formas de pagamento, Pix e contribuições livres.",
+            href: "/dashboard/configuracoes-pagamento",
+          },
+        ],
+      },
+      {
+        title: "Convidados",
+        description:
+          "Organize quem será convidado e acompanhe confirmações.",
+        items: [
+          {
+            label: "Gerenciar convidados",
+            description:
+              "Cadastre convidados e acompanhe a lista do evento.",
+            href: `/dashboard/eventos/${eventId}/convidados`,
+            highlight: true,
+          },
+          {
+            label: "Confirmações RSVP",
+            description:
+              "Veja quem confirmou, recusou ou ainda está pendente.",
+            href: `/dashboard/eventos/${eventId}/convidados`,
+          },
+          {
+            label: "Compartilhar convite",
+            description:
+              "Copie o link público para enviar no WhatsApp ou redes sociais.",
+            button: true,
+            onClick: handleCopyPublicLink,
+            disabled: !publicUrl,
+          },
+        ],
+      },
+      {
+        title: "Publicação",
+        description:
+          "Ações finais para revisar e compartilhar o evento.",
+        items: [
+          {
+            label: "Copiar link público",
+            description:
+              "Copie o endereço do site do evento para compartilhar.",
+            button: true,
+            onClick: handleCopyPublicLink,
+            disabled: !publicUrl,
+            highlight: true,
+          },
+          {
+            label: "Abrir página pública",
+            description:
+              "Veja exatamente o que o convidado verá.",
+            href: publicPath,
+            external: Boolean(publicPath),
+          },
+          {
+            label: "Voltar para meus eventos",
+            description:
+              "Retorne para a lista geral de eventos cadastrados.",
+            href: "/dashboard/eventos",
+          },
+        ],
+      },
+    ];
+  }, [eventId, publicPath, publicUrl]);
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-[#fbfaf7] px-4 py-8 text-[#24182f] sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <section className="rounded-[34px] border border-[#eee9e1] bg-white p-7 shadow-[0_24px_70px_rgba(36,24,47,0.08)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a7926]">
+              VivaLista
+            </p>
+
+            <h1 className="mt-3 text-3xl font-light tracking-[-0.05em]">
+              Carregando central do evento...
+            </h1>
+
+            <p className="mt-3 text-sm leading-7 text-[#7f738c]">
+              Estamos buscando as informações do evento, presentes, convidados e publicação.
+            </p>
+          </section>
+        </div>
+      </main>
+    );
+  }
+
+  if (errorMessage || !event) {
+    return (
+      <main className="min-h-screen bg-[#fbfaf7] px-4 py-8 text-[#24182f] sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl">
+          <section className="rounded-[34px] border border-red-200 bg-white p-7 shadow-[0_24px_70px_rgba(36,24,47,0.08)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-red-600">
+              erro ao carregar
+            </p>
+
+            <h1 className="mt-3 text-3xl font-light tracking-[-0.05em]">
+              Não conseguimos abrir este evento.
+            </h1>
+
+            <p className="mt-3 text-sm leading-7 text-[#7f738c]">
+              {errorMessage || "Evento não encontrado."}
+            </p>
+
+            <Link
+              href="/dashboard/eventos"
+              className="mt-6 inline-flex rounded-full bg-[#24182f] px-6 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5"
+            >
+              Voltar para meus eventos
+            </Link>
+          </section>
+        </div>
+      </main>
+    );
   }
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#fbfaf8_0%,#f8f3ec_100%)]">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {loading ? (
-          <section className="space-y-6">
-            <div className="rounded-[28px] border border-[#e8dfd2] bg-white p-6 shadow-sm">
-              <div className="h-4 w-36 animate-pulse rounded bg-neutral-200" />
-              <div className="mt-4 h-10 w-1/2 animate-pulse rounded bg-neutral-200" />
-              <div className="mt-3 h-4 w-2/3 animate-pulse rounded bg-neutral-200" />
-              <div className="mt-6 flex flex-wrap gap-3">
-                <div className="h-10 w-36 animate-pulse rounded-xl bg-neutral-200" />
-                <div className="h-10 w-40 animate-pulse rounded-xl bg-neutral-200" />
-                <div className="h-10 w-32 animate-pulse rounded-xl bg-neutral-200" />
-                <div className="h-10 w-36 animate-pulse rounded-xl bg-neutral-200" />
-              </div>
-            </div>
+    <main className="min-h-screen bg-[#fbfaf7] text-[#24182f]">
+      <style jsx global>{`
+        :root {
+          --vivalista-deep: #24182f;
+          --vivalista-purple: #5f35c6;
+          --vivalista-gold: #c79a2b;
+          --vivalista-soft: #fbfaf7;
+          --vivalista-muted: #7f738c;
+        }
 
-            <div className="grid gap-6 xl:grid-cols-4">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="rounded-[24px] border border-[#e8dfd2] bg-white p-5 shadow-sm"
+        html {
+          scroll-behavior: smooth;
+        }
+
+        .btn-primary {
+          color: #ffffff !important;
+          background: #5f35c6;
+          box-shadow: 0 18px 38px rgba(95, 53, 198, 0.18);
+        }
+
+        .btn-primary:hover {
+          transform: translateY(-2px);
+          background: #4f2daf;
+          box-shadow: 0 22px 46px rgba(95, 53, 198, 0.25);
+        }
+
+        .btn-dark {
+          color: #ffffff !important;
+          background: #24182f;
+          box-shadow: 0 18px 38px rgba(36, 24, 47, 0.16);
+        }
+
+        .btn-dark:hover {
+          transform: translateY(-2px);
+          background: #1d1328;
+          box-shadow: 0 22px 46px rgba(36, 24, 47, 0.23);
+        }
+
+        .btn-light {
+          color: #24182f !important;
+          background: #ffffff;
+          box-shadow: 0 14px 34px rgba(36, 24, 47, 0.1);
+        }
+
+        .btn-light:hover {
+          transform: translateY(-2px);
+          background: #fbfaf7;
+        }
+
+        .premium-shadow {
+          box-shadow: 0 24px 70px rgba(36, 24, 47, 0.09);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          *,
+          *::before,
+          *::after {
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            scroll-behavior: auto !important;
+            transition-duration: 0.001ms !important;
+          }
+        }
+      `}</style>
+
+      <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 lg:px-8">
+        <header className="overflow-hidden rounded-[38px] border border-[#eee9e1] bg-white premium-shadow">
+          <div className="grid lg:grid-cols-[0.95fr_1.05fr]">
+            <div className="p-6 sm:p-8 lg:p-10">
+              <div className="flex flex-wrap items-center gap-3">
+                <span
+                  className={`inline-flex rounded-full border px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] ${statusPillClasses(
+                    event.status,
+                  )}`}
                 >
-                  <div className="h-3 w-24 animate-pulse rounded bg-neutral-200" />
-                  <div className="mt-3 h-7 w-2/3 animate-pulse rounded bg-neutral-200" />
-                  <div className="mt-3 h-4 w-full animate-pulse rounded bg-neutral-200" />
-                </div>
-              ))}
-            </div>
+                  {statusLabel(event.status)}
+                </span>
 
-            <div className="grid gap-6 lg:grid-cols-3">
-              <div className="lg:col-span-2 rounded-[28px] border border-[#e8dfd2] bg-white p-6 shadow-sm">
-                <div className="h-4 w-40 animate-pulse rounded bg-neutral-200" />
-                <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                  {Array.from({ length: 8 }).map((_, index) => (
-                    <div
-                      key={index}
-                      className="rounded-[20px] border border-[#e8dfd2] bg-[#f8f3ec] p-4"
-                    >
-                      <div className="h-3 w-20 animate-pulse rounded bg-neutral-200" />
-                      <div className="mt-3 h-5 w-full animate-pulse rounded bg-neutral-200" />
-                    </div>
-                  ))}
-                </div>
+                <span className="inline-flex rounded-full border border-[#eee9e1] bg-[#fbfaf7] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7f738c]">
+                  Central do evento
+                </span>
               </div>
 
-              <div className="space-y-6">
-                <div className="rounded-[28px] border border-[#e8dfd2] bg-white p-6 shadow-sm">
-                  <div className="h-4 w-32 animate-pulse rounded bg-neutral-200" />
-                  <div className="mt-4 h-56 animate-pulse rounded-[24px] bg-neutral-200" />
-                </div>
-              </div>
-            </div>
-          </section>
-        ) : errorMessage ? (
-          <section className="rounded-[28px] border border-red-200 bg-red-50 p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-red-800">
-              Erro ao abrir o evento
-            </h2>
-            <p className="mt-2 text-sm text-red-700">{errorMessage}</p>
+              <h1 className="mt-6 max-w-3xl text-4xl font-light leading-[1.06] tracking-[-0.055em] text-[#24182f] sm:text-5xl lg:text-6xl">
+                {event.name}
+              </h1>
 
-            <div className="mt-4 flex flex-wrap gap-3">
-              <Link
-                href="/dashboard/eventos"
-                className="inline-flex items-center justify-center rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100"
-              >
-                Voltar para eventos
-              </Link>
-            </div>
-          </section>
-        ) : !event ? (
-          <section className="rounded-[28px] border border-[#e8dfd2] bg-white p-10 text-center shadow-sm">
-            <h2 className="text-xl font-semibold text-neutral-900">
-              Evento não encontrado
-            </h2>
-            <p className="mt-2 text-sm text-neutral-600">
-              Não foi possível carregar os dados deste evento.
-            </p>
-          </section>
-        ) : (
-          <section className="space-y-6">
-            <div className="relative overflow-hidden rounded-[32px] border border-[#e8dfd2] bg-[linear-gradient(180deg,#fffdfa_0%,#f8f3ec_100%)] p-6 shadow-sm">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(201,162,39,0.14),transparent_24%),radial-gradient(circle_at_bottom_left,rgba(111,74,166,0.05),transparent_26%)]" />
-              <div className="relative flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-                <div className="min-w-0">
-                  <div className="inline-flex rounded-full border border-[#ead79a] bg-[#fbf3d8] px-4 py-2 shadow-[0_10px_24px_rgba(201,162,39,0.10)]">
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#8f6a16]">
-                      dashboard do evento
-                    </p>
-                  </div>
+              <p className="mt-5 max-w-2xl text-[15px] leading-8 text-[#7f738c]">
+                {event.description ||
+                  "Organize visual, presentes, convidados e publicação em uma central simples e clara."}
+              </p>
 
-                  <div className="mt-4 flex flex-wrap items-center gap-3">
-                    <h1 className="text-3xl font-semibold tracking-tight text-neutral-900 sm:text-4xl">
-                      {event.name || "Evento sem nome"}
-                    </h1>
-
-                    <span
-                      className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${statusPillClasses(
-                        event.status
-                      )}`}
-                    >
-                      {statusLabel(event.status)}
-                    </span>
-                  </div>
-
-                  <p className="mt-3 max-w-3xl text-sm leading-7 text-neutral-600">
-                    {event.description ||
-                      "Página principal de configuração e acompanhamento do evento."}
+              <div className="mt-7 grid gap-3 text-sm text-[#5f5568] sm:grid-cols-2">
+                <div className="rounded-[22px] border border-[#eee9e1] bg-[#fbfaf7] p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#9a7926]">
+                    Data
                   </p>
-
-                  <div className="mt-5 flex flex-wrap gap-3">
-                    <Link
-                      href="/dashboard/eventos"
-                      className="inline-flex items-center justify-center rounded-xl border border-[#ddd1f2] bg-[#efe7fb] px-4 py-2 text-sm font-medium text-[#5f3d95] transition hover:bg-[#e7ddf7]"
-                    >
-                      Voltar para eventos
-                    </Link>
-
-                    {editUrl ? (
-                      <Link
-                        href={editUrl}
-                        className="inline-flex items-center justify-center rounded-xl border border-[#e8dfd2] bg-white px-4 py-2 text-sm font-medium text-[#8f6a16] transition hover:bg-[#fcfaf7]"
-                      >
-                        Editar evento
-                      </Link>
-                    ) : null}
-
-                    {visualUrl ? (
-                      <Link
-                        href={visualUrl}
-                        className="inline-flex items-center justify-center rounded-xl border border-[#e8dfd2] bg-white px-4 py-2 text-sm font-medium text-[#8f6a16] transition hover:bg-[#fcfaf7]"
-                      >
-                        Configurações visuais
-                      </Link>
-                    ) : null}
-
-                    {publicUrl ? (
-                      <>
-                        <Link
-                          href={publicUrl}
-                          target="_blank"
-                          className="inline-flex items-center justify-center rounded-xl bg-[#8f6a16] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#7a5911]"
-                        >
-                          Ver página pública
-                        </Link>
-
-                        <button
-                          type="button"
-                          onClick={handleCopyPublicLink}
-                          className="inline-flex items-center justify-center rounded-xl border border-[#e8dfd2] bg-white px-4 py-2 text-sm font-medium text-[#8f6a16] transition hover:bg-[#fcfaf7]"
-                        >
-                          Copiar link público
-                        </button>
-                      </>
-                    ) : null}
-                  </div>
-
-                  {copyMessage ? (
-                    <p className="mt-3 text-sm font-medium text-[#8f6a16]">
-                      {copyMessage}
-                    </p>
-                  ) : null}
+                  <p className="mt-2 font-semibold">{formatEventDate(event.date)}</p>
                 </div>
 
-                <div className="grid min-w-full gap-3 sm:grid-cols-2 xl:min-w-[360px] xl:max-w-[420px]">
-                  <div className="rounded-[22px] border border-[#e8dfd2] bg-white p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
-                      Slug público
-                    </p>
-                    <p className="mt-2 break-all text-sm font-medium text-neutral-900">
-                      {event.slug || "Não informado"}
-                    </p>
-                  </div>
+                <div className="rounded-[22px] border border-[#eee9e1] bg-[#fbfaf7] p-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#9a7926]">
+                    Local
+                  </p>
+                  <p className="mt-2 font-semibold">
+                    {event.location || "Local não informado"}
+                  </p>
+                </div>
+              </div>
 
-                  <div
-                    className={`rounded-[22px] border p-4 ${statusCardClasses(
-                      event.status
-                    )}`}
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <Link
+                  href={`/dashboard/eventos/${event.id}/montar-site`}
+                  className="btn-primary inline-flex items-center justify-center rounded-full px-7 py-4 text-sm font-semibold transition"
+                >
+                  Montar meu site
+                </Link>
+
+                {publicPath ? (
+                  <Link
+                    href={publicPath}
+                    className="btn-light inline-flex items-center justify-center rounded-full px-7 py-4 text-sm font-semibold transition"
                   >
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
-                      Status
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-neutral-900">
-                      {statusLabel(event.status)}
-                    </p>
-                  </div>
+                    Ver site público
+                  </Link>
+                ) : null}
 
-                  <div className="rounded-[22px] border border-[#e8dfd2] bg-white p-4 sm:col-span-2">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
-                      Leitura rápida
-                    </p>
-                    <p className="mt-2 text-lg font-semibold text-neutral-900">
-                      Evento central pronto para gestão, visual público e operação.
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-neutral-600">
-                      Use este painel como ponto principal para navegar entre edição, visual, presentes e convidados.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid gap-6 xl:grid-cols-4">
-              <OverviewCard
-                label="Data do evento"
-                value={formatEventDate(event.date)}
-                description="Data oficial cadastrada para o evento."
-              />
-              <OverviewCard
-                label="Local"
-                value={event.location || "Não informado"}
-                description="Endereço ou local principal do evento."
-              />
-              <OverviewCard
-                label="Capacidade"
-                value={event.capacity ?? "Não informada"}
-                description="Quantidade máxima de convidados prevista."
-              />
-              <OverviewCard
-                label="Event ID"
-                value={event.id}
-                description="Identificador técnico do evento no sistema."
-              />
-            </div>
-
-            <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
-              <div className="space-y-6">
-                <article className="rounded-[28px] border border-[#e8dfd2] bg-white p-6 shadow-sm">
-                  <div className="mb-6">
-                    <p className="text-sm font-medium uppercase tracking-[0.18em] text-[#8a7d74]">
-                      Visão executiva
-                    </p>
-                    <h2 className="mt-2 text-2xl font-semibold tracking-tight text-neutral-900">
-                      Resumo rápido do evento
-                    </h2>
-                  </div>
-
-                  <div className="grid gap-4 xl:grid-cols-3">
-                    <SummaryCard
-                      eyebrow="presentes"
-                      title="Lista"
-                      primaryValue={String(giftsDashboard.totalGifts)}
-                      lines={[
-                        `Ativos: ${giftsDashboard.activeGifts}`,
-                        `Disponíveis: ${giftsDashboard.availableGifts}`,
-                        `Reservados: ${giftsDashboard.reservedGifts}`,
-                        `Comprados: ${giftsDashboard.purchasedGifts}`,
-                      ]}
-                    />
-
-                    <SummaryCard
-                      eyebrow="convidados"
-                      title="RSVP"
-                      primaryValue={String(guestsDashboard.totalGuests)}
-                      lines={[
-                        `Confirmados: ${guestsDashboard.confirmedGuests}`,
-                        `Convidados: ${guestsDashboard.invitedGuests}`,
-                        `Recusados: ${guestsDashboard.declinedGuests}`,
-                      ]}
-                    />
-
-                    <SummaryCard
-                      eyebrow="pagamentos"
-                      title="Recebimentos"
-                      primaryValue={formatMoney(financialSummary.totalRaised)}
-                      lines={[
-                        `Pagos: ${financialSummary.paidContributionsCount}`,
-                        `Pendentes: ${financialSummary.pendingContributionsCount}`,
-                        `Ticket médio: ${formatMoney(financialSummary.averageContribution)}`,
-                      ]}
-                    />
-                  </div>
-                </article>
-
-                <article className="rounded-[28px] border border-[#e8dfd2] bg-white p-6 shadow-sm">
-                  <div className="mb-6">
-                    <p className="text-sm font-medium uppercase tracking-[0.18em] text-[#8a7d74]">
-                      Gestão do evento
-                    </p>
-                    <h2 className="mt-2 text-2xl font-semibold tracking-tight text-neutral-900">
-                      Atalhos rápidos
-                    </h2>
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    {editUrl ? (
-                      <ActionCard
-                        href={editUrl}
-                        eyebrow="edição"
-                        title="Editar dados do evento"
-                        description="Altere nome, slug, descrição, data, local, capacidade e status."
-                      />
-                    ) : null}
-
-                    {visualUrl ? (
-                      <ActionCard
-                        href={visualUrl}
-                        eyebrow="visual"
-                        title="Configurações visuais"
-                        description="Ajuste título público, mensagem inicial, aparência e seções do site."
-                      />
-                    ) : null}
-
-                    {giftsUrl ? (
-                      <ActionCard
-                        href={giftsUrl}
-                        eyebrow="presentes"
-                        title="Gerenciar presentes"
-                        description="Cadastre, envie imagens e organize a lista de presentes do evento."
-                      />
-                    ) : null}
-
-                    {guestsUrl ? (
-                      <ActionCard
-                        href={guestsUrl}
-                        eyebrow="convidados"
-                        title="Gerenciar convidados"
-                        description="Acompanhe confirmações e organize a lista de convidados."
-                      />
-                    ) : null}
-
-                    {publicUrl ? (
-                      <ActionCard
-                        href={publicUrl}
-                        eyebrow="site público"
-                        title="Abrir página pública"
-                        description="Visualize a experiência real do convidado com a página do evento."
-                        highlight
-                        targetBlank
-                      />
-                    ) : null}
-                  </div>
-                </article>
-
-                <article className="rounded-[28px] border border-[#e8dfd2] bg-white p-6 shadow-sm">
-                  <div className="mb-6">
-                    <p className="text-sm font-medium uppercase tracking-[0.18em] text-[#8a7d74]">
-                      Dados principais
-                    </p>
-                    <h2 className="mt-2 text-2xl font-semibold tracking-tight text-neutral-900">
-                      Informações do evento
-                    </h2>
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="rounded-[22px] border border-[#e8dfd2] bg-[#f8f3ec] p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
-                        Nome do evento
-                      </p>
-                      <p className="mt-2 text-sm text-neutral-900">
-                        {event.name || "Não informado"}
-                      </p>
-                    </div>
-
-                    <div className="rounded-[22px] border border-[#e8dfd2] bg-[#f8f3ec] p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
-                        Slug público
-                      </p>
-                      <p className="mt-2 break-all text-sm text-neutral-900">
-                        {event.slug || "Não informado"}
-                      </p>
-                    </div>
-
-                    <div className="rounded-[22px] border border-[#e8dfd2] bg-[#f8f3ec] p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
-                        Data do evento
-                      </p>
-                      <p className="mt-2 text-sm text-neutral-900">
-                        {formatEventDate(event.date)}
-                      </p>
-                    </div>
-
-                    <div className="rounded-[22px] border border-[#e8dfd2] bg-[#f8f3ec] p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
-                        Capacidade
-                      </p>
-                      <p className="mt-2 text-sm text-neutral-900">
-                        {event.capacity ?? "Não informada"}
-                      </p>
-                    </div>
-
-                    <div className="rounded-[22px] border border-[#e8dfd2] bg-[#f8f3ec] p-4 sm:col-span-2">
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
-                        Local
-                      </p>
-                      <p className="mt-2 text-sm text-neutral-900">
-                        {event.location || "Não informado"}
-                      </p>
-                    </div>
-
-                    <div className="rounded-[22px] border border-[#e8dfd2] bg-[#f8f3ec] p-4 sm:col-span-2">
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
-                        Descrição
-                      </p>
-                      <p className="mt-2 whitespace-pre-line text-sm leading-6 text-neutral-900">
-                        {event.description || "Sem descrição cadastrada."}
-                      </p>
-                    </div>
-                  </div>
-                </article>
+                <button
+                  type="button"
+                  onClick={handleCopyPublicLink}
+                  disabled={!publicUrl}
+                  className="inline-flex items-center justify-center rounded-full border border-[#eee9e1] bg-white px-7 py-4 text-sm font-semibold text-[#24182f] transition hover:-translate-y-0.5 hover:bg-[#fbfaf7] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Copiar link
+                </button>
               </div>
 
-              <aside className="space-y-6">
-                <article className="rounded-[28px] border border-[#e8dfd2] bg-white p-6 shadow-sm">
-                  <p className="text-sm font-medium uppercase tracking-[0.18em] text-[#8a7d74]">
-                    Preview da capa
-                  </p>
-
-                  <div className="mt-4 overflow-hidden rounded-[24px] border border-[#e8dfd2] bg-[#f3ece3]">
-                    {coverImageUrl ? (
-                      <img
-                        src={coverImageUrl}
-                        alt={event.name || "Capa do evento"}
-                        className="h-72 w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-72 items-center justify-center px-6 text-center text-sm text-[#8a7d74]">
-                        O evento ainda não possui capa enviada.
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="mt-4 space-y-3">
-                    <div className="rounded-[22px] border border-[#e8dfd2] bg-[#f8f3ec] p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
-                        Página pública
-                      </p>
-                      <p className="mt-2 break-all text-sm font-medium text-neutral-900">
-                        {publicUrl || "Sem slug público"}
-                      </p>
-                    </div>
-
-                    <div className="rounded-[22px] border border-[#e8dfd2] bg-[#f8f3ec] p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
-                        Criado em
-                      </p>
-                      <p className="mt-2 text-sm text-neutral-900">
-                        {formatShortDate(event.createdAt)}
-                      </p>
-                    </div>
-
-                    <div className="rounded-[22px] border border-[#e8dfd2] bg-[#f8f3ec] p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8a7d74]">
-                        Atualizado em
-                      </p>
-                      <p className="mt-2 text-sm text-neutral-900">
-                        {formatShortDate(event.updatedAt)}
-                      </p>
-                    </div>
-                  </div>
-                </article>
-
-                <article className="rounded-[28px] border border-[#e8dfd2] bg-white p-6 shadow-sm">
-                  <p className="text-sm font-medium uppercase tracking-[0.18em] text-[#8a7d74]">
-                    Links rápidos
-                  </p>
-
-                  <div className="mt-4 space-y-3">
-                    <Link
-                      href="/dashboard/eventos"
-                      className="block rounded-[20px] border border-[#ddd1f2] bg-[#efe7fb] px-4 py-3 text-sm font-medium text-[#5f3d95] transition hover:bg-[#e7ddf7]"
-                    >
-                      Voltar para lista de eventos
-                    </Link>
-
-                    {editUrl ? (
-                      <Link
-                        href={editUrl}
-                        className="block rounded-[20px] border border-[#e8dfd2] bg-white px-4 py-3 text-sm font-medium text-[#8f6a16] transition hover:bg-[#fcfaf7]"
-                      >
-                        Editar evento
-                      </Link>
-                    ) : null}
-
-                    {visualUrl ? (
-                      <Link
-                        href={visualUrl}
-                        className="block rounded-[20px] border border-[#e8dfd2] bg-white px-4 py-3 text-sm font-medium text-[#8f6a16] transition hover:bg-[#fcfaf7]"
-                      >
-                        Configurações visuais
-                      </Link>
-                    ) : null}
-
-                    {giftsUrl ? (
-                      <Link
-                        href={giftsUrl}
-                        className="block rounded-[20px] border border-[#e8dfd2] bg-white px-4 py-3 text-sm font-medium text-[#8f6a16] transition hover:bg-[#fcfaf7]"
-                      >
-                        Abrir presentes
-                      </Link>
-                    ) : null}
-
-                    {guestsUrl ? (
-                      <Link
-                        href={guestsUrl}
-                        className="block rounded-[20px] border border-[#e8dfd2] bg-white px-4 py-3 text-sm font-medium text-[#8f6a16] transition hover:bg-[#fcfaf7]"
-                      >
-                        Abrir convidados
-                      </Link>
-                    ) : null}
-
-                    {publicUrl ? (
-                      <Link
-                        href={publicUrl}
-                        target="_blank"
-                        className="block rounded-[20px] border border-[#e8dfd2] bg-white px-4 py-3 text-sm font-medium text-[#8f6a16] transition hover:bg-[#fcfaf7]"
-                      >
-                        Ver página pública
-                      </Link>
-                    ) : null}
-                  </div>
-                </article>
-
-                <article className="rounded-[28px] border border-[#e8dfd2] bg-white p-6 shadow-sm">
-                  <p className="text-sm font-medium uppercase tracking-[0.18em] text-[#8a7d74]">
-                    Resumo técnico
-                  </p>
-
-                  <div className="mt-4 space-y-4 text-sm text-neutral-700">
-                    <div>
-                      <p className="font-semibold text-neutral-900">Status bruto</p>
-                      <p>{event.status || "Não informado"}</p>
-                    </div>
-
-                    <div>
-                      <p className="font-semibold text-neutral-900">Slug</p>
-                      <p className="break-all">{event.slug || "Não informado"}</p>
-                    </div>
-
-                    <div>
-                      <p className="font-semibold text-neutral-900">Cover image</p>
-                      <p className="break-all">{event.coverImage || "Não informado"}</p>
-                    </div>
-                  </div>
-                </article>
-              </aside>
+              {copyMessage ? (
+                <p className="mt-4 rounded-[18px] border border-[#eadfbd] bg-[#fffaf0] px-4 py-3 text-sm font-semibold text-[#8a6518]">
+                  {copyMessage}
+                </p>
+              ) : null}
             </div>
-          </section>
-        )}
+                        <div className="relative min-h-[420px] bg-[#24182f] lg:min-h-full">
+              <div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{ backgroundImage: `url(${coverImage})` }}
+              />
+
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(20,11,30,0.08)_0%,rgba(20,11,30,0.76)_100%)]" />
+
+              <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f2d889]">
+                  prévia do evento
+                </p>
+
+                <h2 className="mt-3 max-w-xl text-4xl font-light leading-tight tracking-[-0.05em] text-white">
+                  {event.name}
+                </h2>
+
+                <p className="mt-4 max-w-xl text-sm leading-7 text-white/78">
+                  {formatShortDate(event.date)} •{" "}
+                  {event.location || "Local não informado"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <OverviewCard
+            label="Presentes"
+            value={giftDashboard?.totalGifts ?? 0}
+            description={`${giftDashboard?.availableGifts ?? 0} disponíveis, ${
+              giftDashboard?.reservedGifts ?? 0
+            } reservados e ${giftDashboard?.purchasedGifts ?? 0} comprados.`}
+          />
+
+          <OverviewCard
+            label="Convidados"
+            value={guestDashboard?.totalGuests ?? 0}
+            description={`${guestDashboard?.confirmedGuests ?? 0} confirmados, ${
+              guestDashboard?.invitedGuests ?? 0
+            } convidados e ${guestDashboard?.declinedGuests ?? 0} recusas.`}
+          />
+
+          <OverviewCard
+            label="Recebido"
+            value={formatMoney(financialSummary?.totalRaised ?? 0)}
+            description={`${
+              financialSummary?.paidContributionsCount ?? 0
+            } pagamento(s) confirmado(s).`}
+          />
+
+          <OverviewCard
+            label="Mídias"
+            value={activeMediaCount}
+            description="Fotos e imagens ativas nas seções visuais do evento."
+          />
+        </section>
+
+        <section className="mt-6 rounded-[38px] border border-[#eee9e1] bg-white p-5 premium-shadow sm:p-7 lg:p-8">
+          <div className="grid gap-6 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a7926]">
+                roteiro de montagem
+              </p>
+
+              <h2 className="mt-3 text-3xl font-light leading-tight tracking-[-0.05em] text-[#24182f] sm:text-4xl">
+                O que falta para deixar seu evento pronto?
+              </h2>
+            </div>
+
+            <p className="max-w-2xl text-sm leading-7 text-[#7f738c] lg:justify-self-end lg:text-right">
+              Use este roteiro como guia. A ideia é o cliente saber exatamente
+              onde começar, onde continuar e quando o site está pronto para ser
+              compartilhado.
+            </p>
+          </div>
+
+          <div className="mt-7 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+            {progressSteps.map((step) => (
+              <ProgressStepCard key={step.number} step={step} />
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-6 grid gap-6 lg:grid-cols-2">
+          {actionGroups.map((group) => (
+            <ActionGroupCard key={group.title} group={group} />
+          ))}
+        </section>
+
+        <section className="mt-6 rounded-[38px] border border-[#eee9e1] bg-white p-5 premium-shadow sm:p-7 lg:p-8">
+          <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#9a7926]">
+                informações rápidas
+              </p>
+
+              <h2 className="mt-3 text-3xl font-light leading-tight tracking-[-0.05em] text-[#24182f]">
+                Resumo técnico do evento.
+              </h2>
+
+              <p className="mt-4 text-sm leading-7 text-[#7f738c]">
+                Estes dados ajudam a conferir se o evento está correto antes de
+                publicar e compartilhar com os convidados.
+              </p>
+            </div>
+
+            <div className="grid gap-3">
+              <div className="rounded-[24px] border border-[#eee9e1] bg-[#fbfaf7] p-5">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#9a7926]">
+                  ID do evento
+                </p>
+                <p className="mt-2 break-all text-sm font-semibold text-[#24182f]">
+                  {event.id}
+                </p>
+              </div>
+
+              <div className="rounded-[24px] border border-[#eee9e1] bg-[#fbfaf7] p-5">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#9a7926]">
+                  Slug público
+                </p>
+                <p className="mt-2 break-all text-sm font-semibold text-[#24182f]">
+                  {event.slug || "Ainda não informado"}
+                </p>
+              </div>
+
+              <div className="rounded-[24px] border border-[#eee9e1] bg-[#fbfaf7] p-5">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#9a7926]">
+                  Capacidade
+                </p>
+                <p className="mt-2 text-sm font-semibold text-[#24182f]">
+                  {event.capacity ? `${event.capacity} pessoas` : "Não informada"}
+                </p>
+              </div>
+
+              <div className="rounded-[24px] border border-[#eee9e1] bg-[#fbfaf7] p-5">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#9a7926]">
+                  Última atualização
+                </p>
+                <p className="mt-2 text-sm font-semibold text-[#24182f]">
+                  {formatShortDate(event.updatedAt)}
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <footer className="mt-8 flex flex-col gap-3 pb-4 text-center text-sm text-[#7f738c] sm:flex-row sm:items-center sm:justify-between sm:text-left">
+          <p>VivaLista — central premium do evento.</p>
+
+          <div className="flex justify-center gap-5">
+            <Link
+              href="/dashboard/eventos"
+              className="font-semibold text-[#5f5568] transition hover:text-[#24182f]"
+            >
+              Meus eventos
+            </Link>
+
+            <Link
+              href="/dashboard"
+              className="font-semibold text-[#5f5568] transition hover:text-[#24182f]"
+            >
+              Dashboard
+            </Link>
+          </div>
+        </footer>
       </div>
     </main>
   );

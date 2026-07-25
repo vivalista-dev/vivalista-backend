@@ -110,6 +110,111 @@ const EMPTY_FORM: GiftFormData = {
   category: "",
 };
 
+const SUGGESTED_WEDDING_GIFTS: GiftFormData[] = [
+  {
+    ...EMPTY_FORM,
+    title: "Air Fryer",
+    description: "Um presente prático para facilitar o dia a dia da nova casa.",
+    price: "299",
+    imageUrl:
+      "https://images.unsplash.com/photo-1585515320310-259814833e62?auto=format&fit=crop&w=1200&q=85",
+    giftType: "PHYSICAL",
+    priceMode: "FIXED",
+    category: "Cozinha",
+    displayOrder: "1",
+    isFeatured: true,
+  },
+  {
+    ...EMPTY_FORM,
+    title: "Jogo de panelas",
+    description: "Um clássico indispensável para começar a vida a dois com carinho.",
+    price: "450",
+    imageUrl:
+      "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&w=1200&q=85",
+    giftType: "PHYSICAL",
+    priceMode: "FIXED",
+    category: "Cozinha",
+    displayOrder: "2",
+  },
+  {
+    ...EMPTY_FORM,
+    title: "Jogo de jantar",
+    description: "Para deixar a mesa mais bonita nos primeiros encontros em família.",
+    price: "380",
+    imageUrl:
+      "https://images.unsplash.com/photo-1464306076886-da185f6a9d05?auto=format&fit=crop&w=1200&q=85",
+    giftType: "PHYSICAL",
+    priceMode: "FIXED",
+    category: "Mesa posta",
+    displayOrder: "3",
+  },
+  {
+    ...EMPTY_FORM,
+    title: "Cota para lua de mel",
+    description: "Uma contribuição especial para tornar a viagem dos noivos ainda mais inesquecível.",
+    price: "250",
+    imageUrl:
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=85",
+    giftType: "QUOTA",
+    priceMode: "FIXED",
+    quotaTotal: "20",
+    category: "Lua de mel",
+    displayOrder: "4",
+    isFeatured: true,
+  },
+  {
+    ...EMPTY_FORM,
+    title: "Cafeteira",
+    description: "Para deixar as manhãs da nova casa mais gostosas.",
+    price: "220",
+    imageUrl:
+      "https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?auto=format&fit=crop&w=1200&q=85",
+    giftType: "PHYSICAL",
+    priceMode: "FIXED",
+    category: "Cozinha",
+    displayOrder: "5",
+  },
+  {
+    ...EMPTY_FORM,
+    title: "Jogo de cama",
+    description: "Conforto e carinho para o novo lar.",
+    price: "320",
+    imageUrl:
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=85",
+    giftType: "PHYSICAL",
+    priceMode: "FIXED",
+    category: "Casa",
+    displayOrder: "6",
+  },
+  {
+    ...EMPTY_FORM,
+    title: "Liquidificador",
+    description: "Um item simples, útil e sempre bem-vindo na cozinha.",
+    price: "180",
+    imageUrl:
+      "https://images.unsplash.com/photo-1570222094114-d054a817e56b?auto=format&fit=crop&w=1200&q=85",
+    giftType: "PHYSICAL",
+    priceMode: "FIXED",
+    category: "Cozinha",
+    displayOrder: "7",
+  },
+  {
+    ...EMPTY_FORM,
+    title: "Contribuição livre",
+    description: "O convidado escolhe o valor e presenteia com carinho.",
+    price: "",
+    imageUrl:
+      "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=1200&q=85",
+    giftType: "FREE_CONTRIBUTION",
+    priceMode: "FLEXIBLE",
+    allowCustomAmount: true,
+    minAmount: "50",
+    category: "Livre",
+    displayOrder: "8",
+    isFeatured: true,
+  },
+];
+
 function getBackendUrl(): string {
   const value =
     process.env.NEXT_PUBLIC_API_URL ||
@@ -491,6 +596,7 @@ export default function DashboardEventGiftsPage() {
   const [formData, setFormData] = useState<GiftFormData>(EMPTY_FORM);
 
   const [uploadingGiftId, setUploadingGiftId] = useState<string | null>(null);
+  const [addingSuggestedGifts, setAddingSuggestedGifts] = useState(false);
 
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
@@ -802,6 +908,67 @@ export default function DashboardEventGiftsPage() {
     }
   }
 
+  async function handleAddSuggestedGifts() {
+    if (!eventId) return;
+
+    const existingTitles = new Set(gifts.map((gift) => normalizeText(gift.title)));
+    const giftsToCreate = SUGGESTED_WEDDING_GIFTS.filter(
+      (gift) => !existingTitles.has(normalizeText(gift.title))
+    );
+
+    if (giftsToCreate.length === 0) {
+      setSavedMessage("A lista sugerida já foi adicionada neste evento.");
+      setErrorMessage(null);
+      return;
+    }
+
+    try {
+      setAddingSuggestedGifts(true);
+      setSavedMessage(null);
+      setErrorMessage(null);
+
+      const token = getAuthToken();
+      const backendUrl = getBackendUrl();
+
+      for (const gift of giftsToCreate) {
+        const response = await fetch(`${backendUrl}/events/${eventId}/gifts`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify(buildPayload(gift)),
+        });
+
+        if (!response.ok) {
+          let apiError: ApiError | null = null;
+
+          try {
+            apiError = (await response.json()) as ApiError;
+          } catch {
+            apiError = null;
+          }
+
+          throw new Error(
+            getErrorMessage(apiError) ||
+              `Erro ao adicionar "${gift.title}". Status ${response.status}.`
+          );
+        }
+      }
+
+      setSavedMessage(
+        `${giftsToCreate.length} presente${giftsToCreate.length === 1 ? "" : "s"} sugerido${giftsToCreate.length === 1 ? "" : "s"} adicionado${giftsToCreate.length === 1 ? "" : "s"} com sucesso.`
+      );
+      setEditingGiftId(null);
+      setFormData(EMPTY_FORM);
+      await loadData();
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error));
+    } finally {
+      setAddingSuggestedGifts(false);
+    }
+  }
+
   const filteredGifts = useMemo(() => {
     const normalizedSearch = normalizeText(search);
 
@@ -842,6 +1009,14 @@ export default function DashboardEventGiftsPage() {
   }, [gifts, search, giftTypeFilter, giftStatusFilter, sortBy]);
 
   const publicPath = event?.slug ? `/e/${event.slug}` : null;
+  const suggestedMissingCount = useMemo(() => {
+    const existingTitles = new Set(gifts.map((gift) => normalizeText(gift.title)));
+
+    return SUGGESTED_WEDDING_GIFTS.filter(
+      (gift) => !existingTitles.has(normalizeText(gift.title))
+    ).length;
+  }, [gifts]);
+
   const formGiftType = formData.giftType;
   const showPriceField = formGiftType !== "FREE_CONTRIBUTION";
   const showQuotaField = formGiftType === "QUOTA";
@@ -1042,6 +1217,75 @@ export default function DashboardEventGiftsPage() {
 
             <div className="grid gap-6 lg:grid-cols-3">
               <div className="lg:col-span-2 space-y-6">
+                <SectionShell
+                  eyebrow="começo rápido"
+                  title="Comece com uma lista sugerida"
+                  description="O cliente não precisa começar do zero. Ele pode usar uma base pronta de casamento e depois editar, apagar ou adicionar outros presentes."
+                >
+                  <div className="grid gap-5">
+                    <div className="rounded-[24px] border border-[#ead79a] bg-[#fff9e8] p-5">
+                      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-[#8f6a16]">
+                            Lista sugerida de casamento
+                          </p>
+                          <p className="mt-2 text-sm leading-6 text-neutral-700">
+                            Inclui itens comuns como Air Fryer, jogo de panelas, jogo de jantar, cota de lua de mel, cafeteira, jogo de cama e contribuição livre.
+                          </p>
+                          <p className="mt-2 text-xs leading-5 text-[#8a7d74]">
+                            Depois de adicionar, o cliente pode editar valores, trocar imagens, destacar itens ou excluir o que não quiser.
+                          </p>
+                        </div>
+
+                        <div className="flex shrink-0 flex-col gap-2 sm:flex-row xl:flex-col">
+                          <button
+                            type="button"
+                            onClick={handleAddSuggestedGifts}
+                            disabled={addingSuggestedGifts || suggestedMissingCount === 0}
+                            className="inline-flex items-center justify-center rounded-xl bg-[#8f6a16] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#7a5911] disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {addingSuggestedGifts
+                              ? "Adicionando..."
+                              : suggestedMissingCount === 0
+                                ? "Lista já adicionada"
+                                : gifts.length > 0
+                                  ? `Adicionar ${suggestedMissingCount} sugestão${suggestedMissingCount === 1 ? "" : "ões"} que falta${suggestedMissingCount === 1 ? "" : "m"}`
+                                  : "Usar lista sugerida"}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={handleCreateNew}
+                            className="inline-flex items-center justify-center rounded-xl border border-[#e8dfd2] bg-white px-5 py-3 text-sm font-medium text-[#8f6a16] transition hover:bg-[#fcfaf7]"
+                          >
+                            Cadastrar manualmente
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                      {SUGGESTED_WEDDING_GIFTS.slice(0, 8).map((gift) => (
+                        <div
+                          key={gift.title}
+                          className="rounded-[20px] border border-[#e8dfd2] bg-white p-4"
+                        >
+                          <p className="text-sm font-semibold text-neutral-900">
+                            {gift.title}
+                          </p>
+                          <p className="mt-1 text-xs text-[#8a7d74]">
+                            {gift.giftType === "FREE_CONTRIBUTION"
+                              ? "Valor livre"
+                              : gift.giftType === "QUOTA"
+                                ? `Cota de ${formatMoney(Number(gift.price || 0))}`
+                                : formatMoney(Number(gift.price || 0))}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </SectionShell>
+
                 <SectionShell
                   eyebrow={editingGiftId ? "edição" : "cadastro"}
                   title={editingGiftId ? "Editar presente" : "Novo presente"}

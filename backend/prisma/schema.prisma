@@ -93,6 +93,7 @@ model Organization {
   contributions Contribution[]
   payments      Payment[]
   galleryImages EventGalleryImage[]
+  sectionMedia  EventSectionMedia[]
 }
 
 model User {
@@ -104,7 +105,25 @@ model User {
   organizationId String
   createdAt      DateTime @default(now())
 
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization        Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  passwordResetTokens PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  email     String
+  tokenHash String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([email])
+  @@index([tokenHash])
+  @@index([expiresAt])
 }
 
 model Event {
@@ -147,13 +166,14 @@ model Event {
   showGifts       Boolean   @default(true)
   showRsvp        Boolean   @default(true)
 
-  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization    Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   guests          Guest[]
   gifts           Gift[]
   payments        Payment[]
   sections        EventSection[]
   contributions   Contribution[]
   galleryImages   EventGalleryImage[]
+  sectionMedia    EventSectionMedia[]
   GiftReservation GiftReservation[]
 }
 
@@ -260,7 +280,6 @@ model EventSection {
   @@index([organizationId])
 }
 
-
 model EventGalleryImage {
   id             String   @id @default(uuid())
   eventId        String
@@ -278,6 +297,33 @@ model EventGalleryImage {
 
   @@index([eventId])
   @@index([organizationId])
+  @@index([eventId, displayOrder])
+}
+
+model EventSectionMedia {
+  id             String   @id @default(uuid())
+  eventId        String
+  organizationId String
+  sectionKey     String
+  mediaRole      String?
+  imageUrl       String
+  title          String?
+  description    String?
+  linkUrl        String?
+  buttonLabel    String?
+  metadata       Json?
+  displayOrder   Int      @default(0)
+  isActive       Boolean  @default(true)
+  isPrimary      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  event        Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([organizationId])
+  @@index([eventId, sectionKey])
   @@index([eventId, displayOrder])
 }
 

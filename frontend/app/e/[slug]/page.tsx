@@ -125,6 +125,49 @@ type PublicGalleryResponse = {
   images?: PublicGalleryImage[];
 };
 
+
+type PublicSectionKey =
+  | "INVITATION"
+  | "HERO"
+  | "COUPLE"
+  | "STORY"
+  | "GALLERY"
+  | "RECEPTION"
+  | "INFO"
+  | "MENU"
+  | "LOCATION"
+  | "ACCOMMODATION"
+  | "GIFTS"
+  | "DEFAULT_GIFT"
+  | "RSVP";
+
+type PublicSectionMedia = {
+  id?: string;
+  eventId?: string;
+  sectionKey?: PublicSectionKey | string;
+  mediaRole?: string | null;
+  imageUrl?: string | null;
+  title?: string | null;
+  description?: string | null;
+  linkUrl?: string | null;
+  buttonLabel?: string | null;
+  displayOrder?: number;
+  isActive?: boolean;
+  isPrimary?: boolean;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+};
+
+type PublicSectionMediaResponse = {
+  event?: {
+    id?: string;
+    name?: string;
+    slug?: string;
+  };
+  media?: PublicSectionMedia[];
+  sections?: Partial<Record<PublicSectionKey, PublicSectionMedia[]>>;
+};
+
 type FinancialSummary = {
   totalRaised: number;
   paidContributionsCount: number;
@@ -259,6 +302,69 @@ function buildPublicAssetUrl(value?: string | null) {
   const normalizedPath = raw.startsWith("/") ? raw : `/${raw}`;
 
   return `${normalizedApi}${normalizedPath}`;
+}
+
+
+function normalizeSectionMediaItem(item: PublicSectionMedia): PublicSectionMedia {
+  return {
+    ...item,
+    imageUrl: buildPublicAssetUrl(item.imageUrl ?? null),
+    displayOrder: Number(item.displayOrder ?? 0),
+    isActive: item.isActive !== false,
+    isPrimary: Boolean(item.isPrimary),
+  };
+}
+
+function normalizeSectionMediaPayload(data: PublicSectionMediaResponse): PublicSectionMedia[] {
+  const fromMedia = Array.isArray(data.media) ? data.media : [];
+
+  const fromSections = data.sections
+    ? Object.values(data.sections).flatMap((items) =>
+        Array.isArray(items) ? items : []
+      )
+    : [];
+
+  const merged = fromMedia.length > 0 ? fromMedia : fromSections;
+
+  return merged
+    .map(normalizeSectionMediaItem)
+    .filter((item) => Boolean(item.imageUrl && item.sectionKey))
+    .sort((a, b) => {
+      const orderA = Number(a.displayOrder ?? 0);
+      const orderB = Number(b.displayOrder ?? 0);
+
+      if (orderA !== orderB) return orderA - orderB;
+      if (a.isPrimary && !b.isPrimary) return -1;
+      if (!a.isPrimary && b.isPrimary) return 1;
+
+      return String(a.id ?? "").localeCompare(String(b.id ?? ""));
+    });
+}
+
+function getActiveSectionMedia(
+  items: PublicSectionMedia[],
+  sectionKey: PublicSectionKey
+) {
+  return items
+    .filter((item) => item.sectionKey === sectionKey && item.isActive !== false)
+    .sort((a, b) => {
+      const orderA = Number(a.displayOrder ?? 0);
+      const orderB = Number(b.displayOrder ?? 0);
+
+      if (orderA !== orderB) return orderA - orderB;
+      if (a.isPrimary && !b.isPrimary) return -1;
+      if (!a.isPrimary && b.isPrimary) return 1;
+
+      return String(a.id ?? "").localeCompare(String(b.id ?? ""));
+    });
+}
+
+function getPrimarySectionMedia(
+  items: PublicSectionMedia[],
+  sectionKey: PublicSectionKey
+) {
+  const sectionItems = getActiveSectionMedia(items, sectionKey);
+  return sectionItems.find((item) => item.isPrimary) ?? sectionItems[0] ?? null;
 }
 
 const GIFT_PLACEHOLDER =
@@ -1121,6 +1227,7 @@ export default function EventPage() {
   const [event, setEvent] = useState<PublicEvent | null>(null);
   const [gifts, setGifts] = useState<Gift[]>([]);
   const [galleryImagesFromEvent, setGalleryImagesFromEvent] = useState<string[]>([]);
+  const [sectionMediaFromEvent, setSectionMediaFromEvent] = useState<PublicSectionMedia[]>([]);
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [financialSummary, setFinancialSummary] = useState<FinancialSummary>({
     totalRaised: 0,
@@ -1162,12 +1269,20 @@ export default function EventPage() {
     setErrorMessage("");
 
     try {
-      const [eventRes, giftsRes, contributionsRes, financialRes, galleryRes] = await Promise.all([
+      const [
+        eventRes,
+        giftsRes,
+        contributionsRes,
+        financialRes,
+        galleryRes,
+        sectionMediaRes,
+      ] = await Promise.all([
         fetch(`${API}/events/public/${slug}`, { cache: "no-store" }),
         fetch(`${API}/events/public/${slug}/gifts`, { cache: "no-store" }),
         fetch(`${API}/events/public/${slug}/contributions`, { cache: "no-store" }),
         fetch(`${API}/events/public/${slug}/financial-summary`, { cache: "no-store" }),
         fetch(`${API}/events/public/${slug}/gallery`, { cache: "no-store" }),
+        fetch(`${API}/events/public/${slug}/section-media`, { cache: "no-store" }),
       ]);
 
       if (!eventRes.ok) {
@@ -1238,9 +1353,35 @@ export default function EventPage() {
         .map((image) => buildPublicAssetUrl(image.imageUrl ?? null))
         .filter((image): image is string => Boolean(image));
 
-      setEvent(normalizedEvent);
-      setGifts((rawGifts as GiftApiItem[]).map(normalizeGift));
+      const sectionMediaJson: PublicSectionMediaResponse = sectionMediaRes.ok
+        ? await sectionMediaRes.json()
+        : { media: [] };
+
+      const normalizedSectionMedia = normalizeSectionMediaPayload(sectionMediaJson);
+      const heroMedia = getPrimarySectionMedia(normalizedSectionMedia, "HERO");
+      const defaultGiftMedia = getPrimarySectionMedia(
+        normalizedSectionMedia,
+        "DEFAULT_GIFT"
+      );
+
+      const enhancedEvent: PublicEvent = {
+        ...normalizedEvent,
+        heroImage: heroMedia?.imageUrl || normalizedEvent.heroImage,
+        coverImage: heroMedia?.imageUrl || normalizedEvent.coverImage,
+      };
+
+      const defaultGiftImage = defaultGiftMedia?.imageUrl || null;
+      const normalizedGifts = (rawGifts as GiftApiItem[])
+        .map(normalizeGift)
+        .map((gift) => ({
+          ...gift,
+          imageUrl: gift.imageUrl || defaultGiftImage,
+        }));
+
+      setEvent(enhancedEvent);
+      setGifts(normalizedGifts);
       setGalleryImagesFromEvent(normalizedGalleryImages);
+      setSectionMediaFromEvent(normalizedSectionMedia);
       setContributions(rawContributions as Contribution[]);
       setFinancialSummary(financial);
     } catch (error) {
@@ -1350,21 +1491,25 @@ export default function EventPage() {
   }, [gifts, giftSearch, giftCategory, giftSort]);
 
   const galleryImages = useMemo(() => {
+    const sectionGalleryImages = getActiveSectionMedia(
+      sectionMediaFromEvent,
+      "GALLERY"
+    )
+      .map((item) => item.imageUrl)
+      .filter((image): image is string => Boolean(image));
+
     const images: string[] =
-      galleryImagesFromEvent.length > 0 ? [...galleryImagesFromEvent] : [];
+      sectionGalleryImages.length > 0
+        ? [...sectionGalleryImages]
+        : galleryImagesFromEvent.length > 0
+          ? [...galleryImagesFromEvent]
+          : [];
 
     if (images.length === 0) {
       if (event?.heroImage) images.push(event.heroImage);
       if (event?.coverImage && event.coverImage !== event.heroImage) {
         images.push(event.coverImage);
       }
-
-      const giftImages = gifts
-        .map((gift) => gift.imageUrl)
-        .filter((item): item is string => Boolean(item))
-        .slice(0, 5);
-
-      images.push(...giftImages);
     }
 
     if (images.length === 0) {
@@ -1376,7 +1521,12 @@ export default function EventPage() {
     }
 
     return images;
-  }, [event?.heroImage, event?.coverImage, gifts, galleryImagesFromEvent]);
+  }, [
+    event?.heroImage,
+    event?.coverImage,
+    galleryImagesFromEvent,
+    sectionMediaFromEvent,
+  ]);
 
   const paymentPreviewAmount = useMemo(() => {
     if (!selectedGift) return null;
@@ -1694,6 +1844,7 @@ export default function EventPage() {
         event={event}
         countdown={countdown}
         galleryImages={galleryImages}
+        sectionMedia={sectionMediaFromEvent}
         filteredGifts={filteredGifts}
         giftCategories={giftCategories}
         financialSummary={financialSummary}

@@ -1,4 +1,4 @@
-
+﻿
 import {
   Body,
   Controller,
@@ -38,7 +38,7 @@ export class PaymentController {
   }
 
   // =========================
-  // ROTAS PÚBLICAS
+  // ROTAS PÃšBLICAS
   // =========================
 
   @Public()
@@ -50,6 +50,12 @@ export class PaymentController {
   @Public()
   @Post('public/mock/:paymentId/paid')
   processPublicMockWebhookPaid(@Param('paymentId') paymentId: string) {
+    return this.paymentService.processPublicMockWebhookPaid(paymentId);
+  }
+
+  @Public()
+  @Get('public/mock/:paymentId/paid')
+  processPublicMockCheckoutPaid(@Param('paymentId') paymentId: string) {
     return this.paymentService.processPublicMockWebhookPaid(paymentId);
   }
 
@@ -102,3 +108,4 @@ export class PaymentController {
     );
   }
 }
+
