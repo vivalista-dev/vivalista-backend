@@ -1,6 +1,6 @@
 ﻿"use client";
 
-// V5 ETAPA 4.5O â€” PÃGINA PÃšBLICA CASAMENTO COM CAPA CIRCULAR IGUAL AO PREVIEW
+// V5 ETAPA 4.5O — PÁGINA PÚBLICA CASAMENTO COM CAPA CIRCULAR IGUAL AO PREVIEW
 
 import { useState, type CSSProperties } from "react";
 
@@ -261,7 +261,7 @@ function getGiftBadge(gift: any) {
   if (gift.giftType === "FREE_CONTRIBUTION") return "VALOR LIVRE";
   if (gift.isPurchased) return "COMPRADO";
   if (gift.isReserved) return "RESERVADO";
-  return "DISPONÃVEL";
+  return "DISPONÍVEL";
 }
 
 function getGiftBadgeClass(gift: any) {
@@ -320,7 +320,7 @@ function getGiftOverlayCardClass(gift: any) {
 function getGiftStateTitle(gift: any) {
   if (gift.isPurchased) return "Presente comprado";
   if (gift.isReserved) return "Presente reservado";
-  return "Presente disponÃ­vel";
+  return "Presente disponível";
 }
 
 function getGiftStateDescription(gift: any) {
@@ -336,7 +336,7 @@ function getGiftStateDescription(gift: any) {
       : "Este presente já foi reservado para o evento.";
   }
 
-  return "DisponÃ­vel para escolha neste momento.";
+  return "Disponível para escolha neste momento.";
 }
 
 function getGiftActionLabel(gift: any) {
@@ -572,7 +572,7 @@ function resolveHeroLayout(
   if (
     combined.includes("circular") ||
     combined.includes("circulo") ||
-    combined.includes("cÃ­rculo") ||
+    combined.includes("círculo") ||
     combined.includes("foto-circular") ||
     combined.includes("foto circular") ||
     combined.includes("capa-foto-circular") ||
@@ -836,7 +836,7 @@ export default function WeddingPublicPage({
           className="wedding-serif mt-7 max-w-2xl text-3xl italic leading-tight sm:text-4xl"
           style={detailBaseStyle}
         >
-          {event.publicSubtitle || event.welcomeMessage || "O inÃ­cio do nosso para sempre."}
+          {event.publicSubtitle || event.welcomeMessage || "O início do nosso para sempre."}
         </p>
 
         <div className={`mt-8 flex flex-wrap gap-3 ${visual.textSettings.align === "center" ? "justify-center" : visual.textSettings.align === "right" ? "justify-end" : "justify-start"}`}>
@@ -1091,7 +1091,7 @@ export default function WeddingPublicPage({
 
           <nav className="hidden items-center gap-6 md:flex">
             <a href="#inicio" className="text-xs font-bold uppercase tracking-[0.16em] text-[#746053] transition hover:text-[var(--wedding-primary)]">
-              InÃ­cio
+              Início
             </a>
             {showStory ? (
               <a href="#historia" className="text-xs font-bold uppercase tracking-[0.16em] text-[#746053] transition hover:text-[var(--wedding-primary)]">
@@ -1099,7 +1099,7 @@ export default function WeddingPublicPage({
               </a>
             ) : null}
             <a href="#cerimonia" className="text-xs font-bold uppercase tracking-[0.16em] text-[#746053] transition hover:text-[var(--wedding-primary)]">
-              CerimÃ´nia
+              Cerimônia
             </a>
             {showGallery ? (
               <a href="#galeria" className="text-xs font-bold uppercase tracking-[0.16em] text-[#746053] transition hover:text-[var(--wedding-primary)]">
@@ -1110,7 +1110,7 @@ export default function WeddingPublicPage({
               Recepção
             </a>
             <a href="#informacoes" className="text-xs font-bold uppercase tracking-[0.16em] text-[#746053] transition hover:text-[var(--wedding-primary)]">
-              InformaçÃµes
+              Informações
             </a>
             {menuImages.length > 0 ? (
               <a href="#cardapio" className="text-xs font-bold uppercase tracking-[0.16em] text-[#746053] transition hover:text-[var(--wedding-primary)]">
@@ -1194,7 +1194,7 @@ export default function WeddingPublicPage({
             {event.welcomeMessage ||
               event.openingMessage ||
               event.description ||
-              "Criamos este site para compartilhar com vocÃªs os detalhes do nosso casamento. Estamos muito felizes e contamos com a presença de todos no nosso grande dia."}
+              "Criamos este site para compartilhar com vocês os detalhes do nosso casamento. Estamos muito felizes e contamos com a presença de todos no nosso grande dia."}
           </p>
         </div>
       </section>
@@ -1220,7 +1220,7 @@ export default function WeddingPublicPage({
               </h2>
               <p className="mt-7 text-lg leading-9 text-[#746053]">
                 Entre sonhos, escolhas e momentos especiais, este dia marca o começo
-                de uma nova fase. Esta página reÃºne as informaçÃµes mais importantes
+                de uma nova fase. Esta página reúne as informações mais importantes
                 para que todos participem com carinho e tranquilidade.
               </p>
               <p className="wedding-serif mt-8 border-l-2 border-[var(--wedding-primary)] pl-6 text-3xl leading-tight text-[var(--wedding-primary)]">
@@ -1239,16 +1239,16 @@ export default function WeddingPublicPage({
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(13,10,8,.96),rgba(13,10,8,.72),rgba(13,10,8,.46))]" />
 
         <div className="relative z-10 mx-auto max-w-5xl text-center">
-          <p className="wedding-eyebrow text-[var(--wedding-primary)]">CerimÃ´nia & Recepção</p>
+          <p className="wedding-eyebrow text-[var(--wedding-primary)]">Cerimônia & Recepção</p>
           <h2 className="wedding-serif mt-4 text-4xl text-[var(--wedding-paper)] sm:text-5xl">
-            InformaçÃµes do grande dia
+            Informações do grande dia
           </h2>
 
           <div className="mt-12 grid items-center gap-8 md:grid-cols-[1fr_auto_1fr]">
             <div>
-              <div className="text-5xl text-[var(--wedding-primary)]">â™™</div>
+              <div className="text-5xl text-[var(--wedding-primary)]">♙</div>
               <h3 className="mt-5 text-xs font-black uppercase tracking-[0.26em] text-[var(--wedding-primary)]">
-                CerimÃ´nia
+                Cerimônia
               </h3>
               <strong className="wedding-serif mt-3 block text-4xl font-normal text-white">
                 {formatDateShort(event.date)}
@@ -1259,12 +1259,12 @@ export default function WeddingPublicPage({
             <div className="hidden h-36 w-px bg-white/15 md:block" />
 
             <div>
-              <div className="text-5xl text-[var(--wedding-primary)]">â™¢</div>
+              <div className="text-5xl text-[var(--wedding-primary)]">♢</div>
               <h3 className="mt-5 text-xs font-black uppercase tracking-[0.26em] text-[var(--wedding-primary)]">
                 Recepção
               </h3>
               <strong className="wedding-serif mt-3 block text-4xl font-normal text-white">
-                Após a cerimÃ´nia
+                Após a cerimônia
               </strong>
               <p className="mt-3 text-white/65">
                 Celebração, presentes, localização e confirmação em um só lugar.
@@ -1297,13 +1297,13 @@ export default function WeddingPublicPage({
       <section id="informacoes" className="bg-[#f3dfd3] px-4 py-24 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[.82fr_1.18fr]">
           <div className="rounded-[34px] border border-[#e1c7b1] bg-[var(--wedding-paper)]/80 p-8 wedding-card-shadow">
-            <p className="wedding-eyebrow text-[var(--wedding-primary)]">InformaçÃµes</p>
+            <p className="wedding-eyebrow text-[var(--wedding-primary)]">Informações</p>
             <h2 className="wedding-display mt-4 text-5xl leading-[0.95] text-[#2f2721] sm:text-6xl">
-              Tudo pensado para vocÃª chegar tranquilo.
+              Tudo pensado para você chegar tranquilo.
             </h2>
             <p className="mt-6 text-base leading-8 text-[#746053]">
               Confira data, local, rotas, presentes e confirmação nesta página.
-              O objetivo é deixar a experiÃªncia mais clara e mais bonita para os convidados.
+              O objetivo é deixar a experiência mais clara e mais bonita para os convidados.
             </p>
           </div>
 
@@ -1318,7 +1318,7 @@ export default function WeddingPublicPage({
             </div>
             <div className="rounded-[28px] border border-[#e1c7b1] bg-white/70 p-6 wedding-card-shadow">
               <p className="wedding-eyebrow text-[var(--wedding-primary)]">Presentes</p>
-              <p className="mt-4 text-2xl font-semibold text-[#2f2721]">{filteredGifts.length} disponÃ­veis</p>
+              <p className="mt-4 text-2xl font-semibold text-[#2f2721]">{filteredGifts.length} disponíveis</p>
             </div>
             <div className="rounded-[28px] border border-[#e1c7b1] bg-white/70 p-6 wedding-card-shadow">
               <p className="wedding-eyebrow text-[var(--wedding-primary)]">Arrecadado</p>
@@ -1406,7 +1406,7 @@ export default function WeddingPublicPage({
                       {event.location}
                     </h3>
                     <p className="mx-auto mt-4 max-w-md text-[#746053]">
-                      No site final, esta área pode receber mapa incorporado e botÃµes de rota.
+                      No site final, esta área pode receber mapa incorporado e botões de rota.
                     </p>
                   </div>
                 </div>
@@ -1429,7 +1429,7 @@ export default function WeddingPublicPage({
                 Sugestão para convidados de fora.
               </h2>
               <p className="mt-6 text-base leading-8 text-[#746053]">
-                Esta seção pode receber foto de hotel, pousada, quarto, contatos e observaçÃµes para quem vem de longe.
+                Esta seção pode receber foto de hotel, pousada, quarto, contatos e observações para quem vem de longe.
               </p>
             </div>
           </div>
@@ -1446,7 +1446,7 @@ export default function WeddingPublicPage({
               </h2>
               <p className="mt-5 text-base leading-8 text-[#746053]">
                 Sua presença é o nosso maior presente. Se desejar nos presentear,
-                escolha uma das opçÃµes abaixo.
+                escolha uma das opções abaixo.
               </p>
             </div>
 
@@ -1519,7 +1519,7 @@ export default function WeddingPublicPage({
                           {gift.title}
                         </h3>
                         <p className="mt-3 min-h-[70px] text-sm leading-7 text-[#746053]">
-                          {gift.description || "Presente disponÃ­vel na lista do evento."}
+                          {gift.description || "Presente disponível na lista do evento."}
                         </p>
                         <p className="wedding-serif mt-4 text-3xl text-[var(--wedding-primary)]">
                           {gift.giftType === "FREE_CONTRIBUTION"
@@ -1661,7 +1661,7 @@ export default function WeddingPublicPage({
       <footer className="bg-[var(--wedding-dark)] px-4 py-10 text-center text-white/60">
         <p className="wedding-serif text-3xl text-[var(--wedding-primary)]">A / L</p>
         <p className="mt-2 text-sm">
-          {formatDateShort(event.date)} â€¢ {event.location}
+          {formatDateShort(event.date)} • {event.location}
         </p>
       </footer>
 
