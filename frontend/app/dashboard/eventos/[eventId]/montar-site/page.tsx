@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -195,8 +195,8 @@ const QUICK_HERO_LAYOUTS: Array<{ value: HeroLayout; label: string }> = [
   { value: "circular", label: "Circular" },
   { value: "oval", label: "Oval" },
   { value: "foto-moldura", label: "Moldura" },
-  { value: "editorial-cartao", label: "Cartão" },
-  { value: "cinematografica", label: "Cinemática" },
+  { value: "editorial-cartao", label: "CartÃ£o" },
+  { value: "cinematografica", label: "CinemÃ¡tica" },
 ];
 
 const QUICK_FONTS = [
@@ -226,11 +226,11 @@ function formatFileSize(bytes: number): string {
 
 function validateInlineImageFile(file: File, contextLabel: string): string | null {
   if (!file.type.startsWith("image/")) {
-    return `Escolha uma imagem válida para ${contextLabel}.`;
+    return `Escolha uma imagem vÃ¡lida para ${contextLabel}.`;
   }
 
   if (file.size > MAX_INLINE_IMAGE_BYTES) {
-    return `Esta imagem tem ${formatFileSize(file.size)}. Para manter o editor rápido, envie uma imagem de até ${formatFileSize(MAX_INLINE_IMAGE_BYTES)}.`;
+    return `Esta imagem tem ${formatFileSize(file.size)}. Para manter o editor rÃ¡pido, envie uma imagem de atÃ© ${formatFileSize(MAX_INLINE_IMAGE_BYTES)}.`;
   }
 
   return null;
@@ -253,19 +253,19 @@ function getSaveErrorMessage(error: unknown): string {
   const normalized = baseMessage.toLowerCase();
 
   if (typeof navigator !== "undefined" && !navigator.onLine) {
-    return "Você parece estar sem internet. Confira a conexão e tente salvar novamente.";
+    return "VocÃª parece estar sem internet. Confira a conexÃ£o e tente salvar novamente.";
   }
 
   if (normalized.includes("401") || normalized.includes("login") || normalized.includes("token") || normalized.includes("unauthorized")) {
-    return "Sua sessão pode ter expirado. Faça login novamente e tente salvar.";
+    return "Sua sessÃ£o pode ter expirado. FaÃ§a login novamente e tente salvar.";
   }
 
-  if (normalized.includes("validation") || normalized.includes("validar") || normalized.includes("inválid") || normalized.includes("invalid")) {
+  if (normalized.includes("validation") || normalized.includes("validar") || normalized.includes("invÃ¡lid") || normalized.includes("invalid")) {
     return `Algum campo precisa ser corrigido antes de salvar: ${baseMessage}`;
   }
 
   if (normalized.includes("failed to fetch") || normalized.includes("network") || normalized.includes("fetch")) {
-    return "Não consegui falar com o servidor agora. Confira se o backend está ligado e tente novamente.";
+    return "NÃ£o consegui falar com o servidor agora. Confira se o backend estÃ¡ ligado e tente novamente.";
   }
 
   return baseMessage;
@@ -277,24 +277,24 @@ const WEDDING_GIFT_SUGGESTIONS = [
   "Jogo de panelas",
   "Air fryer",
   "Jogo de cama",
-  "Contribuição livre",
+  "ContribuiÃ§Ã£o livre",
 ];
 
 const BABY_SHOWER_GIFT_SUGGESTIONS = [
   "Fraldas",
-  "Lenço umedecido",
+  "LenÃ§o umedecido",
   "Banheira",
   "Mamadeira",
   "Kit higiene",
-  "Contribuição livre",
+  "ContribuiÃ§Ã£o livre",
 ];
 
 const BIRTHDAY_GIFT_SUGGESTIONS = [
-  "Contribuição livre",
+  "ContribuiÃ§Ã£o livre",
   "Cota para presente especial",
   "Vale-presente",
-  "Experiência",
-  "Decoração da festa",
+  "ExperiÃªncia",
+  "DecoraÃ§Ã£o da festa",
 ];
 
 function getBackendUrl(): string {
@@ -346,7 +346,7 @@ function getErrorMessage(error: unknown): string {
     }
   }
 
-  return "Não foi possível carregar a montagem do site.";
+  return "NÃ£o foi possÃ­vel carregar a montagem do site.";
 }
 
 async function readApiError(response: Response): Promise<string> {
@@ -390,7 +390,7 @@ function buildAssetUrl(value?: string | null): string | null {
 
 
 function formatShortDate(date?: string | null): string {
-  if (!date) return "Data não informada";
+  if (!date) return "Data nÃ£o informada";
 
   const parsed = new Date(date);
   if (Number.isNaN(parsed.getTime())) return date;
@@ -476,7 +476,7 @@ function inferEventKind(
   if (
     raw.includes("relig") ||
     raw.includes("batizado") ||
-    raw.includes("comunhão") ||
+    raw.includes("comunhÃ£o") ||
     raw.includes("comunhao") ||
     raw.includes("culto")
   ) {
@@ -500,8 +500,8 @@ function getEventKindLabel(event?: EventData | null): string {
   const kind = inferEventKind(event);
 
   if (kind === "wedding") return "Casamento / Noivado";
-  if (kind === "baby") return "Chá de bebê";
-  if (kind === "birthday") return "Festa / Aniversário";
+  if (kind === "baby") return "ChÃ¡ de bebÃª";
+  if (kind === "birthday") return "Festa / AniversÃ¡rio";
   if (kind === "corporate") return "Evento corporativo";
   if (kind === "graduation") return "Formatura";
   if (kind === "house") return "Casa nova";
@@ -519,10 +519,10 @@ function getGiftSuggestions(event?: EventData | null): string[] {
 
   if (kind === "house") {
     return [
-      "Cota para decoração",
-      "Utensílios de cozinha",
+      "Cota para decoraÃ§Ã£o",
+      "UtensÃ­lios de cozinha",
       "Itens de mesa posta",
-      "Contribuição livre",
+      "ContribuiÃ§Ã£o livre",
       "Vale-presente",
     ];
   }
@@ -530,15 +530,15 @@ function getGiftSuggestions(event?: EventData | null): string[] {
   if (kind === "graduation") {
     return [
       "Cota para viagem",
-      "Contribuição livre",
+      "ContribuiÃ§Ã£o livre",
       "Presente especial",
-      "Experiência",
+      "ExperiÃªncia",
       "Vale-presente",
     ];
   }
 
   return [
-    "Contribuição livre",
+    "ContribuiÃ§Ã£o livre",
     "Cota de presente",
     "Presente especial",
     "Vale-presente",
@@ -648,12 +648,12 @@ function buildEditorDraft(event: EventData | null, visual: VisualSettings | null
     publicSubtitle:
       visual?.publicSubtitle ||
       (event?.date
-        ? `${formatShortDate(event.date)} • ${event?.location || "Local do evento"}`
+        ? `${formatShortDate(event.date)} â€¢ ${event?.location || "Local do evento"}`
         : event?.location || ""),
     welcomeMessage:
       visual?.welcomeMessage ||
       event?.description ||
-      "Estamos muito felizes em compartilhar este momento especial com vocês.",
+      "Estamos muito felizes em compartilhar este momento especial com vocÃªs.",
     heroImageUrl:
       visual?.heroImageUrl || event?.heroImageUrl || event?.coverImage || "",
     primaryColor: visual?.primaryColor || "#43263f",
@@ -770,11 +770,11 @@ function normalizeHeroLayout(value?: string | null): HeroLayout {
 function getHeroLayoutLabel(layout: HeroLayout): string {
   if (layout === "tela-cheia") return "Tela cheia";
   if (layout === "meio-a-meio") return "Meio a meio";
-  if (layout === "cinematografica") return "Cinematográfica";
+  if (layout === "cinematografica") return "CinematogrÃ¡fica";
   if (layout === "circular") return "Foto circular";
   if (layout === "oval") return "Foto oval";
   if (layout === "foto-moldura") return "Moldura editorial";
-  if (layout === "editorial-cartao") return "Cartão sobreposto";
+  if (layout === "editorial-cartao") return "CartÃ£o sobreposto";
   if (layout === "monograma-clean") return "Monograma clean";
   if (layout === "convite-luxo") return "Convite luxuoso";
   return "Editorial central";
@@ -823,26 +823,26 @@ function detectTemplateFromText(event?: EventData | null): string | null {
     ],
     [
       "cha-bebe-delicado",
-      ["cha-bebe-delicado", "bebe delicado", "cha de bebe", "chá de bebê"],
+      ["cha-bebe-delicado", "bebe delicado", "cha de bebe", "chÃ¡ de bebÃª"],
     ],
     [
       "cha-cozinha-elegante",
       [
         "cha-cozinha-elegante",
         "cha de cozinha",
-        "chá de cozinha",
+        "chÃ¡ de cozinha",
         "cha panela",
-        "chá panela",
+        "chÃ¡ panela",
       ],
     ],
     [
       "casamento-romantico",
-      ["casamento-romantico", "casamento romantico", "casamento romântico"],
+      ["casamento-romantico", "casamento romantico", "casamento romÃ¢ntico"],
     ],
     ["casamento-luxo", ["casamento-luxo", "casamento luxo", "black tie"]],
     [
       "casamento-rustico",
-      ["casamento-rustico", "casamento rustico", "casamento rústico"],
+      ["casamento-rustico", "casamento rustico", "casamento rÃºstico"],
     ],
     ["casamento-folhas", ["casamento-folhas", "casamento folhas", "folhas"]],
     ["debutante-luxo", ["debutante-luxo", "debutante luxo", "15 anos"]],
@@ -851,7 +851,7 @@ function detectTemplateFromText(event?: EventData | null): string | null {
       [
         "formatura-classica",
         "formatura classica",
-        "formatura clássica",
+        "formatura clÃ¡ssica",
         "formatura",
       ],
     ],
@@ -885,16 +885,16 @@ function getTemplateLabel(event?: EventData | null): string {
 
   const labels: Record<string, string> = {
     "casamento-serenata": "Casamento Serenata",
-    "casamento-romantico": "Casamento Romântico",
-    "casamento-rustico": "Casamento Rústico",
+    "casamento-romantico": "Casamento RomÃ¢ntico",
+    "casamento-rustico": "Casamento RÃºstico",
     "casamento-folhas": "Casamento Folhas",
     "casamento-luxo": "Casamento Luxo",
-    "cha-bebe-delicado": "Chá de Bebê Delicado",
-    "bebe-delicado": "Chá de Bebê Delicado",
-    "cha-cozinha-elegante": "Chá de Cozinha Elegante",
+    "cha-bebe-delicado": "ChÃ¡ de BebÃª Delicado",
+    "bebe-delicado": "ChÃ¡ de BebÃª Delicado",
+    "cha-cozinha-elegante": "ChÃ¡ de Cozinha Elegante",
     "casa-nova-clean": "Casa Nova Clean",
     "debutante-luxo": "Debutante Luxo",
-    "formatura-classica": "Formatura Clássica",
+    "formatura-classica": "Formatura ClÃ¡ssica",
     "corporativo-premium": "Corporativo Premium",
   };
 
@@ -973,7 +973,7 @@ type TemplateDna = {
 };
 
 const CORPORATE_COVER_IMAGES = [
-  { label: "Auditório", url: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=1600&q=90" },
+  { label: "AuditÃ³rio", url: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=1600&q=90" },
   { label: "Networking", url: "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1600&q=90" },
   { label: "Palestra", url: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=1600&q=90" },
   { label: "Marca", url: "https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1600&q=90" },
@@ -988,7 +988,7 @@ const HOUSE_COVER_IMAGES = [
 
 const BABY_COVER_IMAGES = [
   { label: "Delicado", url: "https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=1600&q=90" },
-  { label: "Família", url: "https://images.unsplash.com/photo-1546015720-b8b30df5aa27?auto=format&fit=crop&w=1600&q=90" },
+  { label: "FamÃ­lia", url: "https://images.unsplash.com/photo-1546015720-b8b30df5aa27?auto=format&fit=crop&w=1600&q=90" },
   { label: "Enxoval", url: "https://images.unsplash.com/photo-1522771930-78848d9293e8?auto=format&fit=crop&w=1600&q=90" },
   { label: "Suave", url: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=1600&q=90" },
 ];
@@ -1003,26 +1003,26 @@ const KITCHEN_COVER_IMAGES = [
 function getDefaultTemplateCopy(): TemplateDna["copy"] {
   return {
     countdownEyebrow: "Contagem regressiva",
-    countdownTitle: "O grande dia está chegando",
+    countdownTitle: "O grande dia estÃ¡ chegando",
     countdownDescription: "A contagem usa a data cadastrada na primeira etapa. Se a data estiver errada, ajuste os dados do evento.",
     storyEyebrow: "Mensagem de abertura",
     storyTitle: "Bem-vindos ao nosso site",
-    storyDescription: "Essa área aparece como apresentação inicial para os convidados.",
+    storyDescription: "Essa Ã¡rea aparece como apresentaÃ§Ã£o inicial para os convidados.",
     storyInnerTitle: "Bem-vindos ao nosso site",
     galleryEyebrow: "Galeria",
-    galleryTitle: "Fotos que contam essa história",
-    galleryDescription: "Aqui aparecem as fotos cadastradas para a galeria. Se ainda não houver fotos, o cliente já sabe onde completar.",
-    locationEyebrow: "Localização",
+    galleryTitle: "Fotos que contam essa histÃ³ria",
+    galleryDescription: "Aqui aparecem as fotos cadastradas para a galeria. Se ainda nÃ£o houver fotos, o cliente jÃ¡ sabe onde completar.",
+    locationEyebrow: "LocalizaÃ§Ã£o",
     locationTitle: "Onde tudo vai acontecer",
-    locationDescription: "O endereço cadastrado alimenta a área de localização e ajuda o convidado a chegar sem confusão.",
+    locationDescription: "O endereÃ§o cadastrado alimenta a Ã¡rea de localizaÃ§Ã£o e ajuda o convidado a chegar sem confusÃ£o.",
     giftsEyebrow: "Presentes",
     giftsTitle: "Lista de presentes",
-    giftsDescription: "A lista pode começar com sugestões do modelo ou ser criada manualmente pelo cliente.",
+    giftsDescription: "A lista pode comeÃ§ar com sugestÃµes do modelo ou ser criada manualmente pelo cliente.",
     rsvpEyebrow: "RSVP",
-    rsvpTitle: "Confirmação de presença",
-    rsvpDescription: "Esta área prepara o convidado para confirmar presença no site público.",
-    rsvpInnerTitle: "Confirme sua presença",
-    rsvpInnerDescription: "Sua presença é muito importante. No site público, o convidado poderá confirmar presença e o anfitrião acompanha tudo pelo painel.",
+    rsvpTitle: "ConfirmaÃ§Ã£o de presenÃ§a",
+    rsvpDescription: "Esta Ã¡rea prepara o convidado para confirmar presenÃ§a no site pÃºblico.",
+    rsvpInnerTitle: "Confirme sua presenÃ§a",
+    rsvpInnerDescription: "Sua presenÃ§a Ã© muito importante. No site pÃºblico, o convidado poderÃ¡ confirmar presenÃ§a e o anfitriÃ£o acompanha tudo pelo painel.",
   };
 }
 
@@ -1047,20 +1047,20 @@ function getTemplateDna(event?: EventData | null): TemplateDna {
       copy: {
         ...baseCopy,
         storyEyebrow: "Sobre o evento",
-        storyTitle: "Uma experiência pensada para sua marca",
-        storyDescription: "Este bloco apresenta objetivo, público e posicionamento do encontro.",
-        storyInnerTitle: "Conteúdo, conexão e presença de marca",
+        storyTitle: "Uma experiÃªncia pensada para sua marca",
+        storyDescription: "Este bloco apresenta objetivo, pÃºblico e posicionamento do encontro.",
+        storyInnerTitle: "ConteÃºdo, conexÃ£o e presenÃ§a de marca",
         locationEyebrow: "Local do encontro",
-        locationTitle: "Onde a experiência acontece",
-        locationDescription: "Mostre o endereço do evento, auditório, hotel ou espaço de convenções.",
+        locationTitle: "Onde a experiÃªncia acontece",
+        locationDescription: "Mostre o endereÃ§o do evento, auditÃ³rio, hotel ou espaÃ§o de convenÃ§Ãµes.",
         giftsEyebrow: "Apoios",
-        giftsTitle: "Inscrições, apoios e cotas",
-        giftsDescription: "Use esta área apenas se o evento tiver cotas, apoios ou inscrições pagas.",
-        rsvpEyebrow: "Inscrição",
-        rsvpTitle: "Confirmação ou inscrição",
-        rsvpDescription: "Área objetiva para o convidado confirmar presença no evento corporativo.",
-        rsvpInnerTitle: "Confirmar participação",
-        rsvpInnerDescription: "No site público, o participante poderá confirmar presença e a organização acompanha tudo pelo painel.",
+        giftsTitle: "InscriÃ§Ãµes, apoios e cotas",
+        giftsDescription: "Use esta Ã¡rea apenas se o evento tiver cotas, apoios ou inscriÃ§Ãµes pagas.",
+        rsvpEyebrow: "InscriÃ§Ã£o",
+        rsvpTitle: "ConfirmaÃ§Ã£o ou inscriÃ§Ã£o",
+        rsvpDescription: "Ãrea objetiva para o convidado confirmar presenÃ§a no evento corporativo.",
+        rsvpInnerTitle: "Confirmar participaÃ§Ã£o",
+        rsvpInnerDescription: "No site pÃºblico, o participante poderÃ¡ confirmar presenÃ§a e a organizaÃ§Ã£o acompanha tudo pelo painel.",
       },
     };
   }
@@ -1082,13 +1082,13 @@ function getTemplateDna(event?: EventData | null): TemplateDna {
       copy: {
         ...baseCopy,
         storyEyebrow: "Boas-vindas",
-        storyTitle: "Um novo endereço para novas memórias",
-        storyDescription: "Mensagem curta para apresentar a casa nova e convidar pessoas próximas.",
-        storyInnerTitle: "As portas estão abertas",
-        locationTitle: "Nosso novo endereço",
-        locationDescription: "Ajude os convidados a encontrarem a casa sem confusão.",
+        storyTitle: "Um novo endereÃ§o para novas memÃ³rias",
+        storyDescription: "Mensagem curta para apresentar a casa nova e convidar pessoas prÃ³ximas.",
+        storyInnerTitle: "As portas estÃ£o abertas",
+        locationTitle: "Nosso novo endereÃ§o",
+        locationDescription: "Ajude os convidados a encontrarem a casa sem confusÃ£o.",
         giftsTitle: "Itens para a casa nova",
-        giftsDescription: "Sugestões úteis para montar a casa com carinho.",
+        giftsDescription: "SugestÃµes Ãºteis para montar a casa com carinho.",
       },
     };
   }
@@ -1109,11 +1109,11 @@ function getTemplateDna(event?: EventData | null): TemplateDna {
       },
       copy: {
         ...baseCopy,
-        storyEyebrow: "Mensagem da família",
+        storyEyebrow: "Mensagem da famÃ­lia",
         storyTitle: "Uma chegada esperada com muito amor",
-        storyDescription: "Apresente o carinho da família e o clima do encontro.",
-        storyInnerTitle: "Esperamos você com carinho",
-        galleryTitle: "Fotos da família e desse momento",
+        storyDescription: "Apresente o carinho da famÃ­lia e o clima do encontro.",
+        storyInnerTitle: "Esperamos vocÃª com carinho",
+        galleryTitle: "Fotos da famÃ­lia e desse momento",
         giftsTitle: "Lista de enxoval",
       },
     };
@@ -1137,10 +1137,10 @@ function getTemplateDna(event?: EventData | null): TemplateDna {
         ...baseCopy,
         storyEyebrow: "Encontro especial",
         storyTitle: "Um encontro para celebrar a nova fase",
-        storyDescription: "Mostre a mensagem principal do chá e o clima do encontro.",
+        storyDescription: "Mostre a mensagem principal do chÃ¡ e o clima do encontro.",
         storyInnerTitle: "Vamos celebrar juntos",
         giftsTitle: "Lista de cozinha",
-        giftsDescription: "Itens práticos e bonitos para começar essa nova fase.",
+        giftsDescription: "Itens prÃ¡ticos e bonitos para comeÃ§ar essa nova fase.",
       },
     };
   }
@@ -1161,7 +1161,7 @@ function getTemplateDna(event?: EventData | null): TemplateDna {
       },
       copy: {
         ...baseCopy,
-        storyTitle: "Cada olhar nos trouxe até aqui",
+        storyTitle: "Cada olhar nos trouxe atÃ© aqui",
         storyInnerTitle: "Bem-vindos ao nosso site",
       },
     };
@@ -1183,7 +1183,7 @@ function getTemplateDna(event?: EventData | null): TemplateDna {
       },
       copy: {
         ...baseCopy,
-        storyTitle: "Uma celebração para ficar na memória",
+        storyTitle: "Uma celebraÃ§Ã£o para ficar na memÃ³ria",
       },
     };
   }
@@ -1261,37 +1261,37 @@ function resolveTemplateHeroLayout(event?: EventData | null, visualHeroLayout?: 
 
 function getVariantLabel(variant: TemplateVariant): string {
   if (variant === "serenata")
-    return "estrutura romântica com pausas cinematográficas";
+    return "estrutura romÃ¢ntica com pausas cinematogrÃ¡ficas";
   if (variant === "corporativo")
     return "estrutura corporativa em capa meio a meio";
   if (variant === "casa-nova") return "estrutura clean de casa nova";
-  if (variant === "baby") return "estrutura delicada de chá de bebê";
-  if (variant === "kitchen") return "estrutura acolhedora de chá de cozinha";
+  if (variant === "baby") return "estrutura delicada de chÃ¡ de bebÃª";
+  if (variant === "kitchen") return "estrutura acolhedora de chÃ¡ de cozinha";
   if (variant === "luxury") return "estrutura editorial de luxo";
   return "estrutura personalizada do VivaLista";
 }
 
 function getTemplateStoryTitle(variant: TemplateVariant): string {
-  if (variant === "serenata") return "Cada olhar nos trouxe até aqui";
+  if (variant === "serenata") return "Cada olhar nos trouxe atÃ© aqui";
   if (variant === "corporativo")
-    return "Uma experiência pensada para sua marca";
-  if (variant === "casa-nova") return "Um novo endereço para novas memórias";
+    return "Uma experiÃªncia pensada para sua marca";
+  if (variant === "casa-nova") return "Um novo endereÃ§o para novas memÃ³rias";
   if (variant === "baby") return "Uma chegada esperada com muito amor";
   if (variant === "kitchen") return "Um encontro para celebrar a nova fase";
-  if (variant === "luxury") return "Uma celebração para ficar na memória";
+  if (variant === "luxury") return "Uma celebraÃ§Ã£o para ficar na memÃ³ria";
   return "Bem-vindos ao nosso site";
 }
 
 function getTemplateGalleryTitle(variant: TemplateVariant): string {
   if (variant === "corporativo") return "Momentos, palestrantes e bastidores";
-  if (variant === "casa-nova") return "Cantinhos, detalhes e inspirações";
-  if (variant === "baby") return "Fotos da família e desse momento";
+  if (variant === "casa-nova") return "Cantinhos, detalhes e inspiraÃ§Ãµes";
+  if (variant === "baby") return "Fotos da famÃ­lia e desse momento";
   if (variant === "kitchen") return "Detalhes do encontro";
-  return "Fotos que contam essa história";
+  return "Fotos que contam essa histÃ³ria";
 }
 
 function getTemplateGiftTitle(variant: TemplateVariant): string {
-  if (variant === "corporativo") return "Inscrições, apoios e cotas";
+  if (variant === "corporativo") return "InscriÃ§Ãµes, apoios e cotas";
   if (variant === "casa-nova") return "Itens para a casa nova";
   if (variant === "baby") return "Lista de enxoval";
   if (variant === "kitchen") return "Lista de cozinha";
@@ -1377,7 +1377,7 @@ function EditButton({
   if (onClick) {
     return (
       <button type="button" onClick={onClick} className="vv-edit-button">
-        <span className="vv-pencil" aria-hidden="true">✎</span>
+        <span className="vv-pencil" aria-hidden="true">âœŽ</span>
         <span>{children}</span>
       </button>
     );
@@ -1385,7 +1385,7 @@ function EditButton({
 
   return (
     <Link href={href || "#editor-rapido"} className="vv-edit-button">
-      <span className="vv-pencil" aria-hidden="true">✎</span>
+      <span className="vv-pencil" aria-hidden="true">âœŽ</span>
       <span>{children}</span>
     </Link>
   );
@@ -1449,8 +1449,8 @@ function SiteSectionCard({
         <div className="vv-section-actions">
           <span
             className={`vv-section-status ${isComplete ? "vv-section-status-complete" : "vv-section-status-pending"}`}
-            title={isComplete ? "Seção preenchida" : "Seção pendente"}
-            aria-label={isComplete ? "Seção preenchida" : "Seção pendente"}
+            title={isComplete ? "SeÃ§Ã£o preenchida" : "SeÃ§Ã£o pendente"}
+            aria-label={isComplete ? "SeÃ§Ã£o preenchida" : "SeÃ§Ã£o pendente"}
           />
           <EditButton href={href} onClick={onEdit}>{buttonLabel}</EditButton>
         </div>
@@ -1473,7 +1473,7 @@ function LoadingState() {
           Carregando seu site quase pronto...
         </h1>
         <p className="mt-3 text-sm leading-6 text-[#7d6e64]">
-          Estamos buscando dados, visual, imagens, presentes e seções do evento.
+          Estamos buscando dados, visual, imagens, presentes e seÃ§Ãµes do evento.
         </p>
       </div>
     </main>
@@ -1499,7 +1499,7 @@ function ErrorState({
           erro ao carregar
         </p>
         <h1 className="mt-3 text-3xl font-light tracking-[-0.04em]">
-          Não conseguimos abrir a montagem do site.
+          NÃ£o conseguimos abrir a montagem do site.
         </h1>
         <p className="mt-3 text-sm leading-6 text-[#7d6e64]">{message}</p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
@@ -1561,11 +1561,11 @@ function TemplateExperienceBlocks({
           />
           <div className="vv-template-moment-card">
             <p className="vv-eyebrow">O casal</p>
-            <h2>Cada olhar nos trouxe até aqui</h2>
+            <h2>Cada olhar nos trouxe atÃ© aqui</h2>
             <p>
-              Este bloco é próprio do modelo Serenata: fotos grandes aparecem
-              durante a rolagem e criam uma sensação de site romântico e
-              cinematográfico.
+              Este bloco Ã© prÃ³prio do modelo Serenata: fotos grandes aparecem
+              durante a rolagem e criam uma sensaÃ§Ã£o de site romÃ¢ntico e
+              cinematogrÃ¡fico.
             </p>
             <EditButton onClick={onOpenStoryPhotoEditor}>
               Trocar foto do momento
@@ -1589,10 +1589,10 @@ function TemplateExperienceBlocks({
           />
           <div className="vv-template-moment-card">
             <p className="vv-eyebrow">Depois do sim</p>
-            <h2>A festa começa quando vocês chegam</h2>
+            <h2>A festa comeÃ§a quando vocÃªs chegam</h2>
             <p>
-              Use esta área para criar aquele respiro visual que aparece nos
-              modelos premium de casamento, sem virar um painel técnico.
+              Use esta Ã¡rea para criar aquele respiro visual que aparece nos
+              modelos premium de casamento, sem virar um painel tÃ©cnico.
             </p>
             <EditButton onClick={() => onOpenEditor("fotos")}>Completar galeria</EditButton>
           </div>
@@ -1606,10 +1606,10 @@ function TemplateExperienceBlocks({
       <section className="vv-corporate-structure">
         <div className="vv-corporate-head">
           <p className="vv-eyebrow">Estrutura do modelo</p>
-          <h2>Programação, palestrantes e presença de marca</h2>
+          <h2>ProgramaÃ§Ã£o, palestrantes e presenÃ§a de marca</h2>
           <p>
-            O modelo Corporativo Premium não usa estrutura romântica. Ele abre
-            com capa meio a meio e organiza o evento como página profissional.
+            O modelo Corporativo Premium nÃ£o usa estrutura romÃ¢ntica. Ele abre
+            com capa meio a meio e organiza o evento como pÃ¡gina profissional.
           </p>
         </div>
 
@@ -1617,17 +1617,17 @@ function TemplateExperienceBlocks({
           <article>
             <span>09:00</span>
             <strong>Credenciamento</strong>
-            <p>Recepção dos participantes e abertura do encontro.</p>
+            <p>RecepÃ§Ã£o dos participantes e abertura do encontro.</p>
           </article>
           <article>
             <span>10:00</span>
             <strong>Palestra principal</strong>
-            <p>Momento de conteúdo, marca e posicionamento.</p>
+            <p>Momento de conteÃºdo, marca e posicionamento.</p>
           </article>
           <article>
             <span>14:00</span>
             <strong>Networking</strong>
-            <p>Espaço para conexões, parceiros e convidados.</p>
+            <p>EspaÃ§o para conexÃµes, parceiros e convidados.</p>
           </article>
         </div>
 
@@ -1642,7 +1642,7 @@ function TemplateExperienceBlocks({
           </div>
           <div>
             <strong>100%</strong>
-            <span>editável</span>
+            <span>editÃ¡vel</span>
           </div>
         </div>
       </section>
@@ -1656,8 +1656,8 @@ function TemplateExperienceBlocks({
           <p className="vv-eyebrow">Casa nova</p>
           <h2>Um site clean para abrir as portas</h2>
           <p>
-            O modelo Casa Nova Clean usa blocos claros, painéis suaves e uma
-            leitura leve. A ideia é parecer convite de open house, não
+            O modelo Casa Nova Clean usa blocos claros, painÃ©is suaves e uma
+            leitura leve. A ideia Ã© parecer convite de open house, nÃ£o
             dashboard.
           </p>
           <EditButton onClick={() => onOpenEditor("fotos")}>
@@ -1679,13 +1679,13 @@ function TemplateExperienceBlocks({
         <p className="vv-eyebrow">Estrutura do modelo</p>
         <h2>
           {variant === "baby"
-            ? "Um carinho para a chegada do bebê"
-            : "Uma nova fase começa pela cozinha"}
+            ? "Um carinho para a chegada do bebÃª"
+            : "Uma nova fase comeÃ§a pela cozinha"}
         </h2>
         <p>
           {variant === "baby"
-            ? "Este modelo valoriza mensagem da família, enxoval, confirmação e fotos delicadas."
-            : "Este modelo valoriza encontro, lista de cozinha, localização e contribuição livre."}
+            ? "Este modelo valoriza mensagem da famÃ­lia, enxoval, confirmaÃ§Ã£o e fotos delicadas."
+            : "Este modelo valoriza encontro, lista de cozinha, localizaÃ§Ã£o e contribuiÃ§Ã£o livre."}
         </p>
       </section>
     );
@@ -1711,9 +1711,9 @@ function getEditorTitle(mode: EditorMode): string {
   if (mode === "capa") return "Capa, cores e letras";
   if (mode === "texto") return "Textos do site";
   if (mode === "dados") return "Dados principais";
-  if (mode === "data") return "Data e horário";
-  if (mode === "local") return "Localização";
-  if (mode === "secoes") return "Seções do site";
+  if (mode === "data") return "Data e horÃ¡rio";
+  if (mode === "local") return "LocalizaÃ§Ã£o";
+  if (mode === "secoes") return "SeÃ§Ãµes do site";
   if (mode === "fotos") return "Fotos e galeria";
   if (mode === "presentes") return "Presentes";
   if (mode === "convidados") return "Convidados e RSVP";
@@ -1721,25 +1721,25 @@ function getEditorTitle(mode: EditorMode): string {
 }
 
 function getEditorIcon(mode: EditorMode): string {
-  if (mode === "capa") return "✦";
-  if (mode === "texto") return "✍";
-  if (mode === "dados") return "☰";
-  if (mode === "data") return "◷";
-  if (mode === "local") return "⌖";
-  if (mode === "secoes") return "☷";
-  if (mode === "fotos") return "▧";
-  if (mode === "presentes") return "◇";
-  if (mode === "convidados") return "☑";
-  return "✎";
+  if (mode === "capa") return "âœ¦";
+  if (mode === "texto") return "âœ";
+  if (mode === "dados") return "â˜°";
+  if (mode === "data") return "â—·";
+  if (mode === "local") return "âŒ–";
+  if (mode === "secoes") return "â˜·";
+  if (mode === "fotos") return "â–§";
+  if (mode === "presentes") return "â—‡";
+  if (mode === "convidados") return "â˜‘";
+  return "âœŽ";
 }
 
 function getEditorHint(mode: EditorMode): string {
   if (mode === "capa") return "Foto, formato, cores e letras.";
-  if (mode === "texto") return "Título, subtítulo e mensagem.";
+  if (mode === "texto") return "TÃ­tulo, subtÃ­tulo e mensagem.";
   if (mode === "dados") return "Dados principais do evento.";
-  if (mode === "data") return "Data e horário.";
+  if (mode === "data") return "Data e horÃ¡rio.";
   if (mode === "local") return "Local do evento.";
-  if (mode === "secoes") return "Seções do site.";
+  if (mode === "secoes") return "SeÃ§Ãµes do site.";
   if (mode === "fotos") return "Fotos.";
   if (mode === "presentes") return "Presentes.";
   if (mode === "convidados") return "Convidados e RSVP.";
@@ -1796,6 +1796,12 @@ export default function MontarSitePage() {
     : "/dashboard/eventos";
   const galleryPath = event?.id
     ? `/dashboard/eventos/${event.id}/galeria`
+    : "/dashboard/eventos";
+  const giftsPath = event?.id
+    ? `/dashboard/eventos/${event.id}/presentes`
+    : "/dashboard/eventos";
+  const guestsPath = event?.id
+    ? `/dashboard/eventos/${event.id}/convidados`
     : "/dashboard/eventos";
   const publicPath = event?.slug ? `/e/${event.slug}` : null;
 
@@ -1864,12 +1870,12 @@ export default function MontarSitePage() {
     previewDraft?.publicSubtitle ||
     visual?.publicSubtitle ||
     event?.description ||
-    "Uma celebração especial criada com carinho no VivaLista.";
+    "Uma celebraÃ§Ã£o especial criada com carinho no VivaLista.";
   const welcomeMessage =
     previewDraft?.welcomeMessage ||
     visual?.welcomeMessage ||
     event?.description ||
-    "Estamos muito felizes em compartilhar este momento especial com vocês. Aqui você encontra as principais informações do evento, fotos, presentes e confirmação de presença.";
+    "Estamos muito felizes em compartilhar este momento especial com vocÃªs. Aqui vocÃª encontra as principais informaÃ§Ãµes do evento, fotos, presentes e confirmaÃ§Ã£o de presenÃ§a.";
   const primaryColor = previewDraft?.primaryColor || visual?.primaryColor || "#43263f";
   const secondaryColor = previewDraft?.secondaryColor || visual?.secondaryColor || "#c4a262";
   const typography = parseTypographyPayload(
@@ -1925,39 +1931,39 @@ export default function MontarSitePage() {
   const editorDynamicHint = useMemo(() => {
     if (editorMode === "fotos" && photoEditorTarget === "location") {
       return localLocationPreview || locationMedia?.imageUrl
-        ? "Esta foto alimenta o bloco de localização. Troque abaixo e veja no site ao lado."
-        : "O bloco de localização ainda usa uma imagem padrão. Escolha uma foto para personalizar.";
+        ? "Esta foto alimenta o bloco de localizaÃ§Ã£o. Troque abaixo e veja no site ao lado."
+        : "O bloco de localizaÃ§Ã£o ainda usa uma imagem padrÃ£o. Escolha uma foto para personalizar.";
     }
 
     if (editorMode === "fotos" && photoEditorTarget === "story") {
       return localStoryPreview || storyMedia?.imageUrl
         ? "Esta foto alimenta o bloco de mensagem. Troque abaixo e veja no site ao lado."
-        : "Este bloco ainda está usando uma foto padrão. Escolha uma foto para ver ao vivo.";
+        : "Este bloco ainda estÃ¡ usando uma foto padrÃ£o. Escolha uma foto para ver ao vivo.";
     }
 
     if (editorMode === "fotos") {
       const totalPhotos = localGalleryPreviews.length + galleryMedia.length;
       return totalPhotos > 0
-        ? `Você tem ${totalPhotos} foto${totalPhotos === 1 ? "" : "s"}. Adicione mais ou remova as que não quiser.`
-        : "Ainda não há fotos. Escolha abaixo para ver ao vivo.";
+        ? `VocÃª tem ${totalPhotos} foto${totalPhotos === 1 ? "" : "s"}. Adicione mais ou remova as que nÃ£o quiser.`
+        : "Ainda nÃ£o hÃ¡ fotos. Escolha abaixo para ver ao vivo.";
     }
 
     if (editorMode === "capa") {
       return selectedHeroFile || localHeroPreview || editorDraft.heroImageUrl
-        ? "A capa já tem imagem. Troque o modelo, ajuste as cores ou escolha outra foto."
-        : "Escolha uma capa rápida ou envie uma foto própria para ver ao vivo.";
+        ? "A capa jÃ¡ tem imagem. Troque o modelo, ajuste as cores ou escolha outra foto."
+        : "Escolha uma capa rÃ¡pida ou envie uma foto prÃ³pria para ver ao vivo.";
     }
 
     if (editorMode === "data") {
       return editorDraft.eventDate
-        ? "A contagem usa esta data. Ao salvar, ela também atualiza os dados do evento."
-        : "Informe data e horário para ativar a contagem regressiva.";
+        ? "A contagem usa esta data. Ao salvar, ela tambÃ©m atualiza os dados do evento."
+        : "Informe data e horÃ¡rio para ativar a contagem regressiva.";
     }
 
     if (editorMode === "local") {
       return editorDraft.eventLocation.trim()
-        ? "O mapa já usa este local na prévia ao lado."
-        : "Informe o local para liberar o mapa e o bloco de endereço.";
+        ? "O mapa jÃ¡ usa este local na prÃ©via ao lado."
+        : "Informe o local para liberar o mapa e o bloco de endereÃ§o.";
     }
 
     return getEditorHint(editorMode);
@@ -2008,7 +2014,7 @@ export default function MontarSitePage() {
 
   const loadPageData = useCallback(async () => {
     if (!eventId) {
-      setErrorMessage("ID do evento não encontrado na rota.");
+      setErrorMessage("ID do evento nÃ£o encontrado na rota.");
       setLoading(false);
       return;
     }
@@ -2035,15 +2041,15 @@ export default function MontarSitePage() {
 
       if (!eventResponse.ok) {
         if (eventResponse.status === 401) {
-          throw new Error("Faça login novamente para acessar este evento.");
+          throw new Error("FaÃ§a login novamente para acessar este evento.");
         }
 
         if (eventResponse.status === 403) {
-          throw new Error("Você não tem permissão para acessar este evento.");
+          throw new Error("VocÃª nÃ£o tem permissÃ£o para acessar este evento.");
         }
 
         if (eventResponse.status === 404) {
-          throw new Error("Evento não encontrado no backend para este ID.");
+          throw new Error("Evento nÃ£o encontrado no backend para este ID.");
         }
 
         throw new Error(await readApiError(eventResponse));
@@ -2169,7 +2175,7 @@ export default function MontarSitePage() {
         setLocalHeroPreview(savedHero);
       }
     } catch {
-      // A prévia local é apenas apoio visual. Se falhar, seguimos com a imagem salva no backend.
+      // A prÃ©via local Ã© apenas apoio visual. Se falhar, seguimos com a imagem salva no backend.
     }
   }, [eventId]);
 
@@ -2182,7 +2188,7 @@ export default function MontarSitePage() {
         setLocalStoryPreview(savedStory);
       }
     } catch {
-      // A prévia local do bloco de mensagem é apenas apoio visual.
+      // A prÃ©via local do bloco de mensagem Ã© apenas apoio visual.
     }
   }, [eventId]);
 
@@ -2195,7 +2201,7 @@ export default function MontarSitePage() {
         setLocalLocationPreview(savedLocation);
       }
     } catch {
-      // A prévia local do bloco de localização é apenas apoio visual.
+      // A prÃ©via local do bloco de localizaÃ§Ã£o Ã© apenas apoio visual.
     }
   }, [eventId]);
 
@@ -2212,7 +2218,7 @@ export default function MontarSitePage() {
     } catch (error) {
       setInlineMessage(
         isQuotaExceededError(error)
-          ? "A imagem apareceu na prévia, mas é pesada demais para ficar guardada no navegador. Salve ou escolha uma imagem menor."
+          ? "A imagem apareceu na prÃ©via, mas Ã© pesada demais para ficar guardada no navegador. Salve ou escolha uma imagem menor."
           : fallbackMessage,
       );
       return false;
@@ -2336,7 +2342,7 @@ export default function MontarSitePage() {
         const previewStored = savePreviewInLocalStorage(
           `vivalista_hero_preview_${eventId}`,
           preview,
-          "A foto apareceu na prévia, mas não consegui guardar esta imagem no navegador.",
+          "A foto apareceu na prÃ©via, mas nÃ£o consegui guardar esta imagem no navegador.",
         );
 
         if (previewStored) {
@@ -2346,7 +2352,7 @@ export default function MontarSitePage() {
     };
 
     reader.onerror = () => {
-      setInlineMessage("Não foi possível ler a imagem escolhida.");
+      setInlineMessage("NÃ£o foi possÃ­vel ler a imagem escolhida.");
     };
 
     reader.readAsDataURL(file);
@@ -2377,7 +2383,7 @@ export default function MontarSitePage() {
         const previewStored = savePreviewInLocalStorage(
           `vivalista_story_preview_${eventId}`,
           preview,
-          "A foto apareceu na prévia, mas não consegui guardar esta imagem no navegador.",
+          "A foto apareceu na prÃ©via, mas nÃ£o consegui guardar esta imagem no navegador.",
         );
 
         if (previewStored) {
@@ -2387,7 +2393,7 @@ export default function MontarSitePage() {
     };
 
     reader.onerror = () => {
-      setInlineMessage("Não foi possível ler a imagem escolhida.");
+      setInlineMessage("NÃ£o foi possÃ­vel ler a imagem escolhida.");
     };
 
     reader.readAsDataURL(file);
@@ -2398,7 +2404,7 @@ export default function MontarSitePage() {
 
     if (!file) return;
 
-    const validationMessage = validateInlineImageFile(file, "o bloco de localização");
+    const validationMessage = validateInlineImageFile(file, "o bloco de localizaÃ§Ã£o");
     if (validationMessage) {
       setInlineMessage(validationMessage);
       eventChange.target.value = "";
@@ -2418,7 +2424,7 @@ export default function MontarSitePage() {
         const previewStored = savePreviewInLocalStorage(
           `vivalista_location_preview_${eventId}`,
           preview,
-          "A foto apareceu na prévia, mas não consegui guardar esta imagem no navegador.",
+          "A foto apareceu na prÃ©via, mas nÃ£o consegui guardar esta imagem no navegador.",
         );
 
         if (previewStored) {
@@ -2428,7 +2434,7 @@ export default function MontarSitePage() {
     };
 
     reader.onerror = () => {
-      setInlineMessage("Não foi possível ler a imagem escolhida.");
+      setInlineMessage("NÃ£o foi possÃ­vel ler a imagem escolhida.");
     };
 
     reader.readAsDataURL(file);
@@ -2449,7 +2455,7 @@ export default function MontarSitePage() {
     const imageFiles = files.filter((file) => file.type.startsWith("image/"));
 
     if (imageFiles.length === 0) {
-      setInlineMessage("Escolha uma ou mais imagens válidas para a galeria.");
+      setInlineMessage("Escolha uma ou mais imagens vÃ¡lidas para a galeria.");
       return;
     }
 
@@ -2460,9 +2466,9 @@ export default function MontarSitePage() {
             const reader = new FileReader();
             reader.onload = () => {
               if (typeof reader.result === "string") resolve(reader.result);
-              else reject(new Error("Imagem inválida."));
+              else reject(new Error("Imagem invÃ¡lida."));
             };
-            reader.onerror = () => reject(new Error("Não foi possível ler uma imagem."));
+            reader.onerror = () => reject(new Error("NÃ£o foi possÃ­vel ler uma imagem."));
             reader.readAsDataURL(file);
           }),
       ),
@@ -2480,8 +2486,8 @@ export default function MontarSitePage() {
             } catch (error) {
               setInlineMessage(
                 isQuotaExceededError(error)
-                  ? "As fotos apareceram na prévia, mas são pesadas demais para guardar no navegador. Salve ou use imagens menores."
-                  : "As fotos apareceram na prévia, mas não consegui guardar esta seleção no navegador.",
+                  ? "As fotos apareceram na prÃ©via, mas sÃ£o pesadas demais para guardar no navegador. Salve ou use imagens menores."
+                  : "As fotos apareceram na prÃ©via, mas nÃ£o consegui guardar esta seleÃ§Ã£o no navegador.",
               );
             }
           }
@@ -2495,7 +2501,7 @@ export default function MontarSitePage() {
         setInlineMessage("Fotos escolhidas.");
       })
       .catch(() => {
-        setInlineMessage("Não foi possível carregar uma das imagens da galeria.");
+        setInlineMessage("NÃ£o foi possÃ­vel carregar uma das imagens da galeria.");
       });
   }
 
@@ -2507,7 +2513,7 @@ export default function MontarSitePage() {
       window.localStorage.removeItem(`vivalista_gallery_preview_${eventId}`);
     }
 
-    setInlineMessage("Prévia local da galeria removida.");
+    setInlineMessage("PrÃ©via local da galeria removida.");
   }
 
   function removeInlineGalleryPreview(indexToRemove: number) {
@@ -2529,7 +2535,7 @@ export default function MontarSitePage() {
       return next;
     });
 
-    setInlineMessage("Foto removida da prévia da galeria.");
+    setInlineMessage("Foto removida da prÃ©via da galeria.");
   }
 
   function extractUploadedImageUrl(data: unknown): string | null {
@@ -2592,7 +2598,7 @@ export default function MontarSitePage() {
         if (mediaUrl) return mediaUrl;
       }
     } catch {
-      // Se a rota de mídia ainda não estiver pronta em algum ambiente, tentamos a rota antiga de capa.
+      // Se a rota de mÃ­dia ainda nÃ£o estiver pronta em algum ambiente, tentamos a rota antiga de capa.
     }
 
     try {
@@ -2662,8 +2668,8 @@ export default function MontarSitePage() {
     formData.append("file", selectedLocationFile as File);
     formData.append("sectionKey", "LOCATION");
     formData.append("mediaRole", "location");
-    formData.append("title", "Foto do bloco de localização");
-    formData.append("description", "Imagem do bloco de localização editada na Etapa 3");
+    formData.append("title", "Foto do bloco de localizaÃ§Ã£o");
+    formData.append("description", "Imagem do bloco de localizaÃ§Ã£o editada na Etapa 3");
     formData.append("isActive", "true");
     formData.append("isPrimary", "true");
 
@@ -2693,9 +2699,66 @@ export default function MontarSitePage() {
     }
   }
 
+
+  async function publishAndOpenPublicSite() {
+    if (!eventId || !event?.slug) {
+      setErrorMessage("Evento não encontrado para publicar.");
+      return;
+    }
+
+    try {
+      setErrorMessage(null);
+      setInlineMessage("Publicando site...");
+
+      const token = getAuthToken();
+
+      const response = await fetch(`${backendUrl}/events/${eventId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          status: "PUBLISHED",
+        }),
+      });
+
+      if (!response.ok) {
+        let apiError: { message?: string } | null = null;
+
+        try {
+          apiError = (await response.json()) as { message?: string };
+        } catch {
+          apiError = null;
+        }
+
+        throw new Error(
+          apiError?.message || "Não foi possível publicar o site agora."
+        );
+      }
+
+      setEvent((current) =>
+        current
+          ? {
+              ...current,
+              status: "PUBLISHED",
+            }
+          : current
+      );
+
+      window.location.href = `/e/${event.slug}`;
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível publicar o site agora."
+      );
+    }
+  }
+
   async function saveInlineEditor() {
     if (!eventId || !event) {
-      setInlineMessage("Evento não encontrado para salvar.");
+      setInlineMessage("Evento nÃ£o encontrado para salvar.");
       return;
     }
 
@@ -2750,7 +2813,7 @@ export default function MontarSitePage() {
 
         if (Object.keys(eventPayload).length > 0) {
           let eventSaved = false;
-          let lastEventError = "Não foi possível salvar os dados do evento.";
+          let lastEventError = "NÃ£o foi possÃ­vel salvar os dados do evento.";
 
           for (const method of ["PATCH", "PUT"] as const) {
             const eventResponse = await fetch(`${backendUrl}/events/${eventId}`, {
@@ -2856,7 +2919,7 @@ export default function MontarSitePage() {
       if (uploadedLocationUrl) {
         setLocalLocationPreview(null);
         setSelectedLocationFile(null);
-        upsertLocalSectionMedia("LOCATION", uploadedLocationUrl, "Foto do bloco de localização");
+        upsertLocalSectionMedia("LOCATION", uploadedLocationUrl, "Foto do bloco de localizaÃ§Ã£o");
         if (typeof window !== "undefined") {
           window.localStorage.removeItem(`vivalista_location_preview_${eventId}`);
         }
@@ -2865,11 +2928,11 @@ export default function MontarSitePage() {
       setSaveConfirmed(true);
 
       const warningMessage = heroUploadFailed
-        ? "A alteração foi salva, mas a foto da capa ficou apenas como prévia local porque o backend ainda não confirmou o envio da imagem."
+        ? "A alteraÃ§Ã£o foi salva, mas a foto da capa ficou apenas como prÃ©via local porque o backend ainda nÃ£o confirmou o envio da imagem."
         : storyUploadFailed
-          ? "A alteração foi salva, mas a foto do bloco ficou apenas como prévia local porque o backend ainda não confirmou o envio da imagem."
+          ? "A alteraÃ§Ã£o foi salva, mas a foto do bloco ficou apenas como prÃ©via local porque o backend ainda nÃ£o confirmou o envio da imagem."
           : locationUploadFailed
-            ? "A alteração foi salva, mas a foto da localização ficou apenas como prévia local porque o backend ainda não confirmou o envio da imagem."
+            ? "A alteraÃ§Ã£o foi salva, mas a foto da localizaÃ§Ã£o ficou apenas como prÃ©via local porque o backend ainda nÃ£o confirmou o envio da imagem."
             : null;
 
       setInlineMessage(warningMessage);
@@ -3775,7 +3838,7 @@ export default function MontarSitePage() {
           justify-content: flex-end;
         }
 
-        /* ===== HERÓI RESPEITANDO A ESCOLHA DA ETAPA 2 ===== */
+        /* ===== HERÃ“I RESPEITANDO A ESCOLHA DA ETAPA 2 ===== */
         .vv-hero-shape-photo {
           display: none;
           position: relative;
@@ -4963,7 +5026,7 @@ export default function MontarSitePage() {
         }
 
 
-        /* ===== EDITOR LATERAL PREMIUM — INSPIRAÇÃO CASAR.COM ===== */
+        /* ===== EDITOR LATERAL PREMIUM â€” INSPIRAÃ‡ÃƒO CASAR.COM ===== */
         .vv-editor-bar,
         .vv-hero,
         .vv-template-body,
@@ -5052,7 +5115,7 @@ export default function MontarSitePage() {
         }
 
         .vv-editor-toggle::before {
-          content: "×";
+          content: "Ã—";
           font-size: 25px;
           line-height: 1;
           font-weight: 300;
@@ -5334,7 +5397,7 @@ export default function MontarSitePage() {
 
 
 
-        /* ===== CUSTOMIZADOR LIMPO PREMIUM — PAINEL FINO + SITE COM PROTAGONISMO ===== */
+        /* ===== CUSTOMIZADOR LIMPO PREMIUM â€” PAINEL FINO + SITE COM PROTAGONISMO ===== */
         .vv-progress-wrap {
           display: none !important;
         }
@@ -5407,7 +5470,7 @@ export default function MontarSitePage() {
         }
 
         .vv-editor-tabs button::after {
-          content: "›";
+          content: "â€º";
           position: absolute;
           right: 18px;
           top: 50%;
@@ -5870,7 +5933,7 @@ export default function MontarSitePage() {
         }
 
 
-        /* ===== AJUSTE: EDIÇÃO LIMPA, BOTÕES VISÍVEIS E UPLOAD CLICÁVEL ===== */
+        /* ===== AJUSTE: EDIÃ‡ÃƒO LIMPA, BOTÃ•ES VISÃVEIS E UPLOAD CLICÃVEL ===== */
         .vv-hero-has-live-editor {
           padding-bottom: 0 !important;
         }
@@ -5939,7 +6002,7 @@ export default function MontarSitePage() {
 
         .vv-edit-button::before,
         .vv-top-action::before {
-          content: "✎";
+          content: "âœŽ";
           margin-right: 7px;
           font-weight: 900;
         }
@@ -6010,7 +6073,7 @@ export default function MontarSitePage() {
 
 
 
-        /* ===== AJUSTE FINAL: EDITOR POR SEÇÃO, SEM BOTÃO FIXO ===== */
+        /* ===== AJUSTE FINAL: EDITOR POR SEÃ‡ÃƒO, SEM BOTÃƒO FIXO ===== */
         .vv-editor-tabs {
           display: none !important;
         }
@@ -6222,7 +6285,7 @@ export default function MontarSitePage() {
 
 
         /* ============================================================
-           V10 — AJUSTE CIRÚRGICO SOBRE O ARQUIVO REAL PRESERVADO
+           V10 â€” AJUSTE CIRÃšRGICO SOBRE O ARQUIVO REAL PRESERVADO
            Objetivo: manter o arquivo grande original, remover conflito visual,
            deixar o editor lateral limpo e impedir bolas/decorativos gigantes.
         ============================================================ */
@@ -6621,7 +6684,7 @@ export default function MontarSitePage() {
         }
 
 
-        /* ===== V11 — REFINO 9/10 DO EDITOR LATERAL ===== */
+        /* ===== V11 â€” REFINO 9/10 DO EDITOR LATERAL ===== */
         .vv-section-card {
           outline: 2px solid transparent !important;
           outline-offset: 0 !important;
@@ -6720,7 +6783,7 @@ export default function MontarSitePage() {
         }
 
         .vv-url-details[open] summary::after {
-          content: "−" !important;
+          content: "âˆ’" !important;
         }
 
         .vv-url-details input {
@@ -6852,7 +6915,7 @@ export default function MontarSitePage() {
         }
 
 
-        /* ===== V13: LIMPEZA TÉCNICA SEGURA ===== */
+        /* ===== V13: LIMPEZA TÃ‰CNICA SEGURA ===== */
         .vv-field-help {
           margin: 4px 0 0 !important;
           color: rgba(67, 38, 63, 0.58) !important;
@@ -6880,7 +6943,7 @@ export default function MontarSitePage() {
           padding-top: 18px !important;
         }
 
-        /* ===== V14: ESTABILIDADE DE UPLOAD E FOTO DA LOCALIZAÇÃO ===== */
+        /* ===== V14: ESTABILIDADE DE UPLOAD E FOTO DA LOCALIZAÃ‡ÃƒO ===== */
         .vv-location-edit-row {
           margin-top: 14px !important;
         }
@@ -6929,7 +6992,7 @@ export default function MontarSitePage() {
 
 
 
-        /* V18 — editor mais direto: sem capas rápidas e menos explicação */
+        /* V18 â€” editor mais direto: sem capas rÃ¡pidas e menos explicaÃ§Ã£o */
         .vv-cover-options {
           display: none !important;
         }
@@ -6970,21 +7033,21 @@ export default function MontarSitePage() {
           </Link>
 
           <div className="vv-stage">
-            <strong>Etapa 3 — seu site quase pronto</strong>
+            <strong>Etapa 3 â€” seu site quase pronto</strong>
             <span>
-              {completionPercent}% completo • Modelo {templateLabel} • {getVariantLabel(templateVariant)} • estrutura {templateDna.key} • capa{" "}
-              {heroLayoutLabel} • letra {getTypographyLabel(typography.fontStyle)}.
+              {completionPercent}% completo â€¢ Modelo {templateLabel} â€¢ {getVariantLabel(templateVariant)} â€¢ estrutura {templateDna.key} â€¢ capa{" "}
+              {heroLayoutLabel} â€¢ letra {getTypographyLabel(typography.fontStyle)}.
             </span>
           </div>
 
-          <nav className="vv-actions" aria-label="Ações de edição do site">
+          <nav className="vv-actions" aria-label="AÃ§Ãµes de ediÃ§Ã£o do site">
             <TopAction href={panelPath}>Painel</TopAction>
             <TopAction onClick={() => openInlineEditor("capa")}>Visual</TopAction>
             {showGallery ? <TopAction onClick={openGalleryEditor}>Fotos</TopAction> : null}
-            {showGifts ? <TopAction onClick={() => openInlineEditor("presentes")}>Presentes</TopAction> : null}
+            {showGifts ? <TopAction onClick={() => { window.location.href = giftsPath; }}>Presentes</TopAction> : null}
             {publicPath ? (
-              <TopAction href={publicPath} target="_blank" primary>
-                Ver público
+              <TopAction onClick={publishAndOpenPublicSite} primary>
+                Publicar e ver site
               </TopAction>
             ) : null}
           </nav>
@@ -6997,7 +7060,7 @@ export default function MontarSitePage() {
           className="vv-click-edit-helper"
           onClick={() => openInlineEditor("capa")}
         >
-          ✎ Clique em editar em qualquer bloco para modificar somente aquela seção
+          âœŽ Clique em editar em qualquer bloco para modificar somente aquela seÃ§Ã£o
         </button>
       ) : null}
 
@@ -7017,13 +7080,13 @@ export default function MontarSitePage() {
           onClick={() => openInlineEditor("capa")}
           aria-label="Editar capa"
         >
-          ✎ Editar capa
+          âœŽ Editar capa
         </button>
 
         <div className="vv-hero-content">
           <div className="vv-hero-copy">
             <span className="vv-pill">
-              {getEventKindLabel(event)} • {templateLabel}
+              {getEventKindLabel(event)} â€¢ {templateLabel}
             </span>
 
             {heroLayout === "monograma-clean" ? (
@@ -7046,10 +7109,10 @@ export default function MontarSitePage() {
 
             <div className="vv-hero-meta">
               <span className="vv-meta-chip">
-                📅 {formatShortDate(previewDateIso || event?.date)}
+                ðŸ“… {formatShortDate(previewDateIso || event?.date)}
               </span>
               <span className="vv-meta-chip">
-                📍 {previewLocation || "Local ainda não informado"}
+                ðŸ“ {previewLocation || "Local ainda nÃ£o informado"}
               </span>
               <span className="vv-meta-chip">{statusLabel(event?.status)}</span>
             </div>
@@ -7061,9 +7124,9 @@ export default function MontarSitePage() {
 
           <aside className="vv-hero-panel">
             <div className="vv-hero-panel-inner">
-              <p>Modo edição</p>
+              <p>Modo ediÃ§Ã£o</p>
               <strong>{heroLayoutLabel} + {getTypographyLabel(typography.fontStyle)}.</strong>
-              <p>Prévia do site em edição.</p>
+              <p>PrÃ©via do site em ediÃ§Ã£o.</p>
               <div className="vv-edit-row">
                 <EditButton onClick={() => openInlineEditor("capa")}>Editar capa e cores</EditButton>
                 <EditButton onClick={() => openInlineEditor("dados")}>Editar dados</EditButton>
@@ -7082,7 +7145,7 @@ export default function MontarSitePage() {
           <div className="vv-editor-head-title">
             <span className="vv-editor-head-icon" aria-hidden="true">{getEditorIcon(editorMode)}</span>
             <div>
-              <p className="vv-eyebrow">Customização do site</p>
+              <p className="vv-eyebrow">CustomizaÃ§Ã£o do site</p>
               <h2>{getEditorTitle(editorMode)}</h2>
             </div>
           </div>
@@ -7096,7 +7159,7 @@ export default function MontarSitePage() {
               if (!editorOpen) setEditorDraft(baseEditorDraft);
             }}
           >
-            {editorOpen ? "Fechar edição" : "Abrir editor"}
+            {editorOpen ? "Fechar ediÃ§Ã£o" : "Abrir editor"}
           </button>
         </div>
 
@@ -7113,7 +7176,7 @@ export default function MontarSitePage() {
                         accept="image/*"
                         onChange={handleInlineHeroFileChange}
                       />
-                      <span>📷 Escolher foto</span>
+                      <span>ðŸ“· Escolher foto</span>
                     </label>
 
                     <label>Modelo de capa</label>
@@ -7183,7 +7246,7 @@ export default function MontarSitePage() {
               {editorMode === "texto" ? (
                 <div className="vv-editor-grid">
                   <div className="vv-editor-fields">
-                    <label>Título público</label>
+                    <label>TÃ­tulo pÃºblico</label>
                     <input
                       value={editorDraft.publicTitle}
                       onChange={(eventChange) =>
@@ -7191,7 +7254,7 @@ export default function MontarSitePage() {
                       }
                     />
 
-                    <label>Subtítulo</label>
+                    <label>SubtÃ­tulo</label>
                     <input
                       value={editorDraft.publicSubtitle}
                       onChange={(eventChange) =>
@@ -7227,7 +7290,7 @@ export default function MontarSitePage() {
 
               {editorMode === "data" ? (
                 <div className="vv-editor-fields vv-editor-fields-single">
-                  <label>Data e horário</label>
+                  <label>Data e horÃ¡rio</label>
                   <input
                     type="datetime-local"
                     value={editorDraft.eventDate}
@@ -7247,7 +7310,7 @@ export default function MontarSitePage() {
                     onChange={(eventChange) =>
                       updateEditorDraft("eventLocation", eventChange.target.value)
                     }
-                    placeholder="Ex.: Espaço Villa Jardim, São Paulo"
+                    placeholder="Ex.: EspaÃ§o Villa Jardim, SÃ£o Paulo"
                   />
 
                 </div>
@@ -7255,14 +7318,14 @@ export default function MontarSitePage() {
 
               {editorMode === "secoes" ? (
                 <div className="vv-editor-fields vv-editor-fields-single">
-                  <label>Seções ativas</label>
+                  <label>SeÃ§Ãµes ativas</label>
                   <div className="vv-switch-list">
                     {(
                       [
                         ["showCountdown", "Contagem"],
                         ["showStory", "Mensagem"],
                         ["showGallery", "Galeria"],
-                        ["showLocation", "Localização"],
+                        ["showLocation", "LocalizaÃ§Ã£o"],
                         ["showGifts", "Presentes"],
                         ["showRsvp", "RSVP"],
                       ] as Array<[
@@ -7308,12 +7371,12 @@ export default function MontarSitePage() {
                           accept="image/*"
                           onChange={handleInlineStoryFileChange}
                         />
-                        <span>🖼️ Trocar foto do bloco</span>
+                        <span>ðŸ–¼ï¸ Trocar foto do bloco</span>
                       </label>
 
                       {localStoryPreview ? (
                         <div className="vv-panel-story-preview" aria-label="Foto escolhida para este bloco">
-                          <img src={localStoryPreview} alt="Prévia da foto do bloco" />
+                          <img src={localStoryPreview} alt="PrÃ©via da foto do bloco" />
                           <button
                             type="button"
                             onClick={() => {
@@ -7334,7 +7397,7 @@ export default function MontarSitePage() {
                     </>
                   ) : photoEditorTarget === "location" ? (
                     <>
-                      <label>Foto da localização</label>
+                      <label>Foto da localizaÃ§Ã£o</label>
                       <label className="vv-file-card vv-file-card-compact" htmlFor="inlineLocationFilePanel">
                         <input
                           id="inlineLocationFilePanel"
@@ -7342,12 +7405,12 @@ export default function MontarSitePage() {
                           accept="image/*"
                           onChange={handleInlineLocationFileChange}
                         />
-                        <span>📍 Trocar foto do local</span>
+                        <span>ðŸ“ Trocar foto do local</span>
                       </label>
 
                       {localLocationPreview ? (
-                        <div className="vv-panel-story-preview" aria-label="Foto escolhida para localização">
-                          <img src={localLocationPreview} alt="Prévia da foto da localização" />
+                        <div className="vv-panel-story-preview" aria-label="Foto escolhida para localizaÃ§Ã£o">
+                          <img src={localLocationPreview} alt="PrÃ©via da foto da localizaÃ§Ã£o" />
                           <button
                             type="button"
                             onClick={() => {
@@ -7377,7 +7440,7 @@ export default function MontarSitePage() {
                           multiple
                           onChange={handleInlineGalleryFilesChange}
                         />
-                        <span>🖼️ Escolher várias fotos</span>
+                        <span>ðŸ–¼ï¸ Escolher vÃ¡rias fotos</span>
                       </label>
 
                       {localGalleryPreviews.length > 0 ? (
@@ -7390,7 +7453,7 @@ export default function MontarSitePage() {
                                 onClick={() => removeInlineGalleryPreview(index)}
                                 aria-label={`Remover foto ${index + 1}`}
                               >
-                                ×
+                                Ã—
                               </button>
                             </div>
                           ))}
@@ -7417,10 +7480,10 @@ export default function MontarSitePage() {
                 <div className="vv-editor-note">
                   <strong>Presentes dentro da Etapa 3</strong>
                   <p>
-                    O caminho correto é editar presentes aqui mesmo, sem jogar o
-                    cliente para fora. Nesta versão, deixei o bloco preparado; o
-                    próximo arquivo a migrar é a lista de presentes para dentro
-                    desta área.
+                    O caminho correto Ã© editar presentes aqui mesmo, sem jogar o
+                    cliente para fora. Nesta versÃ£o, deixei o bloco preparado; o
+                    prÃ³ximo arquivo a migrar Ã© a lista de presentes para dentro
+                    desta Ã¡rea.
                   </p>
                 </div>
               ) : null}
@@ -7431,7 +7494,7 @@ export default function MontarSitePage() {
                   <p>
                     A mesma regra vale para convidados: o cliente deve ajustar o
                     RSVP aqui, olhando o site quase pronto. Vamos migrar esse
-                    bloco em uma próxima etapa para não quebrar convidados.
+                    bloco em uma prÃ³xima etapa para nÃ£o quebrar convidados.
                   </p>
                 </div>
               ) : null}
@@ -7444,7 +7507,7 @@ export default function MontarSitePage() {
                   disabled={inlineSaving || saveConfirmed}
                   className={`vv-save-inline ${saveConfirmed ? "vv-save-inline-success" : ""}`}
                 >
-                  {inlineSaving ? "Salvando..." : saveConfirmed ? "✓ Salvo" : "Salvar alterações"}
+                  {inlineSaving ? "Salvando..." : saveConfirmed ? "âœ“ Salvo" : "Salvar alteraÃ§Ãµes"}
                 </button>
               </div>
           </div>
@@ -7499,7 +7562,7 @@ export default function MontarSitePage() {
                 <p>{welcomeMessage}</p>
                 <div className="vv-edit-row">
                   <EditButton onClick={openStoryPhotoEditor}>
-                    Trocar foto desta seção
+                    Trocar foto desta seÃ§Ã£o
                   </EditButton>
                   <EditButton onClick={() => openInlineEditor("texto")}>Editar texto</EditButton>
                 </div>
@@ -7522,18 +7585,18 @@ export default function MontarSitePage() {
                 {galleryDisplayItems.slice(0, 9).map((item) => (
                   <div className="vv-gallery-photo" key={item.id}>
                     <img src={item.image} alt={item.title} />
-                    {item.source === "local" ? <span>Prévia</span> : null}
+                    {item.source === "local" ? <span>PrÃ©via</span> : null}
                   </div>
                 ))}
               </div>
             ) : (
               <div className="vv-gallery-empty">
-                A galeria ainda não tem fotos cadastradas. Clique em
-                <strong> “Montar galeria” </strong>
-                para escolher várias imagens aqui mesmo.
+                A galeria ainda nÃ£o tem fotos cadastradas. Clique em
+                <strong> â€œMontar galeriaâ€ </strong>
+                para escolher vÃ¡rias imagens aqui mesmo.
                 <div className="vv-suggestion-list">
                   {FALLBACK_GALLERY_IMAGES.map((image, index) => (
-                    <span key={image}>Sugestão visual {index + 1}</span>
+                    <span key={image}>SugestÃ£o visual {index + 1}</span>
                   ))}
                 </div>
               </div>
@@ -7554,16 +7617,16 @@ export default function MontarSitePage() {
               <div className="vv-location-card">
                 <div>
                   <strong>
-                    {previewLocation || "Local ainda não informado"}
+                    {previewLocation || "Local ainda nÃ£o informado"}
                   </strong>
                   <span>
                     {previewLocation
-                      ? "Confira o endereço e veja o mapa ao lado."
+                      ? "Confira o endereÃ§o e veja o mapa ao lado."
                       : "Adicione o local na etapa de dados do evento."}
                   </span>
                   <div className="vv-edit-row vv-location-edit-row">
                     <EditButton onClick={openLocationPhotoEditor}>Trocar foto do local</EditButton>
-                    <EditButton onClick={() => openInlineEditor("local")}>Editar endereço</EditButton>
+                    <EditButton onClick={() => openInlineEditor("local")}>Editar endereÃ§o</EditButton>
                   </div>
                 </div>
               </div>
@@ -7594,7 +7657,7 @@ export default function MontarSitePage() {
             eyebrow={templateDna.copy.giftsEyebrow}
             title={templateDna.copy.giftsTitle}
             description={templateDna.copy.giftsDescription}
-            onEdit={() => openInlineEditor("presentes")}
+            onEdit={() => { window.location.href = giftsPath; }}
             buttonLabel="Editar presentes"
             isComplete={gifts.length > 0}
           >
@@ -7616,8 +7679,8 @@ export default function MontarSitePage() {
               </div>
             ) : (
               <div className="vv-gifts-empty">
-                Ainda não há presentes cadastrados. O ideal é começar com uma
-                lista sugerida e depois trocar o que não fizer sentido.
+                Ainda nÃ£o hÃ¡ presentes cadastrados. O ideal Ã© comeÃ§ar com uma
+                lista sugerida e depois trocar o que nÃ£o fizer sentido.
                 <div className="vv-suggestion-list">
                   {giftSuggestions.map((item) => (
                     <span key={item}>{item}</span>
@@ -7633,7 +7696,7 @@ export default function MontarSitePage() {
             eyebrow={templateDna.copy.rsvpEyebrow}
             title={templateDna.copy.rsvpTitle}
             description={templateDna.copy.rsvpDescription}
-            onEdit={() => openInlineEditor("convidados")}
+            onEdit={() => { window.location.href = guestsPath; }}
             buttonLabel="Gerenciar convidados"
             isComplete={Boolean(publicPath)}
           >
@@ -7642,7 +7705,7 @@ export default function MontarSitePage() {
                 <strong>{templateDna.copy.rsvpInnerTitle}</strong>
                 <p>{templateDna.copy.rsvpInnerDescription}</p>
               </div>
-              <EditButton onClick={() => openInlineEditor("convidados")}>Abrir convidados</EditButton>
+              <EditButton onClick={() => { window.location.href = guestsPath; }}>Abrir convidados</EditButton>
             </div>
           </SiteSectionCard>
         ) : null}
@@ -7651,24 +7714,24 @@ export default function MontarSitePage() {
       <div className="vv-final-bar">
         <div className="vv-final-inner">
           <div>
-            <strong>Seu site está quase pronto</strong>
-            <span>Use o topo para editar fotos, presentes e publicação.</span>
+            <strong>Seu site estÃ¡ quase pronto</strong>
+            <span>Use o topo para editar fotos, presentes e publicaÃ§Ã£o.</span>
           </div>
 
           <div className="vv-final-actions">
             {showGallery ? <TopAction onClick={openGalleryEditor}>Completar fotos</TopAction> : null}
-            {showGifts ? <TopAction onClick={() => openInlineEditor("presentes")}>Presentes</TopAction> : null}
+            {showGifts ? <TopAction onClick={() => { window.location.href = giftsPath; }}>Presentes</TopAction> : null}
             {publicPath ? (
               <Link
                 href={publicPath}
                 target="_blank"
                 className="vv-public-button"
               >
-                Ver site público
+                Ver site pÃºblico
               </Link>
             ) : (
               <TopAction onClick={() => openInlineEditor("capa")} primary>
-                Preparar publicação
+                Preparar publicaÃ§Ã£o
               </TopAction>
             )}
           </div>
@@ -7677,3 +7740,5 @@ export default function MontarSitePage() {
     </main>
   );
 }
+
+
